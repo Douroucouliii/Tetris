@@ -1,35 +1,66 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-const char HAUTEUR_GRILLE = 20;
-const char LARGEUR_GRILLE = 10;
+enum couleur{RIEN, ROUGE, BLEU, JAUNE, VERT};
+typedef enum couleur couleur;
 
-char** init_grille(){
-    char** grille;
-    for(int i=0; i<HAUTEUR_GRILLE; i++){
-        for(int j=0; j<LARGEUR_GRILLE; j++){
-            grille[i][j]='/';
+typedef struct{
+    bool estRempli;
+    couleur c;
+}cellule;
+
+const char H = 20;
+const char L = 10;
+
+cellule** init_grille() {
+    cellule** grille = (cellule **) malloc(H * sizeof(cellule*));
+    if(!grille){
+        perror("Erreur malloc()\n");
+        exit(EXIT_FAILURE);
+    }
+    for(int i=0; i < H; i++) {
+        grille[i] = malloc(L * sizeof(cellule));
+        if (!grille[i]) {
+            perror("Erreur malloc()\n");
+            exit(EXIT_FAILURE);
+        }
+        for (int j = 0; j < L; j++) {
+            grille[i][j].estRempli = false;
+            grille[i][j].c = RIEN;
         }
     }
+    return grille;
 }
 
-void display_grille(char ** grille){
-    for(int i=0; i<HAUTEUR_GRILLE; i++){
-        for(int j=0; j<LARGEUR_GRILLE; j++){
-            printf("%c", grille[i][j]);
+void display_grille(cellule** c){
+    for(int i=0; i<H; i++){
+        for(int j=0; j<L; j++){
+            if(!c[i][j].estRempli) printf(" ");
+            else printf("#");
         }
         printf("\n");
     }
     printf("\n");
 }
 
+void clear(cellule** c){
+    for(int i = 0; i < H; i++) {
+        free(c[i]);
+    }
+    free(c);
+}
 
 int main(int argc, char *argv[]){
+    argc--;
+    argv++;
 
-    char** grille = init_grille();
+    cellule** grille = init_grille();
     display_grille(grille);
 
 
+
+    clear(grille);
 
     return EXIT_SUCCESS;
 }
