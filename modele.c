@@ -4,13 +4,19 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-enum couleur{RIEN, ROUGE, BLEU, JAUNE, VERT};
+enum couleur{RIEN, CYAN, JAUNE, VIOLET, ORANGE, BLEU, ROUGE, VERT};
 typedef enum couleur couleur;
 
 typedef struct{
-    bool estRempli;
-    couleur c;
+    unsigned i : 6; //Coordonnée x de la cellule
+    unsigned j : 5; //Coordonnée y de la cellule
+    bool estRempli; //Boolean si la cellule est occupé par une piece
+    couleur c; //Couleur de la cellule
 }cellule;
+
+typedef struct{
+    cellule p[4]; //piece (tableau de 4 cellule)
+}piece;
 
 const char H = 20;
 const char L = 10;
@@ -28,6 +34,8 @@ cellule** init_grille() {
             exit(EXIT_FAILURE);
         }
         for (int j = 0; j < L; j++) {
+            grille[i][j].i = i;
+            grille[i][j].j = j; 
             grille[i][j].estRempli = false;
             grille[i][j].c = RIEN;
         }
@@ -59,7 +67,6 @@ int main(int argc, char *argv[]){
 
     cellule** grille = init_grille();
     display_grille(grille);
-
 
 
     clear(grille);
