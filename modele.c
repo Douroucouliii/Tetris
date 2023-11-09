@@ -1,3 +1,5 @@
+//Faudra pas oublier les commentaires :D  (attendons le cours dessus pour les faire plus propre)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -20,7 +22,7 @@ cellule** init_grille() {
         exit(EXIT_FAILURE);
     }
     for(int i=0; i < H; i++) {
-        grille[i] = malloc(L * sizeof(cellule));
+        grille[i] = (cellule *) malloc(L * sizeof(cellule));
         if (!grille[i]) {
             perror("Erreur malloc()\n");
             exit(EXIT_FAILURE);
