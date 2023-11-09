@@ -68,8 +68,161 @@ piece** init_tmpPiece(){
             exit(EXIT_FAILURE);
         }
         tmpPiece[i]->nom = noms_pieces[i];
+        tmpPiece[i]->p = (cell*) malloc(4 * sizeof(cell));
+        //On crée toutes les pièces
+        if(tmpPiece[i]->nom == 'I'){
+            tmpPiece[i]->p[0].i = 0;
+            tmpPiece[i]->p[0].j = 3;
+            tmpPiece[i]->p[0].isFull=true;
+            tmpPiece[i]->p[0].c=RED;
 
-        //finir ça
+            tmpPiece[i]->p[1].i = 0;
+            tmpPiece[i]->p[1].j = 4;
+            tmpPiece[i]->p[1].isFull=true;
+            tmpPiece[i]->p[1].c=RED;
+
+            tmpPiece[i]->p[2].i = 0;
+            tmpPiece[i]->p[2].j = 5;
+            tmpPiece[i]->p[2].isFull=true;
+            tmpPiece[i]->p[2].c=RED;
+
+            tmpPiece[i]->p[3].i = 0;
+            tmpPiece[i]->p[3].j = 6;
+            tmpPiece[i]->p[3].isFull=true;
+            tmpPiece[i]->p[3].c=RED;
+        }
+        else if(tmpPiece[i]->nom == 'O'){
+            //On crée la pièce
+            tmpPiece[i]->p[0].i = 0;
+            tmpPiece[i]->p[0].j = 4;
+            tmpPiece[i]->p[0].isFull=true;
+            tmpPiece[i]->p[0].c=RED;
+
+            tmpPiece[i]->p[1].i = 0;
+            tmpPiece[i]->p[1].j = 5;
+            tmpPiece[i]->p[1].isFull=true;
+            tmpPiece[i]->p[1].c=RED;
+
+            tmpPiece[i]->p[2].i = 1;
+            tmpPiece[i]->p[2].j = 4;
+            tmpPiece[i]->p[2].isFull=true;
+            tmpPiece[i]->p[2].c=RED;
+
+            tmpPiece[i]->p[3].i = 1;
+            tmpPiece[i]->p[3].j = 5;
+            tmpPiece[i]->p[3].isFull=true;
+            tmpPiece[i]->p[3].c=RED;
+        }
+        else if(tmpPiece[i]->nom == 'T'){
+            //On crée la pièce
+            tmpPiece[i]->p[0].i = 0;
+            tmpPiece[i]->p[0].j = 4;
+            tmpPiece[i]->p[0].isFull=true;
+            tmpPiece[i]->p[0].c=RED;
+
+            tmpPiece[i]->p[1].i = 0;
+            tmpPiece[i]->p[1].j = 5;
+            tmpPiece[i]->p[1].isFull=true;
+            tmpPiece[i]->p[1].c=RED;
+
+            tmpPiece[i]->p[2].i = 0;
+            tmpPiece[i]->p[2].j = 6;
+            tmpPiece[i]->p[2].isFull=true;
+            tmpPiece[i]->p[2].c=RED;
+
+            tmpPiece[i]->p[3].i = 1;
+            tmpPiece[i]->p[3].j = 5;
+            tmpPiece[i]->p[3].isFull=true;
+            tmpPiece[i]->p[3].c=RED;
+        }
+        else if(tmpPiece[i]->nom == 'L'){
+            //On crée la pièce
+            tmpPiece[i]->p[0].i = 0;
+            tmpPiece[i]->p[0].j = 4;
+            tmpPiece[i]->p[0].isFull=true;
+            tmpPiece[i]->p[0].c=RED;
+
+            tmpPiece[i]->p[1].i = 0;
+            tmpPiece[i]->p[1].j = 5;
+            tmpPiece[i]->p[1].isFull=true;
+            tmpPiece[i]->p[1].c=RED;
+
+            tmpPiece[i]->p[2].i = 0;
+            tmpPiece[i]->p[2].j = 6;
+            tmpPiece[i]->p[2].isFull=true;
+            tmpPiece[i]->p[2].c=RED;
+
+            tmpPiece[i]->p[3].i = 1;
+            tmpPiece[i]->p[3].j = 4;
+            tmpPiece[i]->p[3].isFull=true;
+            tmpPiece[i]->p[3].c=RED;
+        }
+        else if(tmpPiece[i]->nom == 'J'){
+            //On crée la pièce
+            tmpPiece[i]->p[0].i = 0;
+            tmpPiece[i]->p[0].j = 4;
+            tmpPiece[i]->p[0].isFull=true;
+            tmpPiece[i]->p[0].c=RED;
+
+            tmpPiece[i]->p[1].i = 0;
+            tmpPiece[i]->p[1].j = 5;
+            tmpPiece[i]->p[1].isFull=true;
+            tmpPiece[i]->p[1].c=RED;
+
+            tmpPiece[i]->p[2].i = 0;
+            tmpPiece[i]->p[2].j = 6;
+            tmpPiece[i]->p[2].isFull=true;
+            tmpPiece[i]->p[2].c=RED;
+
+            tmpPiece[i]->p[3].i = 1;
+            tmpPiece[i]->p[3].j = 6;
+            tmpPiece[i]->p[3].isFull=true;
+            tmpPiece[i]->p[3].c=RED;
+        }
+        else if(tmpPiece[i]->nom == 'Z'){
+            //On crée la pièce
+            tmpPiece[i]->p[0].i = 0;
+            tmpPiece[i]->p[0].j = 4;
+            tmpPiece[i]->p[0].isFull=true;
+            tmpPiece[i]->p[0].c=RED;
+
+            tmpPiece[i]->p[1].i = 0;
+            tmpPiece[i]->p[1].j = 5;
+            tmpPiece[i]->p[1].isFull=true;
+            tmpPiece[i]->p[1].c=RED;
+
+            tmpPiece[i]->p[2].i = 1;
+            tmpPiece[i]->p[2].j = 5;
+            tmpPiece[i]->p[2].isFull=true;
+            tmpPiece[i]->p[2].c=RED;
+
+            tmpPiece[i]->p[3].i = 1;
+            tmpPiece[i]->p[3].j = 6;
+            tmpPiece[i]->p[3].isFull=true;
+            tmpPiece[i]->p[3].c=RED;
+        }
+        else if(tmpPiece[i]->nom == 'S'){
+            //On crée la pièce
+            tmpPiece[i]->p[0].i = 0;
+            tmpPiece[i]->p[0].j = 5;
+            tmpPiece[i]->p[0].isFull=true;
+            tmpPiece[i]->p[0].c=RED;
+
+            tmpPiece[i]->p[1].i = 0;
+            tmpPiece[i]->p[1].j = 6;
+            tmpPiece[i]->p[1].isFull=true;
+            tmpPiece[i]->p[1].c=RED;
+
+            tmpPiece[i]->p[2].i = 1;
+            tmpPiece[i]->p[2].j = 4;
+            tmpPiece[i]->p[2].isFull=true;
+            tmpPiece[i]->p[2].c=RED;
+
+            tmpPiece[i]->p[3].i = 1;
+            tmpPiece[i]->p[3].j = 5;
+            tmpPiece[i]->p[3].isFull=true;
+            tmpPiece[i]->p[3].c=RED;
+        }
     }
 
     return tmpPiece;
