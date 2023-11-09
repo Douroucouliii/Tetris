@@ -16,9 +16,8 @@ typedef struct{
 }cell;
 
 typedef struct{
-    char* nom; //Nom de la pièce
+    char nom; //Nom de la pièce
     cell p[4]; //Piece (tableau de 4 cellules)
-    color c; //Couleur de la pièce
 }piece;
 
 const char HAUTEUR = 20;
@@ -49,30 +48,39 @@ cell** init_board() {
 void display_board(cell** c){
     for(int i=0; i<HAUTEUR; i++){
         for(int j=0; j<LARGEUR; j++){
-            if(!c[i][j].isFull) printf(" ");
-            else printf("#");
+            if(!c[i][j].isFull) printf(' ');
+            else printf('#');
         }
         printf("\n");
     }
     printf("\n");
 }
 
-piece** init_tmp_piece(){
+piece** init_tmpPiece(){
     //Ici on crée les 7 pieces du jeu et on les stock dans le tableau
-    for(int i=0; i<7; i++){
-        tmpPiece[i] = (piece *) malloc(sizeof(piece));
+    char noms_pieces[] = {'I', 'O', 'T', 'L', 'J', 'Z', 'S'};
+    piece[7][] tmpPiece;
+
+    for (int i = 0; i < 7; i++) {
+        tmpPiece[i] = (piece *)malloc(sizeof(piece));
+        if (!tmpPiece[i]) {
+            perror("Erreur malloc()\n");
+            exit(EXIT_FAILURE);
+        }
+        tmpPiece[i]->nom = noms_pieces[i];
+
+        //finir ça
     }
-    tmpPiece[0]->nom = "I";
-    tmpPiece[1]->nom = "O";
-    tmpPiece[2]->nom = "T";
-    tmpPiece[3]->nom = "L";
-    tmpPiece[4]->nom = "J";
-    tmpPiece[5]->nom = "Z";
-    tmpPiece[6]->nom = "S";
+
+    return tmpPiece;
 }
+
 piece* getPiece(){
-    //Ajouter la piece au tableau de pieces
+    //On crée une pièce qu'on a memcpy sur une piece de tmpPiece aléatoirement
+    //Ajouter la piece au tableau de pieces (si c'est vide, on malloc, sinon realloc)
+    //On retourne la pièce
 }
+
 void moveDownPiece(cell** c, piece *p){
     //Et vérif que c'est pas tout en bas
 }
@@ -82,29 +90,64 @@ void moveLeftPiece(cell** c, piece *p){
 void moveRightPiece(cell** c, piece *p){
     //Et vérif que c'est pas tout à droite
 }
+
 void rotateLeft(cell** c, piece *p){
     //Si possible
 }
 void rotateRight(cell** c, piece *p){
     //Si possible
 }
-void clear(cell** c){
+
+
+
+
+void clear_board(cell** c){
     for(int i = 0; i < HAUTEUR; i++) {
         free(c[i]);
     }
     free(c);
 }
+
+void clear_boardPiece(piece** p, int nbBoardPiece){
+    for (int i=0; i<nbBoardPiece; i++) {
+        free(p[i]);
+    }
+    free(p);
+}
+
+void clear_tmpPiece(piece** p){
+    for (int i=0; i<7; i++) {
+        free(p[i]);
+    }
+}
+
+
+
+
 int main(int argc, char *argv[]){
     argc--;
     argv++;
+
     srand(time(NULL));
+
     //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
-    piece[7][] tmpPiece = init_tmp_piece();
+    piece[7][] tmpPiece = init_tmpPiece();
+
     //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
     piece** boardPiece = NULL;
+    int nbBoardPiece=0;
+
     //Tableau de cellule, c'est notre jeu
     cell** board = init_board();
+
     display_board(board);
-    clear(board);
+
+
+
+
+    clear_board(board);
+    clear_boardPiece(boardPiece, nbBoardPiece);
+    clear_tmpPiece(tmpPiece);
+
     return EXIT_SUCCESS;
 }
