@@ -47,14 +47,25 @@ cell** init_board() {
 }
 
 void display_board(cell** c){
-    for(int i=0; i<HAUTEUR; i++){
-        for(int j=0; j<LARGEUR; j++){
-            if(!c[i][j].isFull) printf(".");
-            else printf("#");
-        }
-        printf("\n");
+    printf("+");
+    for(int i=0; i<LARGEUR*2; i++){
+        printf("-");
     }
+    printf("+");
     printf("\n");
+    for(int i=0; i<HAUTEUR; i++){
+        printf("|");
+        for(int j=0; j<LARGEUR; j++){
+            if(!c[i][j].isFull) printf("  ");
+            else printf("[]");
+        }
+        printf("|\n");
+    }
+    printf("+");
+    for(int i=0; i<LARGEUR*2; i++){
+        printf("-");
+    }
+    printf("+\n");
 }
 
 piece** init_tmpPiece(){
@@ -253,35 +264,39 @@ piece* get_piece(piece** tmpPiece){
     return newPiece;
 }
 
-void set_piece(piece* p, piece** boardPiece, cell** board, int *nbBoardPiece){
-    //Ajouter la piece au tableau de pieces (si c'est vide, on malloc, sinon realloc)
-    //Mettre à jour la grille du jeu (si une piece est déjà présente à un emplacement c'est qu'on a perdu);
-
+void set_piece(piece* p, piece*** boardPiece, cell** board, int *nbBoardPiece){
     *nbBoardPiece = *nbBoardPiece + 1;
-    if(!boardPiece){
-        boardPiece = (piece **) malloc(*nbBoardPiece * sizeof(piece *));
-    }else{
-        boardPiece = (piece **) realloc(boardPiece, *nbBoardPiece * sizeof(piece *));
+    if (!*boardPiece) {
+        *boardPiece = (piece **) malloc(sizeof(piece *));
+    } else {
+        *boardPiece = (piece **) realloc(*boardPiece, *nbBoardPiece * sizeof(piece *));
     }
-    if(!boardPiece){
+    if (!*boardPiece) {
         perror("Erreur malloc()/realloc()\n");
         exit(EXIT_FAILURE);
     }
 
-    boardPiece[*nbBoardPiece - 1] = p;
+    //Allouer dynamiquement de la mémoire pour la nouvelle pièce
+    (*boardPiece)[*nbBoardPiece - 1] = (piece *) malloc(sizeof(piece));
+    if (!(*boardPiece)[*nbBoardPiece - 1]) {
+        perror("Erreur malloc()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //Copier les données de la pièce dans la nouvelle mémoire allouée
+    memcpy((*boardPiece)[*nbBoardPiece - 1], p, sizeof(piece));
 
     //Ici on met à jour la grille
-    for(int ind=0; ind<4; ind++){
-        if(board[p->p[ind].i][p->p[ind].j].isFull==true){
+    for(int ind = 0; ind < 4; ind++){
+        if(board[p->p[ind].i][p->p[ind].j].isFull == true){
             //Ca veut dire qu'on a perdu car les pieces sont tout en haut :(
             printf("\nTu as perdu la partie, dommage !\n\n");
             return;
-        }else{
-            board[p->p[ind].i][p->p[ind].j].isFull=true;
+        } else {
+            board[p->p[ind].i][p->p[ind].j].isFull = true;
         }
-        board[p->p[ind].i][p->p[ind].j].c=p->p[0].c;
+        board[p->p[ind].i][p->p[ind].j].c = p->p[0].c;
     }
-
 }
 
 void moveDownPiece(cell** c, piece *p){
@@ -329,8 +344,6 @@ void clear_tmpPiece(piece** p){
 }
 
 
-
-
 int main(int argc, char *argv[]){
     argc--;
     argv++;
@@ -348,13 +361,13 @@ int main(int argc, char *argv[]){
     cell** board = init_board();
 
 
-    //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
+    //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set (qui refait un memcpy jspa si c'est opti):)
     piece* piece = get_piece(tmpPiece);
-    set_piece(piece, boardPiece, board, &nbBoardPiece);
-    piece=get_piece(tmpPiece);
-    set_piece(piece, boardPiece, board, &nbBoardPiece);
+    set_piece(piece, &boardPiece, board, &nbBoardPiece);
     free(piece);
-
+    piece=get_piece(tmpPiece);
+    set_piece(piece, &boardPiece, board, &nbBoardPiece);
+    free(piece);
 
 
     //Et dcp quand j'affiche mon tableau, ploup
@@ -363,7 +376,6 @@ int main(int argc, char *argv[]){
     clear_board(board);
     clear_boardPiece(boardPiece, nbBoardPiece);
     clear_tmpPiece(tmpPiece);
-    //free(piece);
 
     return EXIT_SUCCESS;
 }
