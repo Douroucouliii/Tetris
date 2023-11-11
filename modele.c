@@ -18,10 +18,10 @@ typedef struct{
 }cell;
 
 typedef struct{
-    char nom;
-    int num_cells;
-    int coords[4][2];
-    color c;
+    char nom; // Nom I , O , ...
+    int num_cells; //Nombre de cellule ( pour plus tard )
+    int coords[4][2]; //coordonnées piece de base
+    color c; //couleur
 }PieceConfig;
 
 
@@ -120,8 +120,6 @@ void display_board(cell** c) {
     printf("┘\n\n");
 }
 
-
-
 PieceConfig** init_tmpPiece() {
     PieceConfig** tmpPiece = (PieceConfig**) malloc(7 * sizeof(PieceConfig*));
     if (!tmpPiece) {
@@ -209,20 +207,57 @@ void set_piece(PieceConfig* p, PieceConfig*** boardPiece, cell** board, int* nbB
     }
 }
 
+/*
+La fonction CanMove prend en paramètre 
+    board : notre plateau
+    piece : une piece standard
+    varX et varY : l'orientation de la piece ( Bas , Gauche , Droite , Haut )
+Cette fonction ressor un type boolean qui nous permet de savoir si nous pouvons ou non aller dans une direction.
+*/
+bool canMove(cell** board, PieceConfig* piece, int varX , int varY){
+    for(int i = 0 ; i < piece -> num_cells; i++){
+        int coord_x = piece -> coords[i][0] + varX;
+        int coord_y = piece -> coords[i][1] + varY;
 
+        if( coord_x < 0 || coord_x >= HEIGHT || coord_y < 0 || coord_y >= WIDTH) return false;
+    }
 
+    return true;
+}
+
+void moveDownPiece(cell** c, PieceConfig *p){
+    if(!canMove(c,p,1,0)){
+        //déplacement pas possible
+        return;
+    }
+    //On déplace la piece vers le bas
+    for( int i = 0 ; i < p -> num_cells ; i++){
+        p->coords[i][0]++;
+    }
+    
+}
+
+void moveLeftPiece(cell** c, PieceConfig *p){
+    if(!canMove(c,p,0,-1)){
+        return;
+    }
+
+    for( int i = 0 ; i < p -> num_cells ; i++){
+        p->coords[i][1]--;
+    }
+}
+
+void moveRightPiece(cell** c, PieceConfig *p){
+    if(!canMove(c,p,0,1)){
+        return;
+    }
+
+    for( int i = 0 ; i < p -> num_cells ; i++){
+        p->coords[i][1]++;
+    }
+}
 
 /*
-void moveDownPiece(cell** c, piece *p){
-    //Et vérif que c'est pas tout en bas
-}
-void moveLeftPiece(cell** c, piece *p){
-    //Et vérif que c'est pas tout à gauche
-}
-void moveRightPiece(cell** c, piece *p){
-    //Et vérif que c'est pas tout à droite
-}
-
 void rotateLeft(cell** c, piece *p){
     //Si possible
 }
@@ -230,6 +265,31 @@ void rotateRight(cell** c, piece *p){
     //Si possible
 }
 */
+
+void refresh_board(cell** grille, PieceConfig** lesPieces, int nbBoardPiece){
+    //On efface le tableau
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            grille[i][j].isFull = false;
+            grille[i][j].c = NOTHING; // pas oublier NOTHING
+        }
+    }
+
+    for( int i = 0 ; i < nbBoardPiece ; i ++){
+        PieceConfig* p = lesPieces[i];
+        for (int ind = 0; ind < p->num_cells; ind++) {
+            int coord_x = p->coords[ind][0];
+            int coord_y = p->coords[ind][1];
+
+            // Vérifier que les coordonnées sont valides ( au cas où ptet faire une fonction verifie )
+            if (coord_x >= 0 && coord_x < HEIGHT && coord_y >= 0 && coord_y < WIDTH) {
+                grille[coord_x][coord_y].isFull = true;
+                grille[coord_x][coord_y].c = p->c;
+            }
+        }
+    }
+}
+
 
 void clear_board(cell** c){
     if(!c) return;
@@ -259,7 +319,7 @@ void clear_tmpPiece(PieceConfig** p){
 int main(int argc, char *argv[]){
     argc--;
     argv++;
-    
+
     srand(time(NULL));
 
     //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
@@ -267,20 +327,33 @@ int main(int argc, char *argv[]){
 
     //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
     PieceConfig** boardPiece = NULL;
-    int nbBoardPiece=0;
+    int nbBoardPiece = 0;
 
     //Tableau de cellule, c'est notre jeu
     cell** board = init_board();
 
     //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
     PieceConfig* piece = get_piece(tmpPiece);
-    set_piece(piece, &boardPiece, board, &nbBoardPiece);
+    set_piece(piece,&boardPiece,board,&nbBoardPiece);
 
-    //Et dcp quand j'affiche mon tableau, ploup
     display_board(board);
 
+    // Déplace la pièce vers le bas
+    moveDownPiece(board, piece);
+
+    refresh_board(board, &piece, nbBoardPiece);
+
+    display_board(board);
+
+    // Met à jour la grille avec la pièce déplacée
+    refresh_board(board, &piece, nbBoardPiece);
+
+    // Affiche le tableau après le déplacement
+    display_board(board);
+
+    // Libère la mémoire
     clear_board(board);
-    clear_boardPiece(boardPiece, nbBoardPiece);
+    clear_boardPiece(boardPiece,nbBoardPiece);
     clear_tmpPiece(tmpPiece);
 
     return EXIT_SUCCESS;
