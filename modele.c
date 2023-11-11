@@ -299,8 +299,12 @@ void set_piece(piece* p, piece*** boardPiece, cell** board, int *nbBoardPiece){
     }
 }
 
-void moveDownPiece(cell** c, piece *p){
-    //Et vérif que c'est pas tout en bas
+void moveDownPiece(piece *p){
+    //vérif que c'est pas tout en bas (pas encore fait)
+    for(int i=0; i<4; i++){
+        p->p[i].i++;
+    }
+    //Attention il faut reload le board apres l'appel de cette fonction
 }
 void moveLeftPiece(cell** c, piece *p){
     //Et vérif que c'est pas tout à gauche
@@ -316,8 +320,20 @@ void rotateRight(cell** c, piece *p){
     //Si possible
 }
 
-
-
+void reload_board(cell** grille, piece **lesPieces, int nbBoardPiece){
+    //On efface tout le board
+    for(int i=0; i<HAUTEUR; i++){
+        for(int j=0; j<LARGEUR; j++){
+            grille[i][j].isFull=false;
+        }
+    }
+    //On parcourt nos pieces et met à true les case où y'a des pieces
+    for(int i=0; i<nbBoardPiece; i++){
+        for(int j=0; j<4; j++){
+            grille[lesPieces[i]->p[j].i][lesPieces[i]->p[j].j].isFull=true;
+        }
+    }
+}
 
 void clear_board(cell** c){
     if(!c) return;
@@ -354,8 +370,8 @@ int main(int argc, char *argv[]){
     piece** tmpPiece = init_tmpPiece();
 
     //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
-    piece** boardPiece = NULL;
-    int nbBoardPiece=0;
+    piece** lesPieces = NULL;
+    int nbLesPieces=0;
 
     //Tableau de cellule, c'est notre jeu
     cell** board = init_board();
@@ -363,19 +379,22 @@ int main(int argc, char *argv[]){
 
     //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set (qui refait un memcpy jspa si c'est opti):)
     piece* piece = get_piece(tmpPiece);
-    set_piece(piece, &boardPiece, board, &nbBoardPiece);
+    set_piece(piece, &lesPieces, board, &nbLesPieces);
     free(piece);
-    piece=get_piece(tmpPiece);
-    set_piece(piece, &boardPiece, board, &nbBoardPiece);
-    free(piece);
-
 
     //Et dcp quand j'affiche mon tableau, ploup
     display_board(board);
 
+    moveDownPiece(lesPieces[0]);
+    reload_board(board, lesPieces, nbLesPieces);
+
+
     clear_board(board);
-    clear_boardPiece(boardPiece, nbBoardPiece);
+    clear_boardPiece(lesPieces, nbLesPieces);
     clear_tmpPiece(tmpPiece);
 
     return EXIT_SUCCESS;
 }
+
+
+//A l'aide krol, est ce qu'on ajoute la piece au tableau lesPieces une fois que c'est arrivé tout en bas ou non ?
