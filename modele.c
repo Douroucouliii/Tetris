@@ -24,15 +24,9 @@ typedef struct{
     color c; //couleur
 }PieceConfig;
 
-
-typedef struct{
-    char nom; //Nom de la pièce
-    int x;
-    int y;
-}PlacedPiece;
-
 const char HEIGHT = 20;
 const char WIDTH = 10;
+
 
 PieceConfig pieces[7] = {
     {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED},
@@ -67,11 +61,14 @@ cell** init_board() {
 }
 
 void display_board(cell** c) {
+
     printf("┌");
     for (int i = 0; i < WIDTH * 2; i++) {
         printf("─");
     }
     printf("┐\n");
+
+
 
     for (int i = 0; i < HEIGHT; i++) {
         printf("│");
@@ -234,7 +231,6 @@ void moveDownPiece(cell** c, PieceConfig *p){
     for( int i = 0 ; i < p -> num_cells ; i++){
         p->coords[i][0]++;
     }
-    
 }
 
 void moveLeftPiece(cell** c, PieceConfig *p){
@@ -257,14 +253,72 @@ void moveRightPiece(cell** c, PieceConfig *p){
     }
 }
 
-/*
-void rotateLeft(cell** c, piece *p){
-    //Si possible
+
+bool canRotate(cell** c, PieceConfig* p, int rotationDirection){
+    int newCoords[4][2];
+    
+    int pivotX = p->coords[1][0];
+    int pivotY = p->coords[1][1];
+
+    for( int i = 0 ; i < p -> num_cells ; i++){
+        int oldX = p -> coords[i][0];
+        int oldY = p -> coords[i][1];
+
+        if(rotationDirection == 1 ){ //Rotation Droite
+            newCoords[i][0] = pivotX - (oldY - pivotY);
+            newCoords[i][1] = pivotY + (oldX - pivotX);
+        }else if(rotationDirection == -1){ //Rotation Gauche
+            newCoords[i][0] = pivotX + (oldY - pivotY);
+            newCoords[i][1] = pivotY - (oldX - pivotX);
+        }
+
+        int coord_x = newCoords[i][0];
+        int coord_y = newCoords[i][1];
+
+        if( coord_x < 0 || coord_x >= HEIGHT || coord_y < 0 || coord_y >= WIDTH){
+            return false;
+        }
+    }
+    return true;
 }
-void rotateRight(cell** c, piece *p){
-    //Si possible
+
+void rotateLeft(cell** board, PieceConfig* piece) {
+    if (!canRotate(board, piece, -1)) {
+        printf("Je suis là");
+        return;
+    }
+
+    int pivotX = piece->coords[1][0];
+    int pivotY = piece->coords[1][1];
+
+    for (int i = 0; i < piece->num_cells; i++) {
+        int oldX = piece->coords[i][0];
+        int oldY = piece->coords[i][1];
+
+        // Mise à jour des coordonnées après la rotation à gauche
+        piece->coords[i][0] = pivotX + (oldY - pivotY);
+        piece->coords[i][1] = pivotY - (oldX - pivotX);
+    }
 }
-*/
+
+void rotateRight(cell** board, PieceConfig* piece) {
+    if (!canRotate(board, piece, 1)) {
+        printf("Je suis là mais je devrais pas mdr");
+        return;
+    }
+    
+    int pivotX = piece->coords[1][0];
+    int pivotY = piece->coords[1][1];
+    
+    for (int i = 0; i < piece->num_cells; i++) {
+        int oldX = piece->coords[i][0];
+        int oldY = piece->coords[i][1];
+
+        // Mise à jour des coordonnées après la rotation à droite
+        piece->coords[i][0] = pivotX - (oldY - pivotY);
+        piece->coords[i][1] = pivotY + (oldX - pivotX);
+    }
+}
 
 void refresh_board(cell** grille, PieceConfig** lesPieces, int nbBoardPiece){
     //On efface le tableau
@@ -340,14 +394,15 @@ int main(int argc, char *argv[]){
 
     // Déplace la pièce vers le bas
     moveDownPiece(board, piece);
+    moveDownPiece(board,piece);
 
     refresh_board(board, &piece, nbBoardPiece);
-
     display_board(board);
+
+    rotateLeft(board,piece);
 
     // Met à jour la grille avec la pièce déplacée
     refresh_board(board, &piece, nbBoardPiece);
-
     // Affiche le tableau après le déplacement
     display_board(board);
 
