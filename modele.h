@@ -18,7 +18,7 @@ typedef struct{
 
 //Structure qui initialise le tetris
 typedef struct{
-    cell** board;
+    cell** board; //Notre jeu
 }Tetris;
 
 enum color{NOTHING, CYAN, YELLOW, PURPLE, ORANGE, BLUE, RED, GREEN};
@@ -50,7 +50,7 @@ void moveLeftPiece(cell**, PieceConfig *);
 void moveRightPiece(cell**, PieceConfig *);
 int getPivotX(PieceConfig*);
 int getPivotY(PieceConfig*);
-bool canRotate(cell** c, PieceConfig*, int);
+bool canRotate(cell**, PieceConfig*, int);
 void rotateLeft(cell**, PieceConfig*);
 void rotateRight(cell**, PieceConfig*);
 void refresh_board(cell**, PieceConfig**, int);
