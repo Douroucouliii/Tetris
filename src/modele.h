@@ -1,6 +1,11 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "userInterface.h"
+
+enum color{NOTHING, CYAN, YELLOW, PURPLE, ORANGE, BLUE, RED, GREEN};
+typedef enum color color;
 
 typedef struct{
     unsigned i : 12; //Coordonnée x de la cellule
@@ -20,9 +25,6 @@ typedef struct{
 typedef struct{
     cell** board; //Notre jeu
 }Tetris;
-
-enum color{NOTHING, CYAN, YELLOW, PURPLE, ORANGE, BLUE, RED, GREEN};
-typedef enum color color;
 
 const char HEIGHT = 20;
 const char WIDTH = 10;

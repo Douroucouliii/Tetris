@@ -2,4 +2,4 @@
 
 #include "modele.h"
 
-void affiche_text(Tetris tetris);
+void affiche_sdl(Tetris* tetris);

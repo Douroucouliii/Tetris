@@ -21,30 +21,6 @@ void tetris_playGame(Tetris* tetris, userInterface ui){
 
     //ba dcp ici c'est notre "boucle pour lancer notre tetris"
 
-    //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
-    PieceConfig** tmpPiece = init_tmpPiece();
-    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
-    PieceConfig** boardPiece = NULL;
-    int nbBoardPiece = 0;
-    //Tableau de cellule, c'est notre jeu
-    cell** board = init_board();
-    //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
-    PieceConfig* piece = get_piece(tmpPiece);
-    set_piece(piece,&boardPiece,board,&nbBoardPiece);
-    display_board(board);
-    // Déplace la pièce vers le bas, met à jour la grille et réaffiche le tableau
-    moveDownPiece(board, piece);
-    refresh_board(board, &piece, nbBoardPiece);
-    display_board(board);
-    //
-    rotateLeft(board, piece);
-    refresh_board(board, &piece, nbBoardPiece);
-    display_board(board);
-
-    clear_board(board);
-    clear_boardPiece(boardPiece, nbBoardPiece);
-    clear_tmpPiece(tmpPiece);
-
     return;
 }
 
@@ -376,4 +352,30 @@ void clear_tmpPiece(PieceConfig** p){
 
 int main(){
     srand(time(NULL));
+
+    //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
+    PieceConfig** tmpPiece = init_tmpPiece();
+    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
+    PieceConfig** boardPiece = NULL;
+    int nbBoardPiece = 0;
+    //Tableau de cellule, c'est notre jeu
+    cell** board = init_board();
+    //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
+    PieceConfig* piece = get_piece(tmpPiece);
+    set_piece(piece,&boardPiece,board,&nbBoardPiece);
+    display_board(board);
+    // Déplace la pièce vers le bas, met à jour la grille et réaffiche le tableau
+    moveDownPiece(board, piece);
+    refresh_board(board, &piece, nbBoardPiece);
+    display_board(board);
+    //
+    rotateLeft(board, piece);
+    refresh_board(board, &piece, nbBoardPiece);
+    display_board(board);
+
+    clear_board(board);
+    clear_boardPiece(boardPiece, nbBoardPiece);
+    clear_tmpPiece(tmpPiece);
+
+    return EXIT_SUCCESS;
 }
