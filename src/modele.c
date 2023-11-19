@@ -7,6 +7,19 @@
 
 #include "modele.h"
 
+const char HEIGHT = 20;
+const char WIDTH = 10;
+
+PieceConfig pieces[7] = {
+    {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED},
+    {'O', 4, {{0, 4}, {0, 5}, {1, 4}, {1, 5}}, ORANGE},
+    {'T', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 5}}, GREEN},
+    {'J', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 6}}, CYAN},
+    {'L', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 4}}, YELLOW},
+    {'Z', 4, {{0, 4}, {0, 5}, {1, 5}, {1, 6}}, BLUE},
+    {'S', 4, {{0, 5}, {0, 6}, {1, 4}, {1, 5}}, PURPLE}
+};
+
 Tetris* tetris_init_(){
     //Bon pour l'instant je crée un tetris tout nul et vide mais voilà c'est là qu'on l'initialise
     Tetris* tetris = (Tetris *) calloc(1,sizeof(Tetris));
@@ -14,12 +27,39 @@ Tetris* tetris_init_(){
         perror("calloc()\n");
         exit(EXIT_FAILURE);
     }
+    //Tableau de cellule, c'est notre jeu
+    cell** board = init_board();
+    tetris->board=board;
     return tetris;
 }
 
 void tetris_playGame(Tetris* tetris, userInterface ui){
 
-    //ba dcp ici c'est notre "boucle pour lancer notre tetris"
+    srand(time(NULL));
+
+    //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
+    PieceConfig** tmpPiece = init_tmpPiece();
+    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
+    PieceConfig** boardPiece = NULL;
+    int nbBoardPiece = 0;
+
+    //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
+    PieceConfig* piece = get_piece(tmpPiece);
+    set_piece(piece,&boardPiece,tetris->board,&nbBoardPiece);
+    ui.fonctions->affiche(tetris);
+    //Déplace la pièce vers le bas, met à jour la grille et réaffiche le tableau
+    moveDownPiece(tetris->board, piece);
+    refresh_board(tetris->board, &piece, nbBoardPiece);
+    ui.fonctions->affiche(tetris);
+    //Rotate
+    rotateLeft(tetris->board, piece);
+    refresh_board(tetris->board, &piece, nbBoardPiece);
+    ui.fonctions->affiche(tetris);
+
+    clear_board(tetris->board);
+    clear_boardPiece(boardPiece, nbBoardPiece);
+    clear_tmpPiece(tmpPiece);
+    //Pas oublier de clear l'interface (avec les fonctions etc)
 
     return;
 }
@@ -43,59 +83,8 @@ cell** init_board() {
             board[i][j].c = NOTHING;
         }
     }
-    return board;
-}
 
-void display_board(cell** c) {
-    printf("┌");
-    for (int i = 0; i < WIDTH * 2; i++) {
-        printf("─");
-    }
-    printf("┐\n");
-    for (int i = 0; i < HEIGHT; i++) {
-        printf("│");
-        for (int j = 0; j < WIDTH; j++) {
-            if (!c[i][j].isFull)
-                printf("  ");
-            else {
-                // Utiliser des codes ANSI de couleur pour chaque pièce
-                switch (c[i][j].c) {
-                    case NOTHING:
-                        printf("  ");
-                        break;
-                    case CYAN:
-                        printf("\033[0;36m[]\033[0m");
-                        break;
-                    case YELLOW:
-                        printf("\033[1;33m[]\033[0m");
-                        break;
-                    case PURPLE:
-                        printf("\033[0;35m[]\033[0m");
-                        break;
-                    case ORANGE:
-                        printf("\033[0;33m[]\033[0m");
-                        break;
-                    case BLUE:
-                        printf("\033[0;34m[]\033[0m");
-                        break;
-                    case RED:
-                        printf("\033[0;31m[]\033[0m");
-                        break;
-                    case GREEN:
-                        printf("\033[0;32m[]\033[0m");
-                        break;
-                    default:
-                        printf("[]");
-                }
-            }
-        }
-        printf("│\n");
-    }
-    printf("└");
-    for (int i = 0; i < WIDTH * 2; i++) {
-        printf("─");
-    }
-    printf("┘\n\n");
+    return board;
 }
 
 PieceConfig** init_tmpPiece() {
@@ -348,34 +337,4 @@ void clear_tmpPiece(PieceConfig** p){
         free(p[i]);
     }
     free(p);
-}
-
-int main(){
-    srand(time(NULL));
-
-    //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
-    PieceConfig** tmpPiece = init_tmpPiece();
-    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
-    PieceConfig** boardPiece = NULL;
-    int nbBoardPiece = 0;
-    //Tableau de cellule, c'est notre jeu
-    cell** board = init_board();
-    //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
-    PieceConfig* piece = get_piece(tmpPiece);
-    set_piece(piece,&boardPiece,board,&nbBoardPiece);
-    display_board(board);
-    // Déplace la pièce vers le bas, met à jour la grille et réaffiche le tableau
-    moveDownPiece(board, piece);
-    refresh_board(board, &piece, nbBoardPiece);
-    display_board(board);
-    //
-    rotateLeft(board, piece);
-    refresh_board(board, &piece, nbBoardPiece);
-    display_board(board);
-
-    clear_board(board);
-    clear_boardPiece(boardPiece, nbBoardPiece);
-    clear_tmpPiece(tmpPiece);
-
-    return EXIT_SUCCESS;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "modele.h"
+typedef struct Tetris Tetris;
 
 //Structure de pointeur de fonctions
 typedef struct{

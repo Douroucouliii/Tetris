@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdbool.h>
-
 #include "userInterface.h"
+
+#include <stdbool.h>
 
 enum color{NOTHING, CYAN, YELLOW, PURPLE, ORANGE, BLUE, RED, GREEN};
 typedef enum color color;
@@ -22,22 +22,13 @@ typedef struct{
 }PieceConfig;
 
 //Structure qui initialise le tetris
-typedef struct{
+typedef struct Tetris{
     cell** board; //Notre jeu
 }Tetris;
 
-const char HEIGHT = 20;
-const char WIDTH = 10;
-
-PieceConfig pieces[7] = {
-    {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED},
-    {'O', 4, {{0, 4}, {0, 5}, {1, 4}, {1, 5}}, ORANGE},
-    {'T', 4, {{0, 3}, {0, 4}, {0, 5}, {1, 4}}, GREEN},
-    {'L', 4, {{0, 3}, {0, 4}, {0, 5}, {1, 5}}, CYAN},
-    {'J', 4, {{0, 3}, {0, 4}, {0, 5}, {1, 3}}, YELLOW},
-    {'Z', 4, {{0, 4}, {0, 5}, {1, 5}, {1, 6}}, BLUE},
-    {'S', 4, {{0, 4}, {0, 5}, {1, 3}, {1, 4}}, PURPLE}
-};
+extern const char HEIGHT;
+extern const char WIDTH;
+extern PieceConfig pieces[7];
 
 Tetris *tetris_init_();
 void tetris_playGame(Tetris*, userInterface);

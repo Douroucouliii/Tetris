@@ -5,8 +5,6 @@
 
 int main(){
 
-    printf("Tetris\n");
-
     Tetris *game = tetris_init_();
 
     //On devra faire en sorte de pouvoir switch entre les 3 depuis le jeu :)

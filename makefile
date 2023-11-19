@@ -1,11 +1,11 @@
 CC := gcc
 SRC_DIR ?= src
 OBJ_DIR ?= obj
-CFLAGS ?= -Wall -MMD
-LDFLAGS =
+CFLAGS ?= -Wall -MMD -g
+LDFLAGS=
 
 OBJS := $(shell find $(SRC_DIR) -name "*.c" | sed 's/.c$$/.o/g' | sed 's/$(SRC_DIR)/$(OBJ_DIR)/g')
-DEPS := $(OBJS: .o=.d)
+DEPS := $(OBJS:.o=.d)
 TARGET ?= exec
 
 all: $(TARGET)
