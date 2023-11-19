@@ -4,35 +4,25 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
-enum color{NOTHING, CYAN, YELLOW, PURPLE, ORANGE, BLUE, RED, GREEN};
-typedef enum color color;
 
-typedef struct{
-    unsigned i : 12; //Coordonnée x de la cellule
-    unsigned j : 12; //Coordonnée y de la cellule
-    bool isFull; //Boolean si la cell est occupé par une piece
-    color c; //Couleur de la cellule
-}cell;
+#include "modele.h"
 
-typedef struct{
-    char nom; // Nom : I , O , ...
-    int num_cells; //Nombre de cellule ( pour plus tard )
-    int coords[4][2]; //coordonnées piece de base
-    color c; //couleur
-}PieceConfig;
+Tetris* tetris_init_(){
+    //Bon pour l'instant je crée un tetris tout nul et vide mais voilà c'est là qu'on l'initialise
+    Tetris* tetris = (Tetris *) calloc(1,sizeof(Tetris));
+    if(!tetris){
+        perror("calloc()\n");
+        exit(EXIT_FAILURE);
+    }
+    return tetris;
+}
 
-const char HEIGHT = 20;
-const char WIDTH = 10;
+void tetris_playGame(Tetris* tetris, userInterface ui){
 
-PieceConfig pieces[7] = {
-    {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED},
-    {'O', 4, {{0, 4}, {0, 5}, {1, 4}, {1, 5}}, ORANGE},
-    {'T', 4, {{0, 3}, {0, 4}, {0, 5}, {1, 4}}, GREEN},
-    {'L', 4, {{0, 3}, {0, 4}, {0, 5}, {1, 5}}, CYAN},
-    {'J', 4, {{0, 3}, {0, 4}, {0, 5}, {1, 3}}, YELLOW},
-    {'Z', 4, {{0, 4}, {0, 5}, {1, 5}, {1, 6}}, BLUE},
-    {'S', 4, {{0, 4}, {0, 5}, {1, 3}, {1, 4}}, PURPLE}
-};
+    //ba dcp ici c'est notre "boucle pour lancer notre tetris"
+
+    return;
+}
 
 cell** init_board() {
     cell** board = (cell **) malloc(HEIGHT * sizeof(cell*));
@@ -108,7 +98,6 @@ void display_board(cell** c) {
     printf("┘\n\n");
 }
 
-
 PieceConfig** init_tmpPiece() {
     PieceConfig** tmpPiece = (PieceConfig**) malloc(7 * sizeof(PieceConfig*));
     if (!tmpPiece) {
@@ -137,7 +126,6 @@ PieceConfig** init_tmpPiece() {
     }
     return tmpPiece;
 }
-
 
 PieceConfig* get_piece(PieceConfig** tmpPiece) {
     // On crée une pièce qu'on a memcpy sur une pièce de tmpPiece aléatoirement
@@ -239,6 +227,7 @@ int getPivotX(PieceConfig* p){
     }else if(p -> nom == 'S'){
         return p -> coords[0][0];
     }
+    return -1;
 }
 
 int getPivotY(PieceConfig* p){
@@ -247,6 +236,7 @@ int getPivotY(PieceConfig* p){
     }else if(p -> nom == 'S'){
         return p -> coords[0][1];
     }
+    return -1;
 }
 
 /*
@@ -375,12 +365,16 @@ int main(int argc, char *argv[]){
     PieceConfig* piece = get_piece(tmpPiece);
     set_piece(piece,&boardPiece,board,&nbBoardPiece);
     display_board(board);
-    // Déplace la pièce vers le bas
+    // Déplace la pièce vers le bas, met à jour la grille et réaffiche le tableau
     moveDownPiece(board, piece);
     refresh_board(board, &piece, nbBoardPiece);
     display_board(board);
-    // Met à jour la grille avec la pièce déplacée
+    //
+    rotateLeft(board, piece);
     refresh_board(board, &piece, nbBoardPiece);
-    // Affiche le tableau après le déplacement
     display_board(board);
+
+    clear_board(board);
+    clear_boardPiece(boardPiece, nbBoardPiece);
+    clear_tmpPiece(tmpPiece);
 }
