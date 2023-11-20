@@ -27,30 +27,30 @@ typedef struct Tetris{
     PieceConfig** tmpPiece; //tableau des structures de toutes les pièces possibles
     PieceConfig** boardPiece; //Tableau des pieces qui sont déjà dans notre jeu
     int nbBoardPiece; //Le nombre de pieces dans notre boardPiece
+    unsigned ligne : 5;
+    unsigned colonne : 5;
 }Tetris;
 
-extern const char HEIGHT;
-extern const char WIDTH;
 extern PieceConfig pieces[7];
 
 Tetris *tetris_init_();
 void tetris_playGame(Tetris*, userInterface);
 char demander_caractere();
-cell** init_board();
-PieceConfig** init_tmpPiece();
+void init_board(Tetris*);
+void init_tmpPiece(Tetris*);
 void get_piece(Tetris*);
-bool can_move(PieceConfig*, int, int);
+bool can_move(Tetris*, int, int);
 bool move_down_piece(Tetris*);
 bool move_left_piece(Tetris*);
 bool move_right_piece(Tetris*);
 int get_pivot_X(PieceConfig*);
 int get_pivot_y(PieceConfig*);
-bool can_rotate(cell**, PieceConfig*, int);
+bool can_rotate(Tetris*, int);
 void rotate_left(Tetris*);
 void rotate_right(Tetris*);
-void refresh_board(cell**, PieceConfig**, int);
-void clear_board(cell**);
-void clear_boardPiece(PieceConfig**, int);
-void clear_tmpPiece(PieceConfig**);
+void refresh_board(Tetris*);
+void clear_board(Tetris*);
+void clear_boardPiece(Tetris*);
+void clear_tmpPiece(Tetris*);
 void clear_pointeur_fct(userInterface);
-void clear_all(cell**, PieceConfig**, PieceConfig**, int, userInterface);
+void clear_all(Tetris*, userInterface);

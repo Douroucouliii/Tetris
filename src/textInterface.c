@@ -3,13 +3,13 @@
 
 void affiche_text(Tetris* tetris){
     printf("┌");
-    for (int i = 0; i < WIDTH * 2; i++) {
+    for (int i = 0; i < tetris->ligne * 2; i++) {
         printf("─");
     }
     printf("┐\n");
-    for (int i = 0; i < HEIGHT; i++) {
+    for (int i = 0; i < tetris->colonne; i++) {
         printf("│");
-        for (int j = 0; j < WIDTH; j++) {
+        for (int j = 0; j < tetris->ligne; j++) {
             if (!tetris->board[i][j].isFull)
                 printf("  ");
             else {
@@ -47,7 +47,7 @@ void affiche_text(Tetris* tetris){
         printf("│\n");
     }
     printf("└");
-    for (int i = 0; i < WIDTH * 2; i++) {
+    for (int i = 0; i < tetris->ligne * 2; i++) {
         printf("─");
     }
     printf("┘\n\n");
