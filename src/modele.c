@@ -21,7 +21,6 @@ PieceConfig pieces[7] = {
 };
 
 Tetris* tetris_init_(){
-    //Bon pour l'instant je crée un tetris tout nul et vide mais voilà c'est là qu'on l'initialise
     Tetris* tetris = (Tetris *) calloc(1,sizeof(Tetris));
     if(!tetris){
         perror("calloc()\n");
@@ -29,23 +28,29 @@ Tetris* tetris_init_(){
     }
     //Tableau de cellule, c'est notre jeu
     cell** board = init_board();
+
+    //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
+    PieceConfig** tmpPiece = init_tmpPiece();
+
+    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
+    PieceConfig** boardPiece = NULL;
+
     tetris->board=board;
+    tetris->tmpPiece=tmpPiece;
+    tetris->boardPiece = boardPiece;
+    //Compteur de piece dans le boardPiece
+    tetris->nbBoardPiece = 0;
+    
     return tetris;
 }
 
 void tetris_playGame(Tetris* tetris, userInterface ui){
-    //Faut faire un modeleTxt, modeleSdl, modelenCurses, ici je fait juste pour le modele texte (il faudra le mettre à part plus tard)
+    //Faut faire un modeleTxt, modeleSdl, modelenCurses, ici je fait juste pour le modele texte (il faudra le mettre à part plus tard genre pointeur de fonctions)
     srand(time(NULL));
 
-    //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
-    PieceConfig** tmpPiece = init_tmpPiece();
-    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
-    PieceConfig** boardPiece = NULL;
-    int nbBoardPiece = 0;
-
     //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
-    PieceConfig* piece = get_piece(tmpPiece);
-    set_piece(piece,&boardPiece,tetris->board,&nbBoardPiece);
+    PieceConfig* piece = get_piece(tetris->tmpPiece);
+    set_piece(piece,&tetris->boardPiece,tetris->board,&tetris->nbBoardPiece);
     ui.fonctions->affiche(tetris);
 
     char car = demander_caractere();
@@ -54,7 +59,14 @@ void tetris_playGame(Tetris* tetris, userInterface ui){
             moveLeftPiece(tetris->board, piece);
         }
         if(car == 's'){
-            moveDownPiece(tetris->board, piece);
+            if(!moveDownPiece(tetris->board, piece)){
+                //piece = get_piece(tmpPiece);
+                //set_piece(piece,&boardPiece,tetris->board,&nbBoardPiece);
+                clear_all(tetris->board, tetris->boardPiece, tetris->tmpPiece, tetris->nbBoardPiece, ui);
+                //Jspa comment on fait pour free cette piece sans avoir des erreur de valgrind (à l'aide krol)
+                //free(piece);
+                return;
+            }
         }
         if(car == 'd'){
             moveRightPiece(tetris->board, piece);
@@ -65,16 +77,10 @@ void tetris_playGame(Tetris* tetris, userInterface ui){
         if(car == 'e'){
             rotateRight(tetris->board, piece);
         }
-        refresh_board(tetris->board, &piece, nbBoardPiece);
+        refresh_board(tetris->board, &piece, tetris->nbBoardPiece);
         ui.fonctions->affiche(tetris);
         car = demander_caractere();
     }
-
-    clear_board(tetris->board);
-    clear_boardPiece(boardPiece, nbBoardPiece);
-    clear_tmpPiece(tmpPiece);
-    //Pas oublier de clear l'interface (avec les fonctions etc)
-
     return;
 }
 
@@ -362,4 +368,15 @@ void clear_tmpPiece(PieceConfig** p){
         free(p[i]);
     }
     free(p);
+}
+
+void clear_pointeur_fct(userInterface ui){
+    free(ui.fonctions);
+}
+
+void clear_all(cell** c, PieceConfig** p, PieceConfig **tmp, int nbBoardPiece, userInterface ui){
+    clear_board(c);
+    clear_boardPiece(p, nbBoardPiece);
+    clear_tmpPiece(tmp);
+    clear_pointeur_fct(ui);
 }

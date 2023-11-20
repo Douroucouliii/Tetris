@@ -24,6 +24,9 @@ typedef struct{
 //Structure qui initialise le tetris
 typedef struct Tetris{
     cell** board; //Notre jeu
+    PieceConfig** tmpPiece; //tableau des structures de toutes les pièces possibles
+    PieceConfig** boardPiece; //Tableau des pieces qui sont déjà dans notre jeu
+    int nbBoardPiece; //Le nombre de pieces dans notre boardPiece
 }Tetris;
 
 extern const char HEIGHT;
@@ -51,3 +54,5 @@ void refresh_board(cell**, PieceConfig**, int);
 void clear_board(cell**);
 void clear_boardPiece(PieceConfig**, int);
 void clear_tmpPiece(PieceConfig**);
+void clear_pointeur_fct(userInterface);
+void clear_all(cell**, PieceConfig**, PieceConfig**, int, userInterface);
