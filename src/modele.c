@@ -185,6 +185,14 @@ void get_piece(Tetris *tetris) {
     }
 }
 
+void printisFull(Tetris *tetris){
+    for(int i=0; i<tetris->ligne; i++){
+        printf("\n");
+        for(int j=0; j<tetris->colonne; j++){
+            printf("%d", tetris->board[i][j].isFull);
+        }
+    }
+}
 /*
 La fonction CanMove prend en paramètre 
     board : notre plateau
@@ -196,8 +204,24 @@ bool can_move(Tetris *tetris, int varX, int varY){
     for(int i=0 ; i<tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; i++){
         int coord_x = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][0] + varX;
         int coord_y = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][1] + varY;
+        //Vérifie si la case est en dehors des limites du jeu
         if(coord_x<0 || coord_x>=tetris->ligne || coord_y<0 || coord_y>=tetris->colonne) return false;
-        if(tetris->board[coord_x][coord_y].isFull == true) return false;
+
+        //Vérifie si la case est occupée par une autre piece
+        if(tetris->board[coord_x][coord_y].isFull){
+            //Vérifie si cette case est occupée par une pièce différente de celle actuelle
+            bool same_piece = false;
+            for(int j=0; j<tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; j++){
+                int piece_x = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[j][0];
+                int piece_y = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[j][1];
+                //Vérifie si la case appartient à la même pièce
+                if(piece_x + varX == coord_x && piece_y + varY == coord_y){
+                    same_piece = true;
+                    break;
+                }
+            }
+            if(!same_piece) return false;
+        }
     }
     return true;
 }
