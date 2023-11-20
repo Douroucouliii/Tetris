@@ -8,8 +8,6 @@ enum color{NOTHING, CYAN, YELLOW, PURPLE, ORANGE, BLUE, RED, GREEN};
 typedef enum color color;
 
 typedef struct{
-    unsigned i : 12; //Coordonnée x de la cellule
-    unsigned j : 12; //Coordonnée y de la cellule
     bool isFull; //Boolean si la cell est occupé par une piece
     color c; //Couleur de la cellule
 }cell;
@@ -23,21 +21,22 @@ typedef struct{
 
 //Structure qui initialise le tetris
 typedef struct Tetris{
+    unsigned ligne : 5;
+    unsigned colonne : 5;
     cell** board; //Notre jeu
     PieceConfig** tmpPiece; //tableau des structures de toutes les pièces possibles
     PieceConfig** boardPiece; //Tableau des pieces qui sont déjà dans notre jeu
     int nbBoardPiece; //Le nombre de pieces dans notre boardPiece
-    unsigned ligne : 5;
-    unsigned colonne : 5;
+    bool finDePartie;
 }Tetris;
 
 extern PieceConfig pieces[7];
 
 Tetris *tetris_init_();
-void tetris_playGame(Tetris*, userInterface);
-char demander_caractere();
 void init_board(Tetris*);
 void init_tmpPiece(Tetris*);
+void tetris_playGame(Tetris*, userInterface);
+char demander_caractere();
 void get_piece(Tetris*);
 bool can_move(Tetris*, int, int);
 bool move_down_piece(Tetris*);

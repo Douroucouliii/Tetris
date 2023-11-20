@@ -18,90 +18,48 @@ PieceConfig pieces[7] = {
 };
 
 Tetris* tetris_init_(){
-    Tetris* tetris = (Tetris *) calloc(1,sizeof(Tetris));
+
+    Tetris* tetris = (Tetris *) malloc(sizeof(Tetris));
     if(!tetris){
-        perror("calloc()\n");
+        perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
-    //Tableau de cellule, c'est notre jeu
-    init_board(tetris);
 
-    //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
-    init_tmpPiece(tetris);
-
-    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu.
-    PieceConfig** boardPiece = NULL;
-
-    tetris->boardPiece = boardPiece;
-    //Compteur de piece dans le boardPiece
-    tetris->nbBoardPiece = 0;
+    //Nb ligne et colonne du jeu
     tetris->ligne=20;
     tetris->colonne=10;
 
+    //Init du tableau de cellule, c'est notre jeu
+    init_board(tetris);
+
+    //init du tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
+    init_tmpPiece(tetris);
+
+    //Tableau de pointeur de piece qui stocke toutes les pièces qui ont été dans le jeu (avec des realloc).
+    PieceConfig** boardPiece = NULL;
+    tetris->boardPiece = boardPiece;
+
+    //Compteur de piece dans le boardPiece
+    tetris->nbBoardPiece = 0;
+
+    tetris->finDePartie = false;
+
     return tetris;
-}
-
-void tetris_playGame(Tetris* tetris, userInterface ui){
-    //Faut faire un modeleTxt, modeleSdl, modelenCurses, ici je fait juste pour le modele texte (il faudra le mettre à part plus tard genre pointeur de fonctions)
-    srand(time(NULL));
-
-    //Pour l'instant krol je prend une piece aléatoire avec le get (memcpy etc), et je la met dans la grille avec le set :)
-
-    get_piece(tetris);
-    ui.fonctions->affiche(tetris);
-
-    char car = demander_caractere();
-    while(1){
-        if(car == 'q'){
-            move_left_piece(tetris);
-        }
-        if(car == 's'){
-            if(!move_down_piece(tetris)){
-                get_piece(tetris);
-                //clear_all(tetris, ui);
-                //free(tetris);
-                //return;
-            }
-        }
-        if(car == 'd'){
-            move_right_piece(tetris);
-        }
-        if(car == 'a'){
-            rotate_left(tetris);
-        }
-        if(car == 'e'){
-            rotate_right(tetris);
-        }
-        refresh_board(tetris);
-        ui.fonctions->affiche(tetris);
-        car = demander_caractere();
-    }
-    return;
-}
-
-char demander_caractere(){
-    char car;
-    do{
-        scanf("%c", &car);
-    } while(car!='q' && car!='s' && car!='d' && car!='a' && car!='e');
-    return car;
 }
 
 void init_board(Tetris *tetris) {
     cell** board = (cell **) malloc(tetris->ligne * sizeof(cell*));
     if(!board){
-        perror("Erreur malloc()\n");
+        perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
-    for(int i=0; i < tetris->ligne; i++) {
+    for(int i=0; i<tetris->ligne; i++) {
         board[i] = (cell *) malloc(tetris->colonne * sizeof(cell));
-        if (!board[i]) {
-            perror("Erreur malloc()\n");
+        if(!board[i]) {
+            perror("malloc()\n");
             exit(EXIT_FAILURE);
         }
-        for (int j = 0; j < tetris->colonne; j++) {
-            board[i][j].i = i;
-            board[i][j].j = j; 
+        for(int j=0; j<tetris->colonne; j++) {
             board[i][j].isFull = false;
             board[i][j].c = NOTHING;
         }
@@ -138,6 +96,54 @@ void init_tmpPiece(Tetris *tetris) {
     tetris->tmpPiece=tmpPiece;
 }
 
+void tetris_playGame(Tetris* tetris, userInterface ui){
+    //Faut faire un modeleTxt, modeleSdl, modelenCurses, ici je fait juste pour le modele texte (il faudra le mettre à part plus tard genre pointeur de fonctions)
+    srand(time(NULL));
+
+    //je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
+    get_piece(tetris);
+    ui.fonctions->affiche(tetris);
+
+    char car = demander_caractere();
+    //Boucle pour jouer à notre jeu
+    while(!tetris->finDePartie){
+        if(car == 'q'){
+            move_left_piece(tetris);
+        }
+        if(car == 's'){
+            //Si la piece ne peut pas aller plus bas, alors on génère une nouvelle piece
+            if(!move_down_piece(tetris)){
+                get_piece(tetris);
+            }
+        }
+        if(car == 'd'){
+            move_right_piece(tetris);
+        }
+        if(car == 'a'){
+            rotate_left(tetris);
+        }
+        if(car == 'e'){
+            rotate_right(tetris);
+        }
+        refresh_board(tetris);
+        ui.fonctions->affiche(tetris);
+        car = demander_caractere();
+    }
+
+    printf("\nTu as perdu la partie, dommage !\n\n");
+    clear_all(tetris, ui);
+    free(tetris);
+    return;
+}
+
+char demander_caractere(){
+    char car;
+    do{
+        scanf("%c", &car);
+    } while(car!='q' && car!='s' && car!='d' && car!='a' && car!='e');
+    return car;
+}
+
 //On ajoute une piece de tmpPiece dans le tableau
 void get_piece(Tetris *tetris) {
     //on memcpy sur une pièce de tmpPiece aléatoirement et on l'ajoute dans le table des pieces
@@ -160,17 +166,17 @@ void get_piece(Tetris *tetris) {
     }
     tetris->boardPiece[tetris->nbBoardPiece -1] = newPiece;                                                                                                                                                                                                                                                                 
     //On met à jour la grille
-    for (int ind = 0; ind < newPiece->num_cells; ind++) {                                                                                                                                                       
+    for (int ind=0; ind<newPiece->num_cells; ind++) {                                                                                                                                                       
         int coord_x = newPiece->coords[ind][0];
         int coord_y = newPiece->coords[ind][1];
         if (coord_x < 0 || coord_x >= tetris->ligne || coord_y < 0 || coord_y >= tetris->colonne) {
             // La pièce est en dehors des limites du plateau, donc on a perdu :(
-            printf("\nTu as perdu la partie, dommage !\n\n");
+            tetris->finDePartie=true;
             return;
         }
         if (tetris->board[coord_x][coord_y].isFull == true) {
             // La case est déjà occupée, donc on a perdu :(
-            printf("\nTu as perdu la partie, dommage !\n\n");
+            tetris->finDePartie = true;
             return;
         } else {
             tetris->board[coord_x][coord_y].isFull = true;
@@ -190,7 +196,8 @@ bool can_move(Tetris *tetris, int varX, int varY){
     for(int i=0 ; i<tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; i++){
         int coord_x = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][0] + varX;
         int coord_y = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][1] + varY;
-        if( coord_x < 0 || coord_x >= tetris->ligne || coord_y < 0 || coord_y >= tetris->colonne) return false;
+        if(coord_x<0 || coord_x>=tetris->ligne || coord_y<0 || coord_y>=tetris->colonne) return false;
+        if(tetris->board[coord_x][coord_y].isFull == true) return false;
     }
     return true;
 }
