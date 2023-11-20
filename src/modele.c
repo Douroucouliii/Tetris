@@ -34,7 +34,7 @@ Tetris* tetris_init_(){
 }
 
 void tetris_playGame(Tetris* tetris, userInterface ui){
-
+    //Faut faire un modeleTxt, modeleSdl, modelenCurses, ici je fait juste pour le modele texte (il faudra le mettre à part plus tard)
     srand(time(NULL));
 
     //Tableau de pointeur de piece (les 7 pieces du jeu), qui serviront pour memcpy. Evite de devoir regénérer une piece à chaque fois.
@@ -47,14 +47,28 @@ void tetris_playGame(Tetris* tetris, userInterface ui){
     PieceConfig* piece = get_piece(tmpPiece);
     set_piece(piece,&boardPiece,tetris->board,&nbBoardPiece);
     ui.fonctions->affiche(tetris);
-    //Déplace la pièce vers le bas, met à jour la grille et réaffiche le tableau
-    moveDownPiece(tetris->board, piece);
-    refresh_board(tetris->board, &piece, nbBoardPiece);
-    ui.fonctions->affiche(tetris);
-    //Rotate
-    rotateLeft(tetris->board, piece);
-    refresh_board(tetris->board, &piece, nbBoardPiece);
-    ui.fonctions->affiche(tetris);
+
+    char car = demander_caractere();
+    while(1){
+        if(car == 'q'){
+            moveLeftPiece(tetris->board, piece);
+        }
+        if(car == 's'){
+            moveDownPiece(tetris->board, piece);
+        }
+        if(car == 'd'){
+            moveRightPiece(tetris->board, piece);
+        }
+        if(car == 'a'){
+            rotateLeft(tetris->board, piece);
+        }
+        if(car == 'e'){
+            rotateRight(tetris->board, piece);
+        }
+        refresh_board(tetris->board, &piece, nbBoardPiece);
+        ui.fonctions->affiche(tetris);
+        car = demander_caractere();
+    }
 
     clear_board(tetris->board);
     clear_boardPiece(boardPiece, nbBoardPiece);
@@ -62,6 +76,14 @@ void tetris_playGame(Tetris* tetris, userInterface ui){
     //Pas oublier de clear l'interface (avec les fonctions etc)
 
     return;
+}
+
+char demander_caractere(){
+    char car;
+    do{
+        scanf("%c", &car);
+    } while(car!='q' && car!='s' && car!='d' && car!='a' && car!='e');
+    return car;
 }
 
 cell** init_board() {
@@ -179,33 +201,36 @@ bool canMove(cell** board, PieceConfig* piece, int varX , int varY){
     return true;
 }
 
-void moveDownPiece(cell** c, PieceConfig *p){
+bool moveDownPiece(cell** c, PieceConfig *p){
     if(!canMove(c,p,1,0)){
         //déplacement pas possible
-        return;
+        return false;
     }
     //On déplace la piece vers le bas
     for( int i = 0 ; i < p -> num_cells ; i++){
         p->coords[i][0]++;
     }
+    return true;
 }
 
-void moveLeftPiece(cell** c, PieceConfig *p){
+bool moveLeftPiece(cell** c, PieceConfig *p){
     if(!canMove(c,p,0,-1)){
-        return;
+        return false;
     }
     for( int i = 0 ; i < p -> num_cells ; i++){
         p->coords[i][1]--;
     }
+    return true;
 }
 
-void moveRightPiece(cell** c, PieceConfig *p){
+bool moveRightPiece(cell** c, PieceConfig *p){
     if(!canMove(c,p,0,1)){
-        return;
+        return false;
     }
     for( int i = 0 ; i < p -> num_cells ; i++){
         p->coords[i][1]++;
     }
+    return true;
 }
 
 
