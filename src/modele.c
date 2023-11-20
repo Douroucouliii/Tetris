@@ -321,10 +321,9 @@ void refresh_board(Tetris* tetris){
             tetris->board[i][j].c = NOTHING; // pas oublier NOTHING
         }
     }
-
-    for( int i = 0 ; i < tetris->nbBoardPiece ; i ++){
+    for(int i=0 ; i<tetris->nbBoardPiece ; i ++){
         PieceConfig* p = tetris->boardPiece[i];
-        for (int ind = 0; ind < p->num_cells; ind++) {
+        for (int ind=0; ind<p->num_cells; ind++) {
             int coord_x = p->coords[ind][0];
             int coord_y = p->coords[ind][1];
             // Vérifier que les coordonnées sont valides ( au cas où ptet faire une fonction verifie vive le refactoring)
