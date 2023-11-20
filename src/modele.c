@@ -40,7 +40,7 @@ Tetris* tetris_init_(){
     tetris->boardPiece = boardPiece;
     //Compteur de piece dans le boardPiece
     tetris->nbBoardPiece = 0;
-    
+
     return tetris;
 }
 
@@ -63,8 +63,7 @@ void tetris_playGame(Tetris* tetris, userInterface ui){
                 //piece = get_piece(tmpPiece);
                 //set_piece(piece,&boardPiece,tetris->board,&nbBoardPiece);
                 clear_all(tetris->board, tetris->boardPiece, tetris->tmpPiece, tetris->nbBoardPiece, ui);
-                //Jspa comment on fait pour free cette piece sans avoir des erreur de valgrind (à l'aide krol)
-                //free(piece);
+                free(tetris);
                 return;
             }
         }
