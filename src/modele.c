@@ -7,6 +7,16 @@
 
 #include "modele.h"
 
+//Pour debug, il faudra l'enlever
+void printisFull(Tetris *tetris){
+    for(int i=0; i<tetris->ligne; i++){
+        printf("\n");
+        for(int j=0; j<tetris->colonne; j++){
+            printf("%d", tetris->board[i][j].isFull);
+        }
+    }
+}
+
 PieceConfig pieces[7] = {
     {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED},
     {'O', 4, {{0, 4}, {0, 5}, {1, 4}, {1, 5}}, ORANGE},
@@ -185,44 +195,59 @@ void get_piece(Tetris *tetris) {
     }
 }
 
-void printisFull(Tetris *tetris){
-    for(int i=0; i<tetris->ligne; i++){
-        printf("\n");
-        for(int j=0; j<tetris->colonne; j++){
-            printf("%d", tetris->board[i][j].isFull);
-        }
-    }
-}
 /*
-La fonction CanMove prend en paramètre 
+La fonction can_move prend en paramètre 
     board : notre plateau
     piece : une piece standard
     varX et varY : l'orientation de la piece ( Bas , Gauche , Droite , Haut )
 Cette fonction ressor un type boolean qui nous permet de savoir si nous pouvons ou non aller dans une direction.
 */
 bool can_move(Tetris *tetris, int varX, int varY){
-    for(int i=0 ; i<tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; i++){
-        int coord_x = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][0] + varX;
-        int coord_y = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][1] + varY;
-        //Vérifie si la case est en dehors des limites du jeu
-        if(coord_x<0 || coord_x>=tetris->ligne || coord_y<0 || coord_y>=tetris->colonne) return false;
+    //stockage temporaire des cellules actuelles de la pièce
+    bool temp_cells[tetris->nbBoardPiece][4][2];
+    
+    //copie des cellules actuelles de la pièce avant déplacement
+    for(int i=0; i<tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++) {
+        int curr_x=tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0];
+        int curr_y=tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1];
+        temp_cells[tetris->nbBoardPiece - 1][i][0] = curr_x;
+        temp_cells[tetris->nbBoardPiece - 1][i][1] = curr_y;
+        tetris->board[curr_x][curr_y].isFull = false; //suppression temporaire de la cellule
+    }
 
-        //Vérifie si la case est occupée par une autre piece
-        if(tetris->board[coord_x][coord_y].isFull){
-            //Vérifie si cette case est occupée par une pièce différente de celle actuelle
-            bool same_piece = false;
-            for(int j=0; j<tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; j++){
-                int piece_x = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[j][0];
-                int piece_y = tetris->boardPiece[tetris->nbBoardPiece -1]->coords[j][1];
-                //Vérifie si la case appartient à la même pièce
-                if(piece_x + varX == coord_x && piece_y + varY == coord_y){
-                    same_piece = true;
-                    break;
-                }
+    //vérification si les nouvelles coordonnées sont valides
+    for(int i=0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++){
+        int coord_x=tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] + varX;
+        int coord_y=tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] + varY;
+
+        if(coord_x<0 || coord_x>=tetris->ligne || coord_y<0 || coord_y>=tetris->colonne) {
+            //restaurer l'état initial du plateau
+            for(int j=0; j<tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; j++){
+                int curr_x = temp_cells[tetris->nbBoardPiece - 1][j][0];
+                int curr_y = temp_cells[tetris->nbBoardPiece - 1][j][1];
+                tetris->board[curr_x][curr_y].isFull = true;
             }
-            if(!same_piece) return false;
+            return false;
+        }
+
+        if(tetris->board[coord_x][coord_y].isFull) {
+            //restaurer l'état initial du plateau
+            for(int j = 0; j < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; j++){
+                int curr_x = temp_cells[tetris->nbBoardPiece - 1][j][0];
+                int curr_y = temp_cells[tetris->nbBoardPiece - 1][j][1];
+                tetris->board[curr_x][curr_y].isFull = true;
+            }
+            return false;
         }
     }
+
+    //restaurer l'état initial du plateau
+    for(int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++){
+        int curr_x = temp_cells[tetris->nbBoardPiece - 1][i][0];
+        int curr_y = temp_cells[tetris->nbBoardPiece - 1][i][1];
+        tetris->board[curr_x][curr_y].isFull = true;
+    }
+
     return true;
 }
 
@@ -232,7 +257,7 @@ bool move_down_piece(Tetris *tetris){
         return false;
     }
     //On déplace la piece vers le bas
-    for( int i = 0 ; i < tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; i++){
+    for(int i=0; i<tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; i++){
         tetris->boardPiece[tetris->nbBoardPiece-1]->coords[i][0]++;
     }
     return true;
@@ -243,7 +268,7 @@ bool move_left_piece(Tetris *tetris){
         //déplacement pas possible
         return false;
     }
-    //On déplace la piece vers le bas
+    //On déplace la piece vers la gauche
     for( int i = 0 ; i < tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; i++){
         tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][1]--;
     }
@@ -255,7 +280,7 @@ bool move_right_piece(Tetris *tetris){
         //déplacement pas possible
         return false;
     }
-    //On déplace la piece vers le bas
+    //On déplace la piece vers la droite
     for( int i = 0 ; i < tetris->boardPiece[tetris->nbBoardPiece -1]->num_cells; i++){
         tetris->boardPiece[tetris->nbBoardPiece -1]->coords[i][1]++;
     }
@@ -346,22 +371,24 @@ void rotate_right(Tetris* tetris) {
 
 void refresh_board(Tetris* tetris){
     //On efface le tableau
-    for (int i = 0; i < tetris->ligne; i++) {
-        for (int j = 0; j < tetris->colonne; j++) {
+    for (int i=0; i<tetris->ligne; i++) {
+        for (int j=0; j<tetris->colonne; j++) {
             tetris->board[i][j].isFull = false;
             tetris->board[i][j].c = NOTHING; // pas oublier NOTHING
         }
     }
-    for(int i=0 ; i<tetris->nbBoardPiece ; i ++){
+    for(int i=0; i<tetris->nbBoardPiece; i++){
         PieceConfig* p = tetris->boardPiece[i];
         for (int ind=0; ind<p->num_cells; ind++) {
             int coord_x = p->coords[ind][0];
             int coord_y = p->coords[ind][1];
             // Vérifier que les coordonnées sont valides ( au cas où ptet faire une fonction verifie vive le refactoring)
-            if (coord_x >= 0 && coord_x < tetris->ligne && coord_y >= 0 && coord_y < tetris->colonne) {
+            /*if (coord_x >= 0 && coord_x < tetris->ligne && coord_y >= 0 && coord_y < tetris->colonne) {
                 tetris->board[coord_x][coord_y].isFull = true;
                 tetris->board[coord_x][coord_y].c = p->c;
-            }
+            }*/ //ca je pense pas que ce soit utile vu qu'on s'assurera avec les can_move, can_rotate que ce soit bon
+            tetris->board[coord_x][coord_y].isFull = true;
+            tetris->board[coord_x][coord_y].c = p->c;
         }
     }
 }
