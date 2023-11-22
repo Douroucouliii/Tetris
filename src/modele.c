@@ -123,8 +123,9 @@ void tetris_playGame(Tetris* tetris, userInterface ui){
         if(car == 's'){
             //Si la piece ne peut pas aller plus bas, alors on génère une nouvelle piece
             if(!move_down_piece(tetris)){
+                printf("%d\n", isFullLine(tetris, 19));
                 get_piece(tetris);
-            }
+            }   
         }
         if(car == 'd'){
             move_right_piece(tetris);
@@ -389,6 +390,36 @@ void refresh_board(Tetris* tetris){
             }*/ //ca je pense pas que ce soit utile vu qu'on s'assurera avec les can_move, can_rotate que ce soit bon
             tetris->board[coord_x][coord_y].isFull = true;
             tetris->board[coord_x][coord_y].c = p->c;
+        }
+    }
+}
+
+bool isFullLine(Tetris *tetris, int ligne){
+    for(int i=0; i<tetris->colonne; i++){
+        if(!tetris->board[ligne][i].isFull){
+            return false;
+        }
+    }
+    return true;
+}
+
+void deleteLine(Tetris *tetris, int ligne){
+    for(int i=ligne; i>0; i--){
+        for(int j=0; j<tetris->colonne; j++){
+            tetris->board[i][j].isFull = tetris->board[i-1][j].isFull;
+            tetris->board[i][j].c = tetris->board[i-1][j].c;
+        }
+    }
+    for(int j=0; j<tetris->colonne; j++){
+        tetris->board[0][j].isFull = false;
+        tetris->board[0][j].c = NOTHING;
+    }
+}
+
+void deleteAllLine(Tetris *tetris){
+    for(int i=0; i<tetris->ligne; i++){
+        if(isFullLine(tetris, i)){
+            deleteLine(tetris, i);
         }
     }
 }
