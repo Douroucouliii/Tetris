@@ -1,6 +1,7 @@
 #include "modele.h"
 #include "sdlInterface.h"
 
-void affiche_sdl(Tetris* tetris){
+void display_sdl(Tetris *tetris)
+{
     return;
 }

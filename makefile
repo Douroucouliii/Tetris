@@ -2,7 +2,7 @@ CC := gcc
 SRC_DIR ?= src
 OBJ_DIR ?= obj
 CFLAGS ?= -Wall -MMD -g
-LDFLAGS=
+LDFLAGS= -lncurses
 
 OBJS := $(shell find $(SRC_DIR) -name "*.c" | sed 's/.c$$/.o/g' | sed 's/$(SRC_DIR)/$(OBJ_DIR)/g')
 DEPS := $(OBJS:.o=.d)

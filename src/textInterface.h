@@ -4,4 +4,7 @@
 
 #include "modele.h"
 
-void affiche_text(Tetris* tetris);
+void init_text();
+void close_text();
+char input_text();
+void display_text(Tetris *tetris);

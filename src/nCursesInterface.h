@@ -2,4 +2,7 @@
 
 #include "modele.h"
 
-void affiche_nCurses(Tetris* tetris);
+void init_nCurses();
+void close_nCurses();
+void display_nCurses(Tetris *);
+char input_nCurses();

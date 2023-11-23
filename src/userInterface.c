@@ -1,46 +1,62 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "userInterface.h"
-#include "textInterface.h"
 #include "sdlInterface.h"
+#include "textInterface.h"
 #include "nCursesInterface.h"
 
-userInterface textInterface_init_(){
+userInterface textInterface_init_()
+{
     userInterface interface;
-    Fonction* f = (Fonction *) malloc(sizeof(Fonction));
-    if(!f){
+    Fonction *f = (Fonction *)malloc(sizeof(Fonction));
+    if (!f)
+    {
         perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
     interface.fonctions = f;
-    interface.instance = NULL;
-    interface.fonctions->affiche = affiche_text;
+    interface.instance = "NCurses";
+    interface.fonctions->init_interface = init_text;
+    interface.fonctions->close_interface = close_text;
+    interface.fonctions->display = display_text;
+    interface.fonctions->input = input_text;
     return interface;
 }
 
-userInterface sdlInterface_init_(){
+userInterface nCursesInterface_init_()
+{
     userInterface interface;
-    Fonction* f = (Fonction *) malloc(sizeof(Fonction));
-    if(!f){
+    Fonction *f = (Fonction *)malloc(sizeof(Fonction));
+    if (!f)
+    {
         perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
     interface.fonctions = f;
-    interface.instance = NULL;
-    interface.fonctions->affiche = affiche_sdl;
+    interface.instance = "NCurses";
+    interface.fonctions->init_interface = init_nCurses;
+    interface.fonctions->close_interface = close_nCurses;
+    interface.fonctions->display = display_nCurses;
+    interface.fonctions->input = input_nCurses;
     return interface;
 }
 
-userInterface nCursesInterface_init_(){
+userInterface sdlInterface_init_()
+{
     userInterface interface;
-    Fonction* f = (Fonction *) malloc(sizeof(Fonction));
-    if(!f){
+    Fonction *f = (Fonction *)malloc(sizeof(Fonction));
+    if (!f)
+    {
         perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
     interface.fonctions = f;
-    interface.instance = NULL;
-    interface.fonctions->affiche = affiche_nCurses;
+    interface.instance = "SDL";
+    // Pour l'instant à NULL, je fais d'abord l'affichage
+    interface.fonctions->init_interface = NULL;
+    interface.fonctions->close_interface = NULL;
+    interface.fonctions->display = display_sdl;
+    interface.fonctions->input = NULL;
     return interface;
 }
-
