@@ -123,7 +123,6 @@ void init_tmpPiece(Tetris *tetris)
 
 void tetris_playGame(Tetris *tetris, userInterface ui)
 {
-    // Faut faire un modeleTxt, modeleSdl, modelenCurses, ici je fait juste pour le modele texte (il faudra le mettre à part plus tard genre pointeur de fonctions)
     srand(time(NULL));
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)

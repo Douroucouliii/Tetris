@@ -10,6 +10,7 @@ typedef struct
     void (*display)(Tetris *);     // Permet d'afficher le tetris
     char (*input)(void);           // Permet de récupérer un input selon si c'est SDL ou NCurses
     // void (*menu)(void);     //Plus tard pour le menu   ??
+    // void (*fin_partie)(void);     // Permet d'afficher la fin de partie (score/niveau etc...
     // void (*display_info)(Tetris *);    // Permet d'afficher les informations annexe (score/niveau etc...)
     // void redim(Tetris *);     // Permet de redimensionner le tetris ??
 } Fonction;

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <ncurses.h>
 
 #include "modele.h"
@@ -6,7 +7,31 @@
 // Initialise nCurses
 void init_nCurses()
 {
+    // Lance NCurses
     initscr();
+    // Pas besoin d'appuyer sur entrée
+    cbreak();
+    // N'écrit pas les caracteres tapés
+    noecho();
+    // Enleve le curseur (pas besoin pour le tetris)
+    curs_set(FALSE);
+    // Enleve le buffering
+    raw();
+    // Initialise les paires de couleurs pour nos pièces.
+    start_color();
+    if (!has_colors())
+    {
+        endwin();
+        printf("Votre terminal ne supporte pas les couleurs\n");
+        exit(EXIT_FAILURE);
+    }
+    init_pair(CYAN, COLOR_CYAN, COLOR_BLACK);      // Cyan
+    init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);  // Yellow
+    init_pair(PURPLE, COLOR_MAGENTA, COLOR_BLACK); // Purple
+    init_pair(ORANGE, COLOR_WHITE, COLOR_BLACK);   // Orange (ncurses n'a pas de couleur orange, donc on utilise blanc à la place)
+    init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);      // Blue
+    init_pair(RED, COLOR_RED, COLOR_BLACK);        // Red
+    init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);    // Green
 }
 
 // Ferme nCurses
@@ -43,14 +68,8 @@ void display_nCurses(Tetris *tetris)
 {
     WINDOW *win;
 
-    // Pas besoin d'appuyer sur entrée
-    cbreak();
-    // N'écrit pas les caracteres tapés
-    noecho();
-    // Enleve le curseur (pas besoin pour le tetris)
-    curs_set(FALSE);
     // Crée la taille de la fenetre
-    win = newwin(tetris->ligne, tetris->colonne * 2, 0, 0);
+    win = newwin(tetris->ligne + 2, tetris->colonne * 2 + 2, 0, 0);
     // Le cadre autour du jeu
     box(win, 0, 0);
     wrefresh(win);
@@ -61,43 +80,17 @@ void display_nCurses(Tetris *tetris)
         {
             if (tetris->board[i][j].isFull)
             {
-                mvwprintw(win, i, j * 2, "[]");
+                // Utilisez une paire de couleurs en fonction de la couleur de la cellule
+                attron(COLOR_PAIR(tetris->board[i][j].c));
+                mvwprintw(win, i + 1, j * 2 + 1, "[]");
+                attroff(COLOR_PAIR(tetris->board[i][j].c));
             }
             else
             {
-                // Utiliser des codes ANSI de couleur pour chaque pièce
-                switch (tetris->board[i][j].c)
-                {
-                case NOTHING:
-                    mvwprintw(win, i, j * 2, "  ");
-                    break;
-                case CYAN:
-                    mvwprintw(win, i, j * 2, "\033[0;36m[]\033[0m");
-                    break;
-                case YELLOW:
-                    mvwprintw(win, i, j * 2, "\033[1;33m[]\033[0m");
-                    break;
-                case PURPLE:
-                    mvwprintw(win, i, j * 2, "\033[0;35m[]\033[0m");
-                    break;
-                case ORANGE:
-                    mvwprintw(win, i, j * 2, "\033[0;33m[]\033[0m");
-                    break;
-                case BLUE:
-                    mvwprintw(win, i, j * 2, "\033[0;34m[]\033[0m");
-                    break;
-                case RED:
-                    mvwprintw(win, i, j * 2, "\033[0;31m[]\033[0m");
-                    break;
-                case GREEN:
-                    mvwprintw(win, i, j * 2, "\033[0;32m[]\033[0m");
-                    break;
-                default:
-                    mvwprintw(win, i, j * 2, "[]");
-                }
-                mvwprintw(win, i, j * 2, "  ");
+                mvwprintw(win, i + 1, j * 2 + 1, "  ");
             }
         }
-        return;
     }
+
+    wrefresh(win);
 }
