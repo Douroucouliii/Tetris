@@ -26,7 +26,7 @@ typedef struct
 typedef struct
 {
     char nom;         // Nom : I , O , ...
-    int num_cells;    // Nombre de cellule ( pour plus tard )
+    int num_cells;    // Nombre de cellules
     int coords[4][2]; // coordonnées piece de base
     color c;          // couleur
 } PieceConfig;

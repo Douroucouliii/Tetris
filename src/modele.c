@@ -134,14 +134,8 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             // Si la piece ne peut pas aller plus bas, alors on génère une nouvelle piece
             if (!move_down_piece(tetris))
             {
-                // On élimine les lignes pleines
-                /*for (int i = tetris->ligne - 1; i >= 0; i--)
-                {
-                    while (isFullLine(tetris, i))
-                    {
-                        deleteLine(tetris, i);
-                    }
-                }*/
+                // La ligne ne s'éfface qu'apres que la prochaine piece soit descendue, bizarre
+                deleteAllLine(tetris);
                 get_piece(tetris);
             }
         }
@@ -451,14 +445,11 @@ void refresh_board(Tetris *tetris)
         {
             int coord_x = p->coords[ind][0];
             int coord_y = p->coords[ind][1];
-            // Vérifier que les coordonnées sont valides ( au cas où ptet faire une fonction verifie vive le refactoring)
-            /*if (coord_x >= 0 && coord_x < tetris->ligne && coord_y >= 0 && coord_y < tetris->colonne) {
+            if (!(coord_x == -1 || coord_y == -1))
+            {
                 tetris->board[coord_x][coord_y].isFull = true;
                 tetris->board[coord_x][coord_y].c = p->c;
-            }*/
-            // ca je pense pas que ce soit utile vu qu'on s'assurera avec les can_move, can_rotate que ce soit bon
-            tetris->board[coord_x][coord_y].isFull = true;
-            tetris->board[coord_x][coord_y].c = p->c;
+            }
         }
     }
 }
@@ -477,24 +468,31 @@ bool isFullLine(Tetris *tetris, int ligne)
 
 void deleteLine(Tetris *tetris, int ligne)
 {
-    for (int i = ligne; i > 0; i--)
+    // Mettre à jour les coordonnées des cellules dans les pièces
+    for (int i = 0; i < tetris->nbBoardPiece; i++)
     {
-        for (int j = 0; j < tetris->colonne; j++)
+        PieceConfig *p = tetris->boardPiece[i];
+        for (int ind = 0; ind < p->num_cells; ind++)
         {
-            tetris->board[i][j].isFull = tetris->board[i - 1][j].isFull;
-            tetris->board[i][j].c = tetris->board[i - 1][j].c;
+            if (p->coords[ind][0] == ligne)
+            {
+                // Si la cellule est sur la ligne supprimée, mettre ses coordonnées à -1
+                p->coords[ind][0] = -1;
+                p->coords[ind][1] = -1;
+            }
+            else if (p->coords[ind][0] < ligne)
+            {
+                // Si la cellule est au-dessus de la ligne supprimée, décrémenter sa coordonnée x
+                p->coords[ind][0]++;
+            }
         }
     }
-    for (int j = 0; j < tetris->colonne; j++)
-    {
-        tetris->board[0][j].isFull = false;
-        tetris->board[0][j].c = NOTHING;
-    }
+    refresh_board(tetris);
 }
 
 void deleteAllLine(Tetris *tetris)
 {
-    for (int i = 0; i < tetris->ligne; i++)
+    for (int i = tetris->ligne - 1; i >= 0; i--)
     {
         if (isFullLine(tetris, i))
         {
