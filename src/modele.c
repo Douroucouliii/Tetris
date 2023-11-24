@@ -1,4 +1,3 @@
-// Faudra pas oublier les commentaires :D  (attendons le cours dessus pour les faire plus propre)
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -6,19 +5,6 @@
 #include <time.h>
 
 #include "modele.h"
-
-// Pour debug, il faudra l'enlever
-void printisFull(Tetris *tetris)
-{
-    for (int i = 0; i < tetris->ligne; i++)
-    {
-        printf("\n");
-        for (int j = 0; j < tetris->colonne; j++)
-        {
-            printf("%d", tetris->board[i][j].isFull);
-        }
-    }
-}
 
 PieceConfig pieces[7] = {
     {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED},

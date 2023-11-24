@@ -2,6 +2,7 @@ CC := gcc
 SRC_DIR ?= src
 OBJ_DIR ?= obj
 TEST_DIR ?= test
+DOC_DIR ?= doc
 DEBUG ?= 1
 
 ifeq '$(DEBUG)' '1'
@@ -22,9 +23,9 @@ DEPS := $(OBJS:.o=.d)
 DEPS_TEST := $(OBJS_TEST:.o=.d)
 
 TARGET ?= exec
-TARGET_TEST ?= test
+TARGET_TEST ?= runTest
 
-.PHONY: clean mrpropre
+.PHONY: clean mrpropre doc
 
 all: createRep $(TARGET)
 
@@ -44,6 +45,10 @@ $(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 
 $(OBJ_DIR)/$(TEST_DIR)/%.o: $(TEST_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+doc:
+	@mkdir -p $(DOC_DIR)
+	@doxygen ./Doxyfile
 
 clean:
 	rm -rf $(OBJ_DIR)
