@@ -24,15 +24,15 @@ char input_text()
 void display_text(Tetris *tetris)
 {
     printf("┌");
-    for (int i = 0; i < tetris->colonne * 2; i++)
+    for (int i = 0; i < tetris->column * 2; i++)
     {
         printf("─");
     }
     printf("┐\n");
-    for (int i = 0; i < tetris->ligne; i++)
+    for (int i = 0; i < tetris->line; i++)
     {
         printf("│");
-        for (int j = 0; j < tetris->colonne; j++)
+        for (int j = 0; j < tetris->column; j++)
         {
             if (!tetris->board[i][j].isFull)
                 printf("  ");
@@ -73,10 +73,15 @@ void display_text(Tetris *tetris)
         printf("│\n");
     }
     printf("└");
-    for (int i = 0; i < tetris->colonne * 2; i++)
+    for (int i = 0; i < tetris->column * 2; i++)
     {
         printf("─");
     }
     printf("┘\n\n");
+
+    printf("Nombre de lignes supprimés : %d\n", tetris->nbLines);
+    printf("Niveau : %d\n", tetris->level);
+    printf("Score : %d\n", tetris->score);
+
     return;
 }

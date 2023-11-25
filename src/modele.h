@@ -25,7 +25,7 @@ typedef struct
 
 typedef struct
 {
-    char nom;         // Nom : I , O , ...
+    char name;        // Nom : I , O , ...
     int num_cells;    // Nombre de cellules
     int coords[4][2]; // coordonnées piece de base
     color c;          // couleur
@@ -34,13 +34,16 @@ typedef struct
 // Structure qui initialise le tetris
 typedef struct Tetris
 {
-    unsigned ligne : 5;
-    unsigned colonne : 5;
+    unsigned line : 5;
+    unsigned column : 5;
     cell **board;             // Notre jeu
     PieceConfig **tmpPiece;   // tableau des structures de toutes les pièces possibles
     PieceConfig **boardPiece; // Tableau des pieces qui sont déjà dans notre jeu
     int nbBoardPiece;         // Le nombre de pieces dans notre boardPiece
-    bool finDePartie;
+    bool end;                 // Si on est à la fin de la partie
+    int nbLines;              // Le nombre de lignes supprimées
+    int score;                // Le score (le score utilisé est le systeme de score NES)
+    int level;                // Le niveau actuelle du jeu (vitesse de chute des pieces)
 } Tetris;
 
 extern PieceConfig pieces[7];
@@ -60,9 +63,10 @@ bool can_rotate(Tetris *, int);
 void rotate_left(Tetris *);
 void rotate_right(Tetris *);
 void refresh_board(Tetris *);
-bool isFullLine(Tetris *, int);
-void deleteLine(Tetris *, int);
-void deleteAllLine(Tetris *);
+bool is_full_line(Tetris *, int);
+void delete_line(Tetris *, int);
+void delete_all_line(Tetris *);
+void add_score(Tetris *, int);
 void clear_board(Tetris *);
 void clear_boardPiece(Tetris *);
 void clear_tmpPiece(Tetris *);

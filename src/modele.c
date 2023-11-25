@@ -26,8 +26,8 @@ Tetris *tetris_init_()
     }
 
     // Nb ligne et colonne du jeu
-    tetris->ligne = 20;
-    tetris->colonne = 10;
+    tetris->line = 20;
+    tetris->column = 10;
 
     // Init du tableau de cellule, c'est notre jeu
     init_board(tetris);
@@ -42,28 +42,32 @@ Tetris *tetris_init_()
     // Compteur de piece dans le boardPiece
     tetris->nbBoardPiece = 0;
 
-    tetris->finDePartie = false;
+    tetris->end = false;
+
+    tetris->nbLines = 0;
+    tetris->score = 0;
+    tetris->level = 0;
 
     return tetris;
 }
 
 void init_board(Tetris *tetris)
 {
-    cell **board = (cell **)malloc(tetris->ligne * sizeof(cell *));
+    cell **board = (cell **)malloc(tetris->line * sizeof(cell *));
     if (!board)
     {
         perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < tetris->ligne; i++)
+    for (int i = 0; i < tetris->line; i++)
     {
-        board[i] = (cell *)malloc(tetris->colonne * sizeof(cell));
+        board[i] = (cell *)malloc(tetris->column * sizeof(cell));
         if (!board[i])
         {
             perror("malloc()\n");
             exit(EXIT_FAILURE);
         }
-        for (int j = 0; j < tetris->colonne; j++)
+        for (int j = 0; j < tetris->column; j++)
         {
             board[i][j].isFull = false;
             board[i][j].c = NOTHING;
@@ -89,7 +93,7 @@ void init_tmpPiece(Tetris *tetris)
             exit(EXIT_FAILURE);
         }
         // Initialise à vide
-        tmpPiece[i]->nom = pieces[i].nom;
+        tmpPiece[i]->name = pieces[i].name;
         tmpPiece[i]->num_cells = pieces[i].num_cells;
         tmpPiece[i]->c = pieces[i].c;
         for (int j = 0; j < 4; j++)
@@ -121,7 +125,7 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     ui.fonctions->display(tetris);
 
     // Boucle pour jouer à notre jeu
-    while (!tetris->finDePartie)
+    while (!tetris->end)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
         char input = ui.fonctions->input();
@@ -135,7 +139,8 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             if (!move_down_piece(tetris))
             {
                 // La ligne ne s'éfface qu'apres que la prochaine piece soit descendue, bizarre
-                deleteAllLine(tetris);
+                refresh_board(tetris);
+                delete_all_line(tetris);
                 get_piece(tetris);
             }
         }
@@ -197,16 +202,16 @@ void get_piece(Tetris *tetris)
     {
         int coord_x = newPiece->coords[ind][0];
         int coord_y = newPiece->coords[ind][1];
-        if (coord_x < 0 || coord_x >= tetris->ligne || coord_y < 0 || coord_y >= tetris->colonne)
+        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             // La pièce est en dehors des limites du plateau, donc on a perdu :(
-            tetris->finDePartie = true;
+            tetris->end = true;
             return;
         }
         if (tetris->board[coord_x][coord_y].isFull == true)
         {
             // La case est déjà occupée, donc on a perdu :(
-            tetris->finDePartie = true;
+            tetris->end = true;
             return;
         }
         else
@@ -245,7 +250,7 @@ bool can_move(Tetris *tetris, int varX, int varY)
         int coord_x = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] + varX;
         int coord_y = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] + varY;
 
-        if (coord_x < 0 || coord_x >= tetris->ligne || coord_y < 0 || coord_y >= tetris->colonne)
+        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             // restaurer l'état initial du plateau
             for (int j = 0; j < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; j++)
@@ -329,11 +334,11 @@ bool move_right_piece(Tetris *tetris)
 /*Si ça bug pour le 'I' : De base le pivot est à [2][0]*/
 int get_pivot_X(PieceConfig *p)
 {
-    if ((p->nom == 'J') || (p->nom == 'T') || (p->nom == 'Z') || (p->nom == 'L') || (p->nom == 'I'))
+    if ((p->name == 'J') || (p->name == 'T') || (p->name == 'Z') || (p->name == 'L') || (p->name == 'I'))
     {
         return p->coords[1][0];
     }
-    else if (p->nom == 'S')
+    else if (p->name == 'S')
     {
         return p->coords[0][0];
     }
@@ -342,11 +347,11 @@ int get_pivot_X(PieceConfig *p)
 
 int get_pivot_Y(PieceConfig *p)
 {
-    if ((p->nom == 'J') || (p->nom == 'T') || (p->nom == 'Z') || (p->nom == 'L') || (p->nom == 'I'))
+    if ((p->name == 'J') || (p->name == 'T') || (p->name == 'Z') || (p->name == 'L') || (p->name == 'I'))
     {
         return p->coords[1][1];
     }
-    else if (p->nom == 'S')
+    else if (p->name == 'S')
     {
         return p->coords[0][1];
     }
@@ -381,7 +386,7 @@ bool can_rotate(Tetris *tetris, int rotationDirection)
         }
         int coord_x = newCoords[i][0];
         int coord_y = newCoords[i][1];
-        if (coord_x < 0 || coord_x >= tetris->ligne || coord_y < 0 || coord_y >= tetris->colonne)
+        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             return false;
         }
@@ -391,7 +396,7 @@ bool can_rotate(Tetris *tetris, int rotationDirection)
 
 void rotate_left(Tetris *tetris)
 {
-    if ((!can_rotate(tetris, -1)) || (tetris->boardPiece[tetris->nbBoardPiece - 1]->nom == 'O'))
+    if ((!can_rotate(tetris, -1)) || (tetris->boardPiece[tetris->nbBoardPiece - 1]->name == 'O'))
     {
         return;
     }
@@ -410,7 +415,7 @@ void rotate_left(Tetris *tetris)
 
 void rotate_right(Tetris *tetris)
 {
-    if ((!can_rotate(tetris, 1)) || (tetris->boardPiece[tetris->nbBoardPiece - 1]->nom == 'O'))
+    if ((!can_rotate(tetris, 1)) || (tetris->boardPiece[tetris->nbBoardPiece - 1]->name == 'O'))
     {
         return;
     }
@@ -430,9 +435,9 @@ void rotate_right(Tetris *tetris)
 void refresh_board(Tetris *tetris)
 {
     // On efface le tableau
-    for (int i = 0; i < tetris->ligne; i++)
+    for (int i = 0; i < tetris->line; i++)
     {
-        for (int j = 0; j < tetris->colonne; j++)
+        for (int j = 0; j < tetris->column; j++)
         {
             tetris->board[i][j].isFull = false;
             tetris->board[i][j].c = NOTHING; // pas oublier NOTHING
@@ -454,9 +459,9 @@ void refresh_board(Tetris *tetris)
     }
 }
 
-bool isFullLine(Tetris *tetris, int ligne)
+bool is_full_line(Tetris *tetris, int ligne)
 {
-    for (int i = 0; i < tetris->colonne; i++)
+    for (int i = 0; i < tetris->column; i++)
     {
         if (!tetris->board[ligne][i].isFull)
         {
@@ -466,7 +471,7 @@ bool isFullLine(Tetris *tetris, int ligne)
     return true;
 }
 
-void deleteLine(Tetris *tetris, int ligne)
+void delete_line(Tetris *tetris, int ligne)
 {
     // Mettre à jour les coordonnées des cellules dans les pièces
     for (int i = 0; i < tetris->nbBoardPiece; i++)
@@ -490,22 +495,55 @@ void deleteLine(Tetris *tetris, int ligne)
     refresh_board(tetris);
 }
 
-void deleteAllLine(Tetris *tetris)
+void delete_all_line(Tetris *tetris)
 {
-    for (int i = tetris->ligne - 1; i >= 0; i--)
+    int cpt = 0;
+    for (int i = tetris->line - 1; i >= 0; i--)
     {
-        if (isFullLine(tetris, i))
+        if (is_full_line(tetris, i))
         {
-            deleteLine(tetris, i);
+            delete_line(tetris, i);
+            cpt++;
+            tetris->nbLines++;
+            if (tetris->nbLines % 10 == 0)
+            {
+                tetris->level++;
+            }
+            i++;
         }
     }
+    switch (cpt)
+    {
+    case 0:
+        break;
+    case 1:
+        add_score(tetris, 40);
+        break;
+    case 2:
+        add_score(tetris, 100);
+        break;
+    case 3:
+        add_score(tetris, 300);
+        break;
+    case 4:
+        add_score(tetris, 1200);
+        break;
+    default:
+        perror("Error delete_all_line()\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void add_score(Tetris *tetris, int score_line)
+{
+    tetris->score += score_line * (tetris->level + 1);
 }
 
 void clear_board(Tetris *tetris)
 {
     if (!tetris->board)
         return;
-    for (int i = 0; i < tetris->ligne; i++)
+    for (int i = 0; i < tetris->line; i++)
     {
         free(tetris->board[i]);
     }

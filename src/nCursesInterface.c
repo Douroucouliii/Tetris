@@ -47,16 +47,22 @@ char input_nCurses()
     switch (c)
     {
     case 'q':
+    case 'Q':
         return 'q';
     case 'd':
+    case 'D':
         return 'd';
     case 's':
+    case 'S':
         return 's';
     case 'z':
+    case 'Z':
         return 'z';
     case 'a':
+    case 'A':
         return 'a';
     case 'e':
+    case 'E':
         return 'e';
     default:
         return ' ';
@@ -69,14 +75,14 @@ void display_nCurses(Tetris *tetris)
     WINDOW *win;
 
     // Crée la taille de la fenetre
-    win = newwin(tetris->ligne + 2, tetris->colonne * 2 + 2, 0, 0);
+    win = newwin(tetris->line + 4, tetris->column * 2 + 2, 0, 0);
     // Le cadre autour du jeu
     box(win, 0, 0);
     wrefresh(win);
 
-    for (int i = 0; i < tetris->ligne; i++)
+    for (int i = 0; i < tetris->line; i++)
     {
-        for (int j = 0; j < tetris->colonne; j++)
+        for (int j = 0; j < tetris->column; j++)
         {
             if (tetris->board[i][j].isFull)
             {
@@ -91,6 +97,8 @@ void display_nCurses(Tetris *tetris)
             }
         }
     }
+    mvwprintw(win, tetris->line + 3, 1, "Nombre de lignes supprimés : %d", tetris->nbLines);
+    mvwprintw(win, tetris->line + 4, 1, "Score : %d", tetris->score);
 
     wrefresh(win);
 }

@@ -25,7 +25,7 @@ int main()
 
     userInterface ui = textInterface_init_();
     // userInterface ui = nCursesInterface_init_();
-    //    userInterface ui = sdlInterface_init_();
+    //     userInterface ui = sdlInterface_init_();
 
     tetris_playGame(game, ui);
 
