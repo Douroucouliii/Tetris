@@ -19,19 +19,22 @@ void init_nCurses()
     raw();
     // Initialise les paires de couleurs pour nos pièces.
     start_color();
+    use_default_colors();
     if (!has_colors())
     {
         endwin();
         printf("Votre terminal ne supporte pas les couleurs\n");
         exit(EXIT_FAILURE);
     }
-    init_pair(CYAN, COLOR_CYAN, COLOR_BLACK);      // Cyan
-    init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);  // Yellow
-    init_pair(PURPLE, COLOR_MAGENTA, COLOR_BLACK); // Purple
-    init_pair(ORANGE, COLOR_WHITE, COLOR_BLACK);   // Orange (ncurses n'a pas de couleur orange, donc on utilise blanc à la place)
-    init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);      // Blue
-    init_pair(RED, COLOR_RED, COLOR_BLACK);        // Red
-    init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);    // Green
+    init_pair(CYAN, COLOR_CYAN, COLOR_CYAN);         // Cyan
+    init_pair(YELLOW, COLOR_YELLOW, COLOR_YELLOW);   // Yellow
+    init_pair(PURPLE, COLOR_MAGENTA, COLOR_MAGENTA); // Purple
+    int COLOR_ORANGE = 8;                            // Initialise la couleur (ncurses n'a pas de couleur orange)
+    init_color(COLOR_ORANGE, 1000, 647, 0);          // Création de la couleur orange (ncurses n'a pas de couleur orange)
+    init_pair(ORANGE, COLOR_ORANGE, COLOR_ORANGE);   // Orange
+    init_pair(BLUE, COLOR_BLUE, COLOR_BLUE);         // Blue
+    init_pair(RED, COLOR_RED, COLOR_RED);            // Red
+    init_pair(GREEN, COLOR_GREEN, COLOR_GREEN);      // Green
 }
 
 // Ferme nCurses
@@ -75,7 +78,7 @@ void display_nCurses(Tetris *tetris)
     WINDOW *win;
 
     // Crée la taille de la fenetre
-    win = newwin(tetris->line + 4, tetris->column * 2 + 2, 0, 0);
+    win = newwin(tetris->line + 2, tetris->column * 2 + 2, 0, 0);
     // Le cadre autour du jeu
     box(win, 0, 0);
     wrefresh(win);
@@ -87,9 +90,9 @@ void display_nCurses(Tetris *tetris)
             if (tetris->board[i][j].isFull)
             {
                 // Utilisez une paire de couleurs en fonction de la couleur de la cellule
-                attron(COLOR_PAIR(tetris->board[i][j].c));
-                mvwprintw(win, i + 1, j * 2 + 1, "[]");
-                attroff(COLOR_PAIR(tetris->board[i][j].c));
+                wattron(win, COLOR_PAIR(tetris->board[i][j].c));
+                mvwprintw(win, i + 1, j * 2 + 1, "  ");
+                wattroff(win, COLOR_PAIR(tetris->board[i][j].c));
             }
             else
             {
@@ -97,8 +100,8 @@ void display_nCurses(Tetris *tetris)
             }
         }
     }
-    mvwprintw(win, tetris->line + 3, 1, "Nombre de lignes supprimés : %d", tetris->nbLines);
-    mvwprintw(win, tetris->line + 4, 1, "Score : %d", tetris->score);
+    // mvwprintw(win, tetris->line + 3, 1, "Nombre de lignes supprimés : %d", tetris->nbLines);
+    // mvwprintw(win, tetris->line + 4, 1, "Score : %d", tetris->score);
 
     wrefresh(win);
 }
