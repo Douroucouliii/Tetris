@@ -75,14 +75,23 @@ char input_nCurses()
 // Affiche le tetris dans la console
 void display_nCurses(Tetris *tetris)
 {
-    WINDOW *win;
+    // La taille du terminal
+    int term_rows, term_cols;
+    getmaxyx(stdscr, term_rows, term_cols);
 
-    // Crée la taille de la fenetre
-    win = newwin(tetris->line + 2, tetris->column * 2 + 2, 0, 0);
+    // Calculez la taille et la position de la fenêtre de jeu
+    int game_rows = tetris->line * 2;
+    int game_cols = tetris->column * 4;
+    int game_starty = (term_rows - game_rows) / 2;
+    int game_startx = (term_cols - game_cols) / 2;
+
+    // Crée la fenêtre de jeu
+    WINDOW *win = newwin(game_rows + 2, game_cols + 2, game_starty, game_startx);
     // Le cadre autour du jeu
     box(win, 0, 0);
     wrefresh(win);
 
+    // Affiche le plateau de jeu
     for (int i = 0; i < tetris->line; i++)
     {
         for (int j = 0; j < tetris->column; j++)
@@ -91,17 +100,28 @@ void display_nCurses(Tetris *tetris)
             {
                 // Utilisez une paire de couleurs en fonction de la couleur de la cellule
                 wattron(win, COLOR_PAIR(tetris->board[i][j].c));
-                mvwprintw(win, i + 1, j * 2 + 1, "  ");
+                mvwprintw(win, i * 2 + 1, j * 4 + 1, "    ");
+                mvwprintw(win, i * 2 + 2, j * 4 + 1, "    ");
                 wattroff(win, COLOR_PAIR(tetris->board[i][j].c));
             }
             else
             {
-                mvwprintw(win, i + 1, j * 2 + 1, "  ");
+                mvwprintw(win, i * 2 + 1, j * 4 + 1, "    ");
             }
         }
     }
-    // mvwprintw(win, tetris->line + 3, 1, "Nombre de lignes supprimés : %d", tetris->nbLines);
-    // mvwprintw(win, tetris->line + 4, 1, "Score : %d", tetris->score);
+
+    // Crée la fenêtre de score
+    WINDOW *score = newwin(game_rows / 4 - 1, 20, game_starty, game_startx + game_cols + 2);
+    box(score, 0, 0);
+    wrefresh(score);
+
+    // Affiche le score, le nombre de lignes et le niveau
+    mvwprintw(score, 2, 1, "Score : %d", tetris->score);
+    mvwprintw(score, 4, 1, "Lignes : %d", tetris->nbLines);
+    mvwprintw(score, 6, 1, "Niveau : %d", tetris->level);
+
+    wrefresh(score);
 
     wrefresh(win);
 }
