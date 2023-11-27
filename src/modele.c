@@ -47,6 +47,7 @@ Tetris *tetris_init_()
     tetris->nbLines = 0;
     tetris->score = 0;
     tetris->level = 0;
+    tetris->nextPiece = NULL;
 
     return tetris;
 }
@@ -170,38 +171,27 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     return;
 }
 
-// On ajoute une piece de tmpPiece dans le tableau
-void get_piece(Tetris *tetris)
+PieceConfig *get_next_piece(Tetris *tetris)
 {
-    // on memcpy sur une pièce de tmpPiece aléatoirement et on l'ajoute dans le table des pieces
     int randomIndex = rand() % 7;
-    PieceConfig *newPiece = (PieceConfig *)malloc(sizeof(PieceConfig));
-    if (!newPiece)
-    {
-        perror("Erreur malloc()\n");
+
+    PieceConfig *nextPiece = (PieceConfig*)malloc(sizeof(PieceConfig));
+    if(!nextPiece){
+        perror("Erreur Malloc (NextPiece) \n");
         exit(EXIT_FAILURE);
-    }
-    memcpy(newPiece, tetris->tmpPiece[randomIndex], sizeof(PieceConfig));
-    tetris->nbBoardPiece++;
-    if (!tetris->boardPiece)
+    }  
+    memcpy(nextPiece,tetris->tmpPiece[randomIndex],sizeof(PieceConfig));
+
+    nextPiece->c=(color)(rand() % 7 + 1); //C'est pour pas avoir NOTHING
+    return nextPiece;
+}
+
+void update_piece(Tetris *tetris,PieceConfig *piece)
+{
+     for (int ind = 0; ind < newPiece->num_cells; ind++)
     {
-        tetris->boardPiece = (PieceConfig **)malloc(tetris->nbBoardPiece * sizeof(PieceConfig *));
-    }
-    else
-    {
-        tetris->boardPiece = (PieceConfig **)realloc(tetris->boardPiece, tetris->nbBoardPiece * sizeof(PieceConfig *));
-    }
-    if (!tetris->boardPiece)
-    {
-        perror("Erreur malloc()/realloc()\n");
-        exit(EXIT_FAILURE);
-    }
-    tetris->boardPiece[tetris->nbBoardPiece - 1] = newPiece;
-    // On met à jour la grille
-    for (int ind = 0; ind < newPiece->num_cells; ind++)
-    {
-        int coord_x = newPiece->coords[ind][0];
-        int coord_y = newPiece->coords[ind][1];
+        int coord_x = piece->coords[ind][0];
+        int coord_y = piece->coords[ind][1];
         if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             // La pièce est en dehors des limites du plateau, donc on a perdu :(
@@ -217,9 +207,50 @@ void get_piece(Tetris *tetris)
         else
         {
             tetris->board[coord_x][coord_y].isFull = true;
-            tetris->board[coord_x][coord_y].c = newPiece->c;
+            tetris->board[coord_x][coord_y].c = piece->c;
         }
     }
+}
+
+// On ajoute une piece de tmpPiece dans le tableau
+void get_piece(Tetris *tetris)
+{   
+    //Si la pièce suivante n'est pas initialisé, on en génère une.
+    if( tetris->nextPiece == NULL ){
+        tetris->nextPiece = get_next_piece(tetris);
+    }
+
+    // on memcpy sur une pièce de tmpPiece aléatoirement et on l'ajoute dans le table des pieces
+
+    PieceConfig *newPiece = (PieceConfig *)malloc(sizeof(PieceConfig));
+    if (!newPiece)
+    {
+        perror("Erreur malloc()\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(newPiece,tetris->nextPiece, sizeof(PieceConfig));
+    
+    tetris->nbBoardPiece++;
+    if (!tetris->boardPiece)
+    {
+        tetris->boardPiece = (PieceConfig **)malloc(tetris->nbBoardPiece * sizeof(PieceConfig *));
+    }
+    else
+    {
+        tetris->boardPiece = (PieceConfig **)realloc(tetris->boardPiece, tetris->nbBoardPiece * sizeof(PieceConfig *));
+    }
+    if (!tetris->boardPiece)
+    {
+        perror("Erreur malloc()/realloc()\n");
+        exit(EXIT_FAILURE);
+    }
+    tetris->boardPiece[tetris->nbBoardPiece - 1] = newPiece;
+    
+    //On met à jour la grille 
+    update_piece(tetris,newPiece);
+
+    free(tetris->nextPiece);
+    tetris->nextPiece = get_next_piece(tetris);
 }
 
 /*
