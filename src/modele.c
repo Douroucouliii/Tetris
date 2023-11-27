@@ -212,112 +212,80 @@ void update_piece(Tetris *tetris,PieceConfig *piece)
     }
 }
 
+
 // On ajoute une piece de tmpPiece dans le tableau
 void get_piece(Tetris *tetris)
 {   
-    //Si la pièce suivante n'est pas initialisé, on en génère une.
-    if( tetris->nextPiece == NULL ){
+    if (tetris->nextPiece == NULL)
+    {
         tetris->nextPiece = get_next_piece(tetris);
     }
 
-    // on memcpy sur une pièce de tmpPiece aléatoirement et on l'ajoute dans le table des pieces
-
-    PieceConfig *newPiece = (PieceConfig *)malloc(sizeof(PieceConfig));
-    if (!newPiece)
-    {
-        perror("Erreur malloc()\n");
-        exit(EXIT_FAILURE);
-    }
-    memcpy(newPiece,tetris->nextPiece, sizeof(PieceConfig));
-    
     tetris->nbBoardPiece++;
+
+    tetris->boardPiece = (PieceConfig **)realloc(tetris->boardPiece, tetris->nbBoardPiece * sizeof(PieceConfig *));
     if (!tetris->boardPiece)
     {
-        tetris->boardPiece = (PieceConfig **)malloc(tetris->nbBoardPiece * sizeof(PieceConfig *));
-    }
-    else
-    {
-        tetris->boardPiece = (PieceConfig **)realloc(tetris->boardPiece, tetris->nbBoardPiece * sizeof(PieceConfig *));
-    }
-    if (!tetris->boardPiece)
-    {
-        perror("Erreur malloc()/realloc()\n");
+        perror("Erreur realloc()\n");
         exit(EXIT_FAILURE);
     }
-    tetris->boardPiece[tetris->nbBoardPiece - 1] = newPiece;
-    
-    //On met à jour la grille 
-    update_piece(tetris,newPiece);
 
-    free(tetris->nextPiece);
+    tetris->boardPiece[tetris->nbBoardPiece - 1] = tetris->nextPiece;
+    update_piece(tetris, tetris->nextPiece);
+
     tetris->nextPiece = get_next_piece(tetris);
 }
 
-void copy_piece_cells(Tetris *tetris, bool*** temp_cells) {
-    int piece_index = tetris->nbBoardPiece - 1;
+void restore_board_state(Tetris *tetris, bool temp_cells[][4][2])
+{
+    for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
+    {
+        int curr_x = temp_cells[tetris->nbBoardPiece - 1][i][0];
+        int curr_y = temp_cells[tetris->nbBoardPiece - 1][i][1];
 
-    temp_cells[piece_index] = (bool**)malloc(4 * sizeof(bool*));
-    for (int i = 0; i < 4; i++) {
-        temp_cells[piece_index][i] = (bool*)malloc(2 * sizeof(bool));
-    }
-
-    for (int i = 0; i < tetris->boardPiece[piece_index]->num_cells; i++) {
-        int curr_x = tetris->boardPiece[piece_index]->coords[i][0];
-        int curr_y = tetris->boardPiece[piece_index]->coords[i][1];
-        temp_cells[piece_index][i][0] = curr_x;
-        temp_cells[piece_index][i][1] = curr_y;
-        tetris->board[curr_x][curr_y].isFull = false;
+        // Restaurer l'état initial de la cellule sur le plateau
+        tetris->board[curr_x][curr_y].isFull = true;
     }
 }
 
-
-void free_temp_cells(Tetris *tetris,bool*** temp_cells) {
-    // Libération de la mémoire allouée pour le tableau temporaire
-    for (int i = 0; i < 4; i++) {
-        free(temp_cells[tetris->nbBoardPiece - 1][i]);
-    }
-    free(temp_cells[tetris->nbBoardPiece - 1]);
-}
-
-
-/*
-varX et varY : l'orientation de la piece ( Bas , Gauche , Droite , Haut )
-Cette fonction ressor un type boolean qui nous permet de savoir si nous pouvons ou non aller dans une direction.
-*/
 bool can_move(Tetris *tetris, int varX, int varY)
 {
-    // stockage temporaire des cellules actuelles de la pièce
-    bool*** temp_cells = (bool***)malloc(tetris->nbBoardPiece * sizeof(bool**));
+    // Stockage temporaire des cellules actuelles de la pièce
+    bool temp_cells[tetris->nbBoardPiece][4][2];
 
-    copy_piece_cells(tetris,temp_cells);
-    // vérification si les nouvelles coordonnées sont valides
+    // Copie des cellules actuelles de la pièce avant déplacement
+    for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
+    {
+        int curr_x = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0];
+        int curr_y = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1];
+
+        temp_cells[tetris->nbBoardPiece - 1][i][0] = curr_x;
+        temp_cells[tetris->nbBoardPiece - 1][i][1] = curr_y;
+        tetris->board[curr_x][curr_y].isFull = false;
+    }
+
+    // Vérification si les nouvelles coordonnées sont valides
     for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
     {
         int coord_x = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] + varX;
         int coord_y = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] + varY;
 
-        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column || tetris->board[coord_x][coord_y].isFull)
+        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
-            // restaurer l'état initial du plateau
-            for (int j = 0; j < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; j++)
-            {
-                int curr_x = temp_cells[tetris->nbBoardPiece - 1][j][0];
-                int curr_y = temp_cells[tetris->nbBoardPiece - 1][j][1];
-                tetris->board[curr_x][curr_y].isFull = true;
-            }
-            free_temp_cells(tetris,temp_cells);
+            // Restaurer l'état initial du plateau
+            restore_board_state(tetris, temp_cells);
+            return false;
+        }
+        if (tetris->board[coord_x][coord_y].isFull)
+        {
+            // Restaurer l'état initial du plateau
+            restore_board_state(tetris, temp_cells);
             return false;
         }
     }
 
-    // restaurer l'état initial du plateau
-    for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
-    {
-        int curr_x = temp_cells[tetris->nbBoardPiece - 1][i][0];
-        int curr_y = temp_cells[tetris->nbBoardPiece - 1][i][1];
-        tetris->board[curr_x][curr_y].isFull = true;
-    }
-    free_temp_cells(tetris,temp_cells);
+    // Restaurer l'état initial du plateau
+    restore_board_state(tetris, temp_cells);
     return true;
 }
 
@@ -393,6 +361,19 @@ int get_pivot_Y(PieceConfig *p)
     return -1;
 }
 
+
+// Fonction pour vérifier si la position spécifiée est la même que les anciennes coordonnées
+bool is_same_as_old_coords(Tetris *tetris, int x, int y, int oldX, int oldY)
+{
+    for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
+    {
+        if (x == tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] && y == tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1])
+        {
+            return true;
+        }
+    }
+    return false;
+}
 /*
 Fonction qui permet de rotate une piece standard.
     Direction : -1 //Rotation Gauche
@@ -409,25 +390,34 @@ bool can_rotate(Tetris *tetris, int rotationDirection)
     {
         int oldX = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0];
         int oldY = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1];
+
+        int deltaX = oldX - pivotX;
+        int deltaY = oldY - pivotY;
+
         if (rotationDirection == 1)
         { // Rotation Droite
-            newCoords[i][0] = pivotX - (oldY - pivotY);
-            newCoords[i][1] = pivotY + (oldX - pivotX);
+            newCoords[i][0] = pivotX - deltaY;
+            newCoords[i][1] = pivotY + deltaX;
         }
         else if (rotationDirection == -1)
         { // Rotation Gauche
-            newCoords[i][0] = pivotX + (oldY - pivotY);
-            newCoords[i][1] = pivotY - (oldX - pivotX);
+            newCoords[i][0] = pivotX + deltaY;
+            newCoords[i][1] = pivotY - deltaX;
         }
+
         int coord_x = newCoords[i][0];
         int coord_y = newCoords[i][1];
-        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
+
+        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column ||
+            (tetris->board[coord_x][coord_y].isFull && !is_same_as_old_coords(tetris, coord_x, coord_y, oldX, oldY)))
         {
             return false;
         }
     }
+
     return true;
 }
+
 
 void rotate_left(Tetris *tetris)
 {
@@ -442,9 +432,12 @@ void rotate_left(Tetris *tetris)
     {
         int oldX = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0];
         int oldY = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1];
+        int deltaX = oldX - pivotX;
+        int deltaY = oldY - pivotY;
+
         // Mise à jour des coordonnées après la rotation à gauche
-        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX + (oldY - pivotY);
-        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY - (oldX - pivotX);
+        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX - deltaY;
+        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY + deltaX;
     }
 }
 
@@ -461,11 +454,15 @@ void rotate_right(Tetris *tetris)
     {
         int oldX = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0];
         int oldY = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1];
-        // Mise à jour des coordonnées après la rotation à gauche
-        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX + (oldY - pivotY);
-        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY - (oldX - pivotX);
+        int deltaX = oldX - pivotX;
+        int deltaY = oldY - pivotY;
+
+        // Mise à jour des coordonnées après la rotation à droite
+        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX + deltaY;
+        tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY - deltaX;
     }
 }
+
 
 void refresh_board(Tetris *tetris)
 {
@@ -617,5 +614,6 @@ void clear_all(Tetris *t, userInterface ui)
     clear_board(t);
     clear_boardPiece(t);
     clear_tmpPiece(t);
+    free(t->nextPiece);
     clear_pointeur_fct(ui);
 }

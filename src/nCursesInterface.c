@@ -4,6 +4,9 @@
 #include "modele.h"
 #include "nCursesInterface.h"
 
+WINDOW *win;
+WINDOW *score;
+
 // Initialise nCurses
 void init_nCurses()
 {
@@ -41,7 +44,20 @@ void init_nCurses()
 void close_nCurses()
 {
     endwin();
+
+    if (win != NULL)
+    {
+        delwin(win);
+        win = NULL;
+    }
+
+    if (score != NULL)
+    {
+        delwin(score);
+        score = NULL;
+    }
 }
+
 
 // Récupère un input depuis NCurses et retourne le char correspondant dans le modele
 char input_nCurses()
@@ -86,7 +102,7 @@ void display_nCurses(Tetris *tetris)
     int game_startx = (term_cols - game_cols) / 2;
 
     // Crée la fenêtre de jeu
-    WINDOW *win = newwin(game_rows + 2, game_cols + 2, game_starty, game_startx);
+    win = newwin(game_rows + 2, game_cols + 2, game_starty, game_startx);
     // Le cadre autour du jeu
     box(win, 0, 0);
     wrefresh(win);
@@ -112,7 +128,7 @@ void display_nCurses(Tetris *tetris)
     }
 
     // Crée la fenêtre de score
-    WINDOW *score = newwin(game_rows / 4 - 1, 20, game_starty, game_startx + game_cols + 2);
+    score = newwin(game_rows / 4 - 1, 20, game_starty, game_startx + game_cols + 2);
     box(score, 0, 0);
     wrefresh(score);
 

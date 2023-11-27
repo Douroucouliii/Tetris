@@ -122,26 +122,21 @@ void update_piece(Tetris *,PieceConfig *);
 void get_piece(Tetris *);
 
 /**
- * @brief Fonction qui permet de copier temporairement les cellules d'une piece
- * 
+ * @brief Fonction qui permet de restauré notre plateau
  * @param tetris
- * @param temp_cells
- */
-void copy_piece_cells(Tetris *,bool***);
+ * @param temp_cells[][4][2]
+*/
+void restore_board_state(Tetris *tetris, bool temp_cells[][4][2]);
 
-/**
- * @brief Fonction qui permet de liberer l'espace alloué pour le tableau temporaire de cellules
- * 
- * @param tetris
- * @param temp_cells
- */
-void free_temp_cells(Tetris*, bool***);
+
+bool is_same_as_old_coords(Tetris *tetris, int x, int y, int oldX, int oldY);
 
 /**
  * @brief Fonction qui retourne vrai ou faux, si la pièce peut bouger grâce aux variables Varx et VarY qui gère l'orientation ( Bas, Gauche, Droite, Haut )
  * 
  * @param tetris
- * @param VarX et VarY ( Valeur entre [-1,1] )
+ * @param VarX  ( Valeurs entre [-1,1] )
+ * @param VarY ( Valeurs entre [-1,1] )
  * @return true ; si la piece peut bouger
  * @return false ; si la piece ne peut pas bouger
  */
