@@ -188,7 +188,7 @@ PieceConfig *get_next_piece(Tetris *tetris)
 
 void update_piece(Tetris *tetris,PieceConfig *piece)
 {
-     for (int ind = 0; ind < newPiece->num_cells; ind++)
+     for (int ind = 0; ind < piece->num_cells; ind++)
     {
         int coord_x = piece->coords[ind][0];
         int coord_y = piece->coords[ind][1];
@@ -253,35 +253,50 @@ void get_piece(Tetris *tetris)
     tetris->nextPiece = get_next_piece(tetris);
 }
 
+void copy_piece_cells(Tetris *tetris, bool*** temp_cells) {
+    int piece_index = tetris->nbBoardPiece - 1;
+
+    temp_cells[piece_index] = (bool**)malloc(4 * sizeof(bool*));
+    for (int i = 0; i < 4; i++) {
+        temp_cells[piece_index][i] = (bool*)malloc(2 * sizeof(bool));
+    }
+
+    for (int i = 0; i < tetris->boardPiece[piece_index]->num_cells; i++) {
+        int curr_x = tetris->boardPiece[piece_index]->coords[i][0];
+        int curr_y = tetris->boardPiece[piece_index]->coords[i][1];
+        temp_cells[piece_index][i][0] = curr_x;
+        temp_cells[piece_index][i][1] = curr_y;
+        tetris->board[curr_x][curr_y].isFull = false;
+    }
+}
+
+
+void free_temp_cells(Tetris *tetris,bool*** temp_cells) {
+    // Libération de la mémoire allouée pour le tableau temporaire
+    for (int i = 0; i < 4; i++) {
+        free(temp_cells[tetris->nbBoardPiece - 1][i]);
+    }
+    free(temp_cells[tetris->nbBoardPiece - 1]);
+}
+
+
 /*
-La fonction can_move prend en paramètre
-    board : notre plateau
-    piece : une piece standard
-    varX et varY : l'orientation de la piece ( Bas , Gauche , Droite , Haut )
+varX et varY : l'orientation de la piece ( Bas , Gauche , Droite , Haut )
 Cette fonction ressor un type boolean qui nous permet de savoir si nous pouvons ou non aller dans une direction.
 */
 bool can_move(Tetris *tetris, int varX, int varY)
 {
     // stockage temporaire des cellules actuelles de la pièce
-    bool temp_cells[tetris->nbBoardPiece][4][2];
+    bool*** temp_cells = (bool***)malloc(tetris->nbBoardPiece * sizeof(bool**));
 
-    // copie des cellules actuelles de la pièce avant déplacement
-    for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
-    {
-        int curr_x = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0];
-        int curr_y = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1];
-        temp_cells[tetris->nbBoardPiece - 1][i][0] = curr_x;
-        temp_cells[tetris->nbBoardPiece - 1][i][1] = curr_y;
-        tetris->board[curr_x][curr_y].isFull = false; // suppression temporaire de la cellule
-    }
-
+    copy_piece_cells(tetris,temp_cells);
     // vérification si les nouvelles coordonnées sont valides
     for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
     {
         int coord_x = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] + varX;
         int coord_y = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] + varY;
 
-        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
+        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column || tetris->board[coord_x][coord_y].isFull)
         {
             // restaurer l'état initial du plateau
             for (int j = 0; j < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; j++)
@@ -290,18 +305,7 @@ bool can_move(Tetris *tetris, int varX, int varY)
                 int curr_y = temp_cells[tetris->nbBoardPiece - 1][j][1];
                 tetris->board[curr_x][curr_y].isFull = true;
             }
-            return false;
-        }
-
-        if (tetris->board[coord_x][coord_y].isFull)
-        {
-            // restaurer l'état initial du plateau
-            for (int j = 0; j < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; j++)
-            {
-                int curr_x = temp_cells[tetris->nbBoardPiece - 1][j][0];
-                int curr_y = temp_cells[tetris->nbBoardPiece - 1][j][1];
-                tetris->board[curr_x][curr_y].isFull = true;
-            }
+            free_temp_cells(tetris,temp_cells);
             return false;
         }
     }
@@ -313,7 +317,7 @@ bool can_move(Tetris *tetris, int varX, int varY)
         int curr_y = temp_cells[tetris->nbBoardPiece - 1][i][1];
         tetris->board[curr_x][curr_y].isFull = true;
     }
-
+    free_temp_cells(tetris,temp_cells);
     return true;
 }
 

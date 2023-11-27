@@ -50,48 +50,56 @@ typedef struct
  */
 typedef struct Tetris
 {
-    unsigned line : 5;
-    unsigned column : 5;
-    cell **board;             /**< Tableau representant notre plateau de jeu Tetris*/
+    unsigned line : 5;        /**< Valeur par defaut pour les lignes de notre plateau   */
+    unsigned column : 5;      /**< Valeur par defaut pour les colonnes de notre plateau */
+    cell **board;             /**< Tableau representant notre plateau de jeu Tetris     */
     PieceConfig **tmpPiece;   /**< Tableau des structures de toutes les pièces possibles pour notre Tetris*/
-    PieceConfig **boardPiece; /**< Tableau des pièces déjà présente dans le Tetris*/
-    int nbBoardPiece;         /**< Le nombre de pièces dans le tableau boardPiece */
-    bool end;                 /**< Indique si la partie est terminée */
-    int nbLines;              /**< Le nombre de ligne supprimées */
+    PieceConfig **boardPiece; /**< Tableau des pièces déjà présente dans le Tetris      */
+    int nbBoardPiece;         /**< Le nombre de pièces dans le tableau boardPiece       */
+    bool end;                 /**< Indique si la partie est terminée                    */
+    int nbLines;              /**< Le nombre de ligne supprimées                        */
     int score;                /**< Le score du jeu ( On utilise le système de score de la NES )*/
     int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
-    PieceConfig* nextPiece;   /**< La prochaine pièce qui va arriver */
+    PieceConfig* nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
 } Tetris;
 
+/**
+ * @brief Tableau statique des pièces de notre jeu.
+ * 
+ */
 extern PieceConfig pieces[7];
 
 /**
- * @brief 
+ * @brief Fonction qui initialise notre jeu Tetris et qui retourne un pointeur de notre jeu
  * 
  * @return Tetris* 
  */
 Tetris *tetris_init_();
 
 /**
- * @brief 
+ * @brief Fonction qui intialise notre tableau de cellule
  * 
+ * @param tetris
  */
 void init_board(Tetris *);
 
 /**
- * @brief 
+ * @brief Fonction qui initialise le tableau de pointeur de nos pieces
  * 
+ * @param tetris
  */
 void init_tmpPiece(Tetris *);
 
 /**
- * @brief 
+ * @brief Fonction qui permet au joueur de jouer au Tetris avec l'interface voulu ( NCurses ou SDL )
  * 
+ * @param tetris
+ * @param userInterface 
  */
 void tetris_playGame(Tetris *, userInterface);
 
 /**
- * @brief Get the next piece object
+ * @brief Fonction qui donne la prochaine pièce qui va apparaître sur le plateau.
  * 
  * @param tetris 
  * @return PieceConfig* 
@@ -99,34 +107,60 @@ void tetris_playGame(Tetris *, userInterface);
 PieceConfig *get_next_piece(Tetris *);
 
 /**
- * @brief 
+ * @brief Fonction qui met à jour le plateau de jeu avec la piece actuelle en paramètre.
  * 
+ * @param tetris
+ * @param piece
  */
-void update_piece(Tetris *,PieceConfig *)
+void update_piece(Tetris *,PieceConfig *);
 
 /**
- * @brief Get the piece object
+ * @brief Fonction qui donne la piece qui va etre placer sur le Tetris et qui remet à jour la prochaine piece qui va apparaitre
  * 
+ * @param tetris
  */
 void get_piece(Tetris *);
 
 /**
- * @brief 
+ * @brief Fonction qui permet de copier temporairement les cellules d'une piece
  * 
- * @return true 
- * @return false 
+ * @param tetris
+ * @param temp_cells
+ */
+void copy_piece_cells(Tetris *,bool***);
+
+/**
+ * @brief Fonction qui permet de liberer l'espace alloué pour le tableau temporaire de cellules
+ * 
+ * @param tetris
+ * @param temp_cells
+ */
+void free_temp_cells(Tetris*, bool***);
+
+/**
+ * @brief Fonction qui retourne vrai ou faux, si la pièce peut bouger grâce aux variables Varx et VarY qui gère l'orientation ( Bas, Gauche, Droite, Haut )
+ * 
+ * @param tetris
+ * @param VarX et VarY ( Valeur entre [-1,1] )
+ * @return true ; si la piece peut bouger
+ * @return false ; si la piece ne peut pas bouger
  */
 bool can_move(Tetris *, int, int);
 
 /**
- * @brief 
+ * @brief Fonction qui retourne vrai ou faux si l'on peut bouger la pièce vers le bas
+ * 
+ * @param tetris
  * 
  * @return true 
  * @return false 
  */
 bool move_down_piece(Tetris *);
+
 /**
- * @brief 
+ * @brief Fonction qui retourne vrai ou faux si l'on peut bouger la pièce vers la gauche
+ * 
+ * @param tetris 
  * 
  * @return true 
  * @return false 
@@ -134,7 +168,9 @@ bool move_down_piece(Tetris *);
 bool move_left_piece(Tetris *);
 
 /**
- * @brief 
+ * @brief Fonction qui retourne vrai ou faux, si l'on peut bouger la piece vers la droite
+ * 
+ * @param tetris
  * 
  * @return true 
  * @return false 
@@ -142,21 +178,28 @@ bool move_left_piece(Tetris *);
 bool move_right_piece(Tetris *);
 
 /**
- * @brief Get the pivot X object
+ * @brief Fonction qui permet de savoir qu'elle pivotX avoir pour tourner notre piece et retourne -1 si il ne trouve pas de qu'elle piece, on parle.
+ * 
+ * @param piece
  * 
  * @return int 
  */
 int get_pivot_X(PieceConfig *);
 
 /**
- * @brief Get the pivot y object
+ * @brief Fonction qui permet de savoir qu'elle pivotY avoir pour tourner notre piece et retourne -1 si il ne trouve pas de qu'elle piece, on parle.
+ * 
+ * @param piece
  * 
  * @return int 
  */
 int get_pivot_y(PieceConfig *);
 
 /**
- * @brief 
+ * @brief Fonction qui retourne vrai ou faux pour savoir si l'on peut tourner notre piece dans un sens ( 1 pour tourner à droite et -1 pour tourner à gauche ).
+ * 
+ * @param tetris
+ * @param rotationDirection 
  * 
  * @return true 
  * @return false 
@@ -164,75 +207,79 @@ int get_pivot_y(PieceConfig *);
 bool can_rotate(Tetris *, int);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui permet de tourner la piece à gauche et change les coordonnées de notre pièce par rapport à son pivot.
+ * @param tetris
  */
 void rotate_left(Tetris *);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui permet de tourner la piece à droite et change les coordonnées de notre piece par rapport à son pivot.
+ * @param tetris
  */
 void rotate_right(Tetris *);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui permet de raffraichir notre affichage sur la console
+ * @param tetris
  */
 void refresh_board(Tetris *);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui nous indique si la ligne de notre tableau est complète
+ * @param tetris
+ * @param ligne ( indice )
  * @return true 
  * @return false 
  */
 bool is_full_line(Tetris *, int);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui enlève la ligne complète et descend toutes les autres (en mettant à jours leurs coordonées ).
+ * @param tetris
+ * @param ligne ( indice )
  */
 void delete_line(Tetris *, int);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui enlève toutes les lignes complète de notre jeu Tetris et met à jour le score du joueur et son passage de level en level
+ * @param tetris
  */
 void delete_all_line(Tetris *);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui met à jour le score du joueur.
+ * @param tetris
+ * @param score_line
  */
 void add_score(Tetris *, int);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui permet de liberer l'espace alloué à notre plateau de jeu
+ * @param tetris
  */
 void clear_board(Tetris *);
 
 /**
- * @brief 
- * 
+ * @brief Fonction qui permet de liberer l'espace alloué à notre tableau de piece
+ * @param tetris
  */
 void clear_boardPiece(Tetris *);
 
 /**
- * @brief 
- * 
+ * @brief Libère la mémoire allouée pour le tableau des configurations temporaires de pièces Tetris
+ * @param tetris
  */
 void clear_tmpPiece(Tetris *);
 
 /**
- * @brief 
- * 
+ * @brief  Libère la mémoire allouée pour le tableau de pointeurs de fonctions d'interface utilisateur
+ * @param userInterface
  */
 void clear_pointeur_fct(userInterface);
 
 /**
- * @brief 
- * 
+ * @brief Libère la mémoire allouée pour toutes les structures du jeu Tetris
+ * @param tetris
+ * @param userInterface
  */
 void clear_all(Tetris *, userInterface);
