@@ -6,7 +6,9 @@
 
 WINDOW *win;
 WINDOW *score;
-WINDOW *pieceStats;
+WINDOW *piece_stats;
+WINDOW *level;
+WINDOW *next_piece;
 
 // Initialise nCurses
 void init_nCurses()
@@ -141,36 +143,61 @@ void display_info_nCurses(Tetris *tetris){
     int game_startx = (term_cols - game_cols) / 2;
 
     // Crée la fenêtre de score
-    score = newwin(game_rows / 4 - 1, 20, game_starty, game_startx + game_cols + 2);
+    score = newwin(game_rows / 4 + 1, 20, game_starty + game_rows - 9, game_startx + game_cols + 2);
     box(score, 0, 0);
-    wrefresh(score);
 
-    // Affiche le score, le nombre de lignes et le niveau
-    mvwprintw(score, 2, 1, "Score : %d", tetris->score);
-    mvwprintw(score, 4, 1, "Lignes : %d", tetris->nbLines);
-    mvwprintw(score, 6, 1, "Niveau : %d", tetris->level);
+    // Affiche le score, le nombre de lignes
+    mvwprintw(score, 3, 5, "Score : %d", tetris->score);
+    mvwprintw(score, 6, 5, "Lignes : %d", tetris->nbLines);
 
     //Afficher un fenetre à gauche pour les statistiques des pieces
-    pieceStats = newwin((game_rows + 2) * 3/4, 20, game_starty, game_startx - 20);
-    box(pieceStats, 0, 0);
-    wrefresh(pieceStats);
+    piece_stats = newwin((int)(game_rows + 2) * 3/4, 20, game_starty, game_startx - 20);
+    box(piece_stats, 0, 0);   
 
     // Afficher chaque pièce avec sa statistique dans la fenêtre pieceStats
     for (int i = 0; i < 7; i++){
         for (int j = 0; j < 4; j++){
-            wattron(pieceStats, COLOR_PAIR(tetris->tmpPiece[i]->c));
+            wattron(piece_stats, COLOR_PAIR(tetris->tmpPiece[i]->c));
             //Le I est plus grand que les autres pièces donc on le décale un peu plus
             if(i==6){
-                mvwprintw(pieceStats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 3, "  ");
+                mvwprintw(piece_stats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 3, "  ");
             }else{
-                mvwprintw(pieceStats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 5, "  ");
+                mvwprintw(piece_stats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 5, "  ");
             }
-            wattroff(pieceStats, COLOR_PAIR(tetris->tmpPiece[i]->c));
+            wattroff(piece_stats, COLOR_PAIR(tetris->tmpPiece[i]->c));
         }
         //Ajouter la stat apres la piece
-        mvwprintw(pieceStats, i * 4 + 3, 14, "%d", tetris->pieceStats[i]);
+        mvwprintw(piece_stats, i * 4 + 3, 14, "%d", tetris->pieceStats[i]);
     }
 
+    // Afficher le niveau en bas à gauche
+    level = newwin(game_rows / 4 + 1, 20, game_starty + game_rows - 9, game_startx - 20);
+    box(level, 0, 0);
+    mvwprintw(level, 5, 5, "Niveau : %d", tetris->level);
+
+    // Afficher la prochaine piece
+    next_piece = newwin(game_rows / 4 + 1, 20, game_starty, game_startx + game_cols + 2);
+    box(next_piece, 0, 0);
+    for (int j = 0; j < 4; j++){
+        wattron(next_piece, COLOR_PAIR(tetris->nextPiece->c));
+        //Si la piece est un I ou un O on doit l'afficher différent car elle prend pas la meme place
+        if(tetris->nextPiece->name == 'I'){
+            mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 4, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
+            mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 5, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
+        }else if(tetris->nextPiece->name == 'O'){
+            mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 3, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
+            mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 4, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
+        }else{
+            mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 3, tetris->nextPiece->coords[j][1] * 4 - 12, "    ");
+            mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 4, tetris->nextPiece->coords[j][1] * 4 - 12, "    ");
+        }
+        wattroff(next_piece, COLOR_PAIR(tetris->nextPiece->c));
+    }
+
+
+
     wrefresh(score);
-    wrefresh(pieceStats);
+    wrefresh(piece_stats);
+    wrefresh(level);
+    wrefresh(next_piece);
 }
