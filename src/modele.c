@@ -7,13 +7,13 @@
 #include "modele.h"
 
 PieceConfig pieces[7] = {
-    {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED},
-    {'O', 4, {{0, 4}, {0, 5}, {1, 4}, {1, 5}}, ORANGE},
     {'T', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 5}}, GREEN},
     {'J', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 6}}, CYAN},
-    {'L', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 4}}, YELLOW},
     {'Z', 4, {{0, 4}, {0, 5}, {1, 5}, {1, 6}}, BLUE},
-    {'S', 4, {{0, 5}, {0, 6}, {1, 4}, {1, 5}}, PURPLE}};
+    {'O', 4, {{0, 4}, {0, 5}, {1, 4}, {1, 5}}, ORANGE},
+    {'S', 4, {{0, 5}, {0, 6}, {1, 4}, {1, 5}}, PURPLE},
+    {'L', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 4}}, YELLOW},
+    {'I', 4, {{0, 3}, {0, 4}, {0, 5}, {0, 6}}, RED}};
 
 Tetris *tetris_init_()
 {
@@ -48,6 +48,10 @@ Tetris *tetris_init_()
     tetris->score = 0;
     tetris->level = 0;
     tetris->nextPiece = NULL;
+
+    for(int i = 0; i < 7; i++){
+        tetris->pieceStats[i] = 0;
+    }
 
     return tetris;
 }
@@ -159,6 +163,7 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
         }
         refresh_board(tetris);
         ui.fonctions->display(tetris);
+        ui.fonctions->display_info(tetris);
     }
 
     printf("\nTu as perdu la partie, dommage !\n\n");
@@ -182,11 +187,40 @@ PieceConfig *get_next_piece(Tetris *tetris)
     }  
     memcpy(nextPiece,tetris->tmpPiece[randomIndex],sizeof(PieceConfig));
 
-    nextPiece->c=(color)(rand() % 7 + 1); //C'est pour pas avoir NOTHING
     return nextPiece;
 }
 
-void update_piece(Tetris *tetris,PieceConfig *piece)
+void update_stats(Tetris *tetris, char name){
+    switch (name)
+    {
+    case 'T':
+        tetris->pieceStats[0]++;
+        break;
+    case 'J':
+        tetris->pieceStats[1]++;
+        break;
+    case 'Z':
+        tetris->pieceStats[2]++;
+        break;
+    case 'O':
+        tetris->pieceStats[3]++;
+        break;
+    case 'S':
+        tetris->pieceStats[4]++;
+        break;
+    case 'L':
+        tetris->pieceStats[5]++;
+        break;
+    case 'I':
+        tetris->pieceStats[6]++;
+        break;
+    default:
+        perror("Erreur update_stats()\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void update_piece(Tetris *tetris, PieceConfig *piece)
 {
      for (int ind = 0; ind < piece->num_cells; ind++)
     {
@@ -212,11 +246,10 @@ void update_piece(Tetris *tetris,PieceConfig *piece)
     }
 }
 
-
 // On ajoute une piece de tmpPiece dans le tableau
 void get_piece(Tetris *tetris)
 {   
-    if (tetris->nextPiece == NULL)
+    if (!tetris->nextPiece)
     {
         tetris->nextPiece = get_next_piece(tetris);
     }
@@ -231,6 +264,7 @@ void get_piece(Tetris *tetris)
     }
 
     tetris->boardPiece[tetris->nbBoardPiece - 1] = tetris->nextPiece;
+    update_stats(tetris, tetris->nextPiece->name);
     update_piece(tetris, tetris->nextPiece);
 
     tetris->nextPiece = get_next_piece(tetris);
@@ -361,7 +395,6 @@ int get_pivot_Y(PieceConfig *p)
     return -1;
 }
 
-
 // Fonction pour vérifier si la position spécifiée est la même que les anciennes coordonnées
 bool is_same_as_old_coords(Tetris *tetris, int x, int y, int oldX, int oldY)
 {
@@ -418,7 +451,6 @@ bool can_rotate(Tetris *tetris, int rotationDirection)
     return true;
 }
 
-
 void rotate_left(Tetris *tetris)
 {
     if ((!can_rotate(tetris, -1)) || (tetris->boardPiece[tetris->nbBoardPiece - 1]->name == 'O'))
@@ -462,7 +494,6 @@ void rotate_right(Tetris *tetris)
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY - deltaX;
     }
 }
-
 
 void refresh_board(Tetris *tetris)
 {

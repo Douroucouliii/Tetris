@@ -6,6 +6,7 @@
 
 WINDOW *win;
 WINDOW *score;
+WINDOW *pieceStats;
 
 // Initialise nCurses
 void init_nCurses()
@@ -57,7 +58,6 @@ void close_nCurses()
         score = NULL;
     }
 }
-
 
 // Récupère un input depuis NCurses et retourne le char correspondant dans le modele
 char input_nCurses()
@@ -127,6 +127,19 @@ void display_nCurses(Tetris *tetris)
         }
     }
 
+    wrefresh(win);
+}
+
+void display_info_nCurses(Tetris *tetris){
+    // La taille du terminal
+    int term_rows, term_cols;
+    getmaxyx(stdscr, term_rows, term_cols);
+    // Calculez la taille et la position de la fenêtre de jeu
+    int game_rows = tetris->line * 2;
+    int game_cols = tetris->column * 4;
+    int game_starty = (term_rows - game_rows) / 2;
+    int game_startx = (term_cols - game_cols) / 2;
+
     // Crée la fenêtre de score
     score = newwin(game_rows / 4 - 1, 20, game_starty, game_startx + game_cols + 2);
     box(score, 0, 0);
@@ -137,7 +150,27 @@ void display_nCurses(Tetris *tetris)
     mvwprintw(score, 4, 1, "Lignes : %d", tetris->nbLines);
     mvwprintw(score, 6, 1, "Niveau : %d", tetris->level);
 
-    wrefresh(score);
+    //Afficher un fenetre à gauche pour les statistiques des pieces
+    pieceStats = newwin((game_rows + 2) * 3/4, 20, game_starty, game_startx - 20);
+    box(pieceStats, 0, 0);
+    wrefresh(pieceStats);
 
-    wrefresh(win);
+    // Afficher chaque pièce avec sa statistique dans la fenêtre pieceStats
+    for (int i = 0; i < 7; i++){
+        for (int j = 0; j < 4; j++){
+            wattron(pieceStats, COLOR_PAIR(tetris->tmpPiece[i]->c));
+            //Le I est plus grand que les autres pièces donc on le décale un peu plus
+            if(i==6){
+                mvwprintw(pieceStats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 3, "  ");
+            }else{
+                mvwprintw(pieceStats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 5, "  ");
+            }
+            wattroff(pieceStats, COLOR_PAIR(tetris->tmpPiece[i]->c));
+        }
+        //Ajouter la stat apres la piece
+        mvwprintw(pieceStats, i * 4 + 3, 14, "%d", tetris->pieceStats[i]);
+    }
+
+    wrefresh(score);
+    wrefresh(pieceStats);
 }

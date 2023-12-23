@@ -1,3 +1,6 @@
 {
-    "editor.colorDecorators": false
+    "editor.colorDecorators": false,
+    "files.associations": {
+        "userinterface.h": "c"
+    }
 }

@@ -61,6 +61,7 @@ typedef struct Tetris
     int score;                /**< Le score du jeu ( On utilise le système de score de la NES )*/
     int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
     PieceConfig* nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
+    int pieceStats[7];          /**< Tableau des statistiques de pièces                   */
 } Tetris;
 
 /**
@@ -105,6 +106,14 @@ void tetris_playGame(Tetris *, userInterface);
  * @return PieceConfig* 
  */
 PieceConfig *get_next_piece(Tetris *);
+
+/**
+ * @brief Fonction qui met à jour les statistiques de nos pieces
+ * 
+ * @param tetris
+ * @param name
+ */
+void update_stats(Tetris *, char);
 
 /**
  * @brief Fonction qui met à jour le plateau de jeu avec la piece actuelle en paramètre.
