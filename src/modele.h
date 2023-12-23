@@ -1,12 +1,20 @@
 #pragma once
 
+/**
+ * @file modele.h
+ * @author Perin Clément (https://github.com/Douroucouliii)
+ * @author Mackowiak Carole (https://github.com/Carole-prog)
+ * @brief Squelette du projet Tetris
+ * @date 2023-11-24
+ */
+
 #include "userInterface.h"
 
 #include <stdbool.h>
 
 /**
  * @brief Une enumeration de differentes couleurs pour nos pieces dans le Tetris.
- * 
+ *
  */
 enum color
 {
@@ -23,7 +31,7 @@ typedef enum color color;
 
 /**
  * @brief Structure de nos cellule pour notre Matrice ( Plateau du Tetris )
- * 
+ *
  */
 typedef struct
 {
@@ -33,7 +41,7 @@ typedef struct
 
 /**
  * @brief Structure pour la configuration de nos pieces pour notre Tetris
- * 
+ *
  */
 typedef struct
 {
@@ -43,10 +51,9 @@ typedef struct
     color c;          /**< Permet de savoir la couleur de notre piece */
 } PieceConfig;
 
-
 /**
  * @brief Structure représentant le jeu : Tetris
- * 
+ *
  */
 typedef struct Tetris
 {
@@ -60,56 +67,56 @@ typedef struct Tetris
     int nbLines;              /**< Le nombre de ligne supprimées                        */
     int score;                /**< Le score du jeu ( On utilise le système de score de la NES )*/
     int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
-    PieceConfig* nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
-    int pieceStats[7];          /**< Tableau des statistiques de pièces                   */
+    PieceConfig *nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
+    int pieceStats[7];        /**< Tableau des statistiques de pièces                   */
 } Tetris;
 
 /**
  * @brief Tableau statique des pièces de notre jeu.
- * 
+ *
  */
 extern PieceConfig pieces[7];
 
 /**
  * @brief Fonction qui initialise notre jeu Tetris et qui retourne un pointeur de notre jeu
- * 
- * @return Tetris* 
+ *
+ * @return Tetris*
  */
 Tetris *tetris_init_();
 
 /**
  * @brief Fonction qui intialise notre tableau de cellule
- * 
+ *
  * @param tetris
  */
 void init_board(Tetris *);
 
 /**
  * @brief Fonction qui initialise le tableau de pointeur de nos pieces
- * 
+ *
  * @param tetris
  */
 void init_tmpPiece(Tetris *);
 
 /**
  * @brief Fonction qui permet au joueur de jouer au Tetris avec l'interface voulu ( NCurses ou SDL )
- * 
+ *
  * @param tetris
- * @param userInterface 
+ * @param userInterface
  */
 void tetris_playGame(Tetris *, userInterface);
 
 /**
  * @brief Fonction qui donne la prochaine pièce qui va apparaître sur le plateau.
- * 
- * @param tetris 
- * @return PieceConfig* 
+ *
+ * @param tetris
+ * @return PieceConfig*
  */
 PieceConfig *get_next_piece(Tetris *);
 
 /**
  * @brief Fonction qui met à jour les statistiques de nos pieces
- * 
+ *
  * @param tetris
  * @param name
  */
@@ -117,15 +124,15 @@ void update_stats(Tetris *, char);
 
 /**
  * @brief Fonction qui met à jour le plateau de jeu avec la piece actuelle en paramètre.
- * 
+ *
  * @param tetris
  * @param piece
  */
-void update_piece(Tetris *,PieceConfig *);
+void update_piece(Tetris *, PieceConfig *);
 
 /**
  * @brief Fonction qui donne la piece qui va etre placer sur le Tetris et qui remet à jour la prochaine piece qui va apparaitre
- * 
+ *
  * @param tetris
  */
 void get_piece(Tetris *);
@@ -134,15 +141,14 @@ void get_piece(Tetris *);
  * @brief Fonction qui permet de restauré notre plateau
  * @param tetris
  * @param temp_cells[][4][2]
-*/
+ */
 void restore_board_state(Tetris *tetris, bool temp_cells[][4][2]);
-
 
 bool is_same_as_old_coords(Tetris *tetris, int x, int y, int oldX, int oldY);
 
 /**
  * @brief Fonction qui retourne vrai ou faux, si la pièce peut bouger grâce aux variables Varx et VarY qui gère l'orientation ( Bas, Gauche, Droite, Haut )
- * 
+ *
  * @param tetris
  * @param VarX  ( Valeurs entre [-1,1] )
  * @param VarY ( Valeurs entre [-1,1] )
@@ -153,60 +159,60 @@ bool can_move(Tetris *, int, int);
 
 /**
  * @brief Fonction qui retourne vrai ou faux si l'on peut bouger la pièce vers le bas
- * 
+ *
  * @param tetris
- * 
- * @return true 
- * @return false 
+ *
+ * @return true
+ * @return false
  */
 bool move_down_piece(Tetris *);
 
 /**
  * @brief Fonction qui retourne vrai ou faux si l'on peut bouger la pièce vers la gauche
- * 
- * @param tetris 
- * 
- * @return true 
- * @return false 
+ *
+ * @param tetris
+ *
+ * @return true
+ * @return false
  */
 bool move_left_piece(Tetris *);
 
 /**
  * @brief Fonction qui retourne vrai ou faux, si l'on peut bouger la piece vers la droite
- * 
+ *
  * @param tetris
- * 
- * @return true 
- * @return false 
+ *
+ * @return true
+ * @return false
  */
 bool move_right_piece(Tetris *);
 
 /**
  * @brief Fonction qui permet de savoir qu'elle pivotX avoir pour tourner notre piece et retourne -1 si il ne trouve pas de qu'elle piece, on parle.
- * 
+ *
  * @param piece
- * 
- * @return int 
+ *
+ * @return int
  */
 int get_pivot_X(PieceConfig *);
 
 /**
  * @brief Fonction qui permet de savoir qu'elle pivotY avoir pour tourner notre piece et retourne -1 si il ne trouve pas de qu'elle piece, on parle.
- * 
+ *
  * @param piece
- * 
- * @return int 
+ *
+ * @return int
  */
 int get_pivot_y(PieceConfig *);
 
 /**
  * @brief Fonction qui retourne vrai ou faux pour savoir si l'on peut tourner notre piece dans un sens ( 1 pour tourner à droite et -1 pour tourner à gauche ).
- * 
+ *
  * @param tetris
- * @param rotationDirection 
- * 
- * @return true 
- * @return false 
+ * @param rotationDirection
+ *
+ * @return true
+ * @return false
  */
 bool can_rotate(Tetris *, int);
 
@@ -232,8 +238,8 @@ void refresh_board(Tetris *);
  * @brief Fonction qui nous indique si la ligne de notre tableau est complète
  * @param tetris
  * @param ligne ( indice )
- * @return true 
- * @return false 
+ * @return true
+ * @return false
  */
 bool is_full_line(Tetris *, int);
 
