@@ -9,10 +9,10 @@ typedef struct
     void (*close_interface)(void); // Permet de fermer l'interface
     void (*display)(Tetris *);     // Permet d'afficher le tetris
     char (*input)(void);           // Permet de récupérer un input selon si c'est SDL ou NCurses
-    // void (*menu)(void);     //Plus tard pour le menu   ??
-    // void (*fin_partie)(void);     // Permet d'afficher la fin de partie (score/niveau etc...
-    void (*display_info)(Tetris *);    // Permet d'afficher les informations annexe (score/niveau etc...)
-    // void redim(Tetris *);     // Permet de redimensionner le tetris ??
+    void (*menu)(Tetris *);        // Pour le menu
+    // void (*fin_partie)(void);   // Permet d'afficher la fin de partie (score/niveau etc...
+    void (*display_info)(Tetris *);// Permet d'afficher les informations annexe (score/niveau etc...)
+    // void redim(Tetris *);       // Permet de redimensionner le tetris ??
 } Fonction;
 
 // Structure qui prend une instance et des pointeurs de fonctions

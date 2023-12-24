@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <ncurses.h>
+#include <string.h>
 
 #include "modele.h"
 #include "nCursesInterface.h"
 
+WINDOW *menu;
 WINDOW *win;
 WINDOW *score;
 WINDOW *piece_stats;
@@ -85,6 +87,8 @@ char input_nCurses()
     case 'e':
     case 'E':
         return 'e';
+    case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
+        return c;
     default:
         return ' ';
     }
@@ -93,6 +97,9 @@ char input_nCurses()
 // Affiche le tetris dans la console
 void display_nCurses(Tetris *tetris)
 {
+    //On supprime le menu
+    wclear(menu);
+
     // La taille du terminal
     int term_rows, term_cols;
     getmaxyx(stdscr, term_rows, term_cols);
@@ -200,4 +207,28 @@ void display_info_nCurses(Tetris *tetris){
     wrefresh(piece_stats);
     wrefresh(level);
     wrefresh(next_piece);
+}
+
+void menu_nCurses(Tetris *tetris) {
+    // La taille du terminal
+    int term_rows, term_cols;
+    getmaxyx(stdscr, term_rows, term_cols);
+
+    // Afficher un menu, avec la possibilité de commencer entre le niveau 0 et 9
+    menu = newwin(term_rows, term_cols, 0, 0);
+    box(menu, 0, 0);
+
+    // Affichage du texte "Bienvenue dans Tetris" en plus grand
+    mvwprintw(menu, term_rows / 4, term_cols / 2 - 18, "MMMMMM MMMMMM MMMMMM MMMML  MMMMM MMMMMM");
+    mvwprintw(menu, term_rows / 4 + 1, term_cols / 2 - 18, "  MM   MM       MM   M   M    M   MM    ");
+    mvwprintw(menu, term_rows / 4 + 2, term_cols / 2 - 18, "  MM   MMMM     MM   MMMMP    M   MMMMMM");
+    mvwprintw(menu, term_rows / 4 + 3, term_cols / 2 - 18, "  MM   MM       MM   M  M,    M       MM");
+    mvwprintw(menu, term_rows / 4 + 4, term_cols / 2 - 18, "  MM   MM       MM   M  \"M,   M       MM");
+    mvwprintw(menu, term_rows / 4 + 5, term_cols / 2 - 18, "  MM   MMMMMM   MM   M   \"M MMMMM MMMMMM");
+
+    // Affichage du reste du menu
+    mvwprintw(menu, term_rows / 2, term_cols / 2 - 13, "Choisissez un niveau : (0-9)");
+    mvwprintw(menu, term_rows / 2 + 2, term_cols / 2 - 16, "Entrez au clavier /!\\ verr num /!\\");
+
+    wrefresh(menu);
 }

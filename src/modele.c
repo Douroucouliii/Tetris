@@ -123,23 +123,32 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.fonctions->init_interface();
 
+    char input;
+    do{
+        input = ui.fonctions->input();
+        // On affiche le menu
+        ui.fonctions->menu(tetris);
+    } while(input!='0' && input!='1' && input!='2' && input!='3' && input!='4' && input!='5' && input!='6' && input!='7' && input!='8' && input!='9');
+    tetris->level = atoi(&input);
+
     // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
     get_piece(tetris);
 
-    // On affiche le jeu
+    // On affiche le jeu et les infos du jeu
     ui.fonctions->display(tetris);
+    ui.fonctions->display_info(tetris);
 
     // Boucle pour jouer à notre jeu
     while (!tetris->end)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
-        char input = ui.fonctions->input();
-        if (input == 'q')
+        input = ui.fonctions->input();
+        switch (input)
         {
+        case 'q':
             move_left_piece(tetris);
-        }
-        if (input == 's')
-        {
+            break;
+        case 's':
             // Si la piece ne peut pas aller plus bas, alors on génère une nouvelle piece
             if (!move_down_piece(tetris))
             {
@@ -148,18 +157,18 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
                 delete_all_line(tetris);
                 get_piece(tetris);
             }
-        }
-        if (input == 'd')
-        {
+            break;
+        case 'd':
             move_right_piece(tetris);
-        }
-        if (input == 'a')
-        {
+            break;
+        case 'a':
             rotate_left(tetris);
-        }
-        if (input == 'e')
-        {
+            break;
+        case 'e':
             rotate_right(tetris);
+            break;
+        default:
+            break;
         }
         refresh_board(tetris);
         ui.fonctions->display(tetris);

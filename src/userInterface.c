@@ -22,6 +22,7 @@ userInterface textInterface_init_()
     interface.fonctions->display = display_text;
     interface.fonctions->input = input_text;
     interface.fonctions->display_info = NULL;
+    interface.fonctions->menu = NULL;
     return interface;
 }
 
@@ -41,6 +42,7 @@ userInterface nCursesInterface_init_()
     interface.fonctions->display = display_nCurses;
     interface.fonctions->input = input_nCurses;
     interface.fonctions->display_info = display_info_nCurses;
+    interface.fonctions->menu = menu_nCurses;
     return interface;
 }
 
@@ -61,5 +63,6 @@ userInterface sdlInterface_init_()
     interface.fonctions->display = display_sdl;
     interface.fonctions->input = NULL;
     interface.fonctions->display_info = NULL;
+    interface.fonctions->menu = NULL;
     return interface;
 }
