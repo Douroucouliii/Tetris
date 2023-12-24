@@ -48,7 +48,11 @@ $(OBJ_DIR)/$(TEST_DIR)/%.o: $(TEST_DIR)/%.c
 
 doc:
 	@mkdir -p $(DOC_DIR)
-	@doxygen ./Doxyfile
+	@if [ -e Doxyfile ]; then \
+		doxygen ./Doxyfile; \
+	else \
+		echo "Erreur : Doxyfile n'existe pas";\
+	fi
 
 clean:
 	rm -rf $(OBJ_DIR)

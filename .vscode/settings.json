@@ -2,5 +2,6 @@
     "editor.colorDecorators": false,
     "files.associations": {
         "userinterface.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
