@@ -65,7 +65,7 @@ void close_nCurses()
 }
 
 // Fonction pour calculer le délai en fonction du niveau (en utilisant les frames ou cellules de grille)
-int calculer_delai(int niveau) {
+int delay(int niveau) {
     int frames;
 
     // le nombre de frames/cellules de grille par pièce en fonction du niveau
@@ -126,10 +126,13 @@ int calculer_delai(int niveau) {
 // Récupère un input depuis NCurses et retourne le char correspondant dans le modele
 char input_nCurses(Tetris *tetris)
 {
-    int delai = calculer_delai(tetris->level);
+    int delai = delay(tetris->level);
 
-    // on crée un timeout pour la fenetre
-    timeout(delai);
+    //Si le jeu a commencé
+    if(tetris->start){
+        //On crée un timeout pour la fenetre pour faire descendre nos pieces
+        timeout(delai);
+    }
 
     char c = getch();
     switch (c)

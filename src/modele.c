@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "modele.h"
 
@@ -42,6 +43,7 @@ Tetris *tetris_init_()
     // Compteur de piece dans le boardPiece
     tetris->nbBoardPiece = 0;
 
+    tetris->start = false;
     tetris->end = false;
 
     tetris->nbLines = 0;
@@ -131,6 +133,8 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     } while(input!='0' && input!='1' && input!='2' && input!='3' && input!='4' && input!='5' && input!='6' && input!='7' && input!='8' && input!='9');
     tetris->level = atoi(&input);
 
+    tetris->start = true;
+    
     // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
     get_piece(tetris);
 
@@ -153,9 +157,11 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             // Si la piece ne peut pas aller plus bas, alors on génère une nouvelle piece
             if (!move_down_piece(tetris))
             {
-                // La ligne ne s'éfface qu'apres que la prochaine piece soit descendue, bizarre
+                // Dans le cas où la piece descend, on refresh le plateau, on enleve les lignes pleines
+                // On fait un sleep avant de faire apparaitre la nouvelle piece (systeme NES, voir fonction)
                 refresh_board(tetris);
                 delete_all_line(tetris);
+                sleep_NES(tetris);
                 get_piece(tetris);
             }
             break;
@@ -175,6 +181,8 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
         ui.functions->display(tetris);
         ui.functions->display_info(tetris);
     }
+
+    tetris->start = false;
 
     //Ecran de fin de partie (q pour quitter la partie)
     do{
@@ -615,6 +623,37 @@ void delete_all_line(Tetris *tetris)
 void add_score(Tetris *tetris, int score_line)
 {
     tetris->score += score_line * (tetris->level + 1);
+}
+
+void sleep_NES(Tetris *tetris){
+    int nb=0;
+    int frame=0;
+    //On compte le nombre de ligne qui contienne au minimum 1 cellule pleine
+    for(int i=0; i<tetris->line; i++){
+        for(int j=0; j<tetris->column; j++){
+            if(tetris->board[i][j].isFull){
+                nb++;
+                break;
+            }
+        }
+    }
+    //Calcule des frames qu'on va devoir attendre
+    if(nb<=2){
+        frame=10*nb;
+    }else{
+        frame=10*2;
+        nb-=2;
+        while(nb>=4){
+            frame+=2;
+            nb-=4;
+        }
+    }
+
+    //Transformation des frames en milliseconde
+    int sleep_time = frame*1000/60;
+
+    //On sleep le programme (on convertit de milliseconde en microseconde)
+    usleep(sleep_time*1000);
 }
 
 void clear_board(Tetris *tetris)

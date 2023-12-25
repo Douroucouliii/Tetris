@@ -63,6 +63,7 @@ typedef struct Tetris
     PieceConfig **tmpPiece;   /**< Tableau des structures de toutes les pièces possibles pour notre Tetris*/
     PieceConfig **boardPiece; /**< Tableau des pièces déjà présente dans le Tetris      */
     int nbBoardPiece;         /**< Le nombre de pièces dans le tableau boardPiece       */
+    bool start;               /**< Indique si la partie est commencée                   */
     bool end;                 /**< Indique si la partie est terminée                    */
     int nbLines;              /**< Le nombre de ligne supprimées                        */
     int score;                /**< Le score du jeu ( On utilise le système de score de la NES )*/
@@ -262,6 +263,12 @@ void delete_all_line(Tetris *);
  * @param score_line
  */
 void add_score(Tetris *, int);
+
+/**
+ * @brief Fonction qui fait un sleep avant d'apparaitre la prochaine piece : "time until piece apparition: 10 frames for the bottom two rows, +2 frames for each group of 4 rows above that"
+ * @param tetris
+ */
+void sleep_NES(Tetris *);
 
 /**
  * @brief Fonction qui permet de liberer l'espace alloué à notre plateau de jeu
