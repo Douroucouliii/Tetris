@@ -121,13 +121,13 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     srand(time(NULL));
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
-    ui.fonctions->init_interface();
+    ui.functions->init_interface();
 
     char input;
     do{
-        input = ui.fonctions->input();
+        input = ui.functions->input();
         // On affiche le menu
-        ui.fonctions->menu(tetris);
+        ui.functions->home_page(tetris);
     } while(input!='0' && input!='1' && input!='2' && input!='3' && input!='4' && input!='5' && input!='6' && input!='7' && input!='8' && input!='9');
     tetris->level = atoi(&input);
 
@@ -135,14 +135,14 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     get_piece(tetris);
 
     // On affiche le jeu et les infos du jeu
-    ui.fonctions->display(tetris);
-    ui.fonctions->display_info(tetris);
+    ui.functions->display(tetris);
+    ui.functions->display_info(tetris);
 
     // Boucle pour jouer à notre jeu
     while (!tetris->end)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
-        input = ui.fonctions->input();
+        input = ui.functions->input();
         switch (input)
         {
         case 'q':
@@ -171,14 +171,19 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             break;
         }
         refresh_board(tetris);
-        ui.fonctions->display(tetris);
-        ui.fonctions->display_info(tetris);
+        ui.functions->display(tetris);
+        ui.functions->display_info(tetris);
     }
 
-    printf("\nTu as perdu la partie, dommage !\n\n");
+    //Ecran de fin de partie (q pour quitter la partie)
+    do{
+        input = ui.functions->input();
+        // On affiche la fin de partie
+        ui.functions->end_screen(tetris);
+    } while(input!='q');
 
     // On ferme l'interface (fermer Ncurses ou SDL)
-    ui.fonctions->close_interface();
+    ui.functions->close_interface();
 
     clear_all(tetris, ui);
     free(tetris);
@@ -646,7 +651,7 @@ void clear_tmpPiece(Tetris *tetris)
 
 void clear_pointeur_fct(userInterface ui)
 {
-    free(ui.fonctions);
+    free(ui.functions);
 }
 
 void clear_all(Tetris *t, userInterface ui)

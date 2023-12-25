@@ -5,12 +5,13 @@
 #include "modele.h"
 #include "nCursesInterface.h"
 
-WINDOW *menu;
+WINDOW *home_page;
 WINDOW *win;
 WINDOW *score;
 WINDOW *piece_stats;
 WINDOW *level;
 WINDOW *next_piece;
+WINDOW *end_screen;
 
 // Initialise nCurses
 void init_nCurses()
@@ -98,7 +99,7 @@ char input_nCurses()
 void display_nCurses(Tetris *tetris)
 {
     //On supprime le menu
-    wclear(menu);
+    wclear(home_page);
 
     // La taille du terminal
     int term_rows, term_cols;
@@ -209,26 +210,48 @@ void display_info_nCurses(Tetris *tetris){
     wrefresh(next_piece);
 }
 
-void menu_nCurses(Tetris *tetris) {
+void home_page_nCurses(Tetris *tetris) {
     // La taille du terminal
     int term_rows, term_cols;
     getmaxyx(stdscr, term_rows, term_cols);
 
     // Afficher un menu, avec la possibilité de commencer entre le niveau 0 et 9
-    menu = newwin(term_rows, term_cols, 0, 0);
-    box(menu, 0, 0);
+    home_page = newwin(term_rows, term_cols, 0, 0);
+    box(home_page, 0, 0);
 
     // Affichage du texte "Bienvenue dans Tetris" en plus grand
-    mvwprintw(menu, term_rows / 4, term_cols / 2 - 18, "MMMMMM MMMMMM MMMMMM MMMML  MMMMM MMMMMM");
-    mvwprintw(menu, term_rows / 4 + 1, term_cols / 2 - 18, "  MM   MM       MM   M   M    M   MM    ");
-    mvwprintw(menu, term_rows / 4 + 2, term_cols / 2 - 18, "  MM   MMMM     MM   MMMMP    M   MMMMMM");
-    mvwprintw(menu, term_rows / 4 + 3, term_cols / 2 - 18, "  MM   MM       MM   M  M,    M       MM");
-    mvwprintw(menu, term_rows / 4 + 4, term_cols / 2 - 18, "  MM   MM       MM   M  \"M,   M       MM");
-    mvwprintw(menu, term_rows / 4 + 5, term_cols / 2 - 18, "  MM   MMMMMM   MM   M   \"M MMMMM MMMMMM");
+    mvwprintw(home_page, term_rows / 4, term_cols / 2 - 18, "MMMMMM MMMMMM MMMMMM MMMML  MMMMM MMMMMM");
+    mvwprintw(home_page, term_rows / 4 + 1, term_cols / 2 - 18, "  MM   MM       MM   M   M    M   MM    ");
+    mvwprintw(home_page, term_rows / 4 + 2, term_cols / 2 - 18, "  MM   MMMM     MM   MMMMP    M   MMMMMM");
+    mvwprintw(home_page, term_rows / 4 + 3, term_cols / 2 - 18, "  MM   MM       MM   M  M,    M       MM");
+    mvwprintw(home_page, term_rows / 4 + 4, term_cols / 2 - 18, "  MM   MM       MM   M  \"M,   M       MM");
+    mvwprintw(home_page, term_rows / 4 + 5, term_cols / 2 - 18, "  MM   MMMMMM   MM   M   \"M MMMMM MMMMMM");
 
     // Affichage du reste du menu
-    mvwprintw(menu, term_rows / 2, term_cols / 2 - 13, "Choisissez un niveau : (0-9)");
-    mvwprintw(menu, term_rows / 2 + 2, term_cols / 2 - 16, "Entrez au clavier /!\\ verr num /!\\");
+    mvwprintw(home_page, term_rows / 2, term_cols / 2 - 13, "Choisissez un niveau : (0-9)");
+    mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 16, "Entrez au clavier /!\\ verr num /!\\");
 
-    wrefresh(menu);
+    wrefresh(home_page);
+}
+
+void end_screen_nCurses(Tetris *tetris){
+    //On supprime le menu
+    wclear(win);
+    wclear(score);
+    wclear(piece_stats);
+    wclear(level);
+    wclear(next_piece);
+
+    // La taille du terminal
+    int term_rows, term_cols;
+    getmaxyx(stdscr, term_rows, term_cols);
+
+    //Créer la fenêtre de fin de partie
+    end_screen = newwin(term_rows, term_cols, 0, 0);
+    box(end_screen, 0, 0);
+
+    mvwprintw(end_screen, term_rows / 2, term_cols / 2 - 13, "q pour quitter le jeu");
+    mvwprintw(end_screen, term_rows / 2 + 2, term_cols / 2 - 16, "et oui c'est fini :(");
+
+    wrefresh(end_screen);
 }

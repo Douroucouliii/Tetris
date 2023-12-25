@@ -9,60 +9,63 @@
 userInterface textInterface_init_()
 {
     userInterface interface;
-    Fonction *f = (Fonction *)malloc(sizeof(Fonction));
+    Function *f = (Function *)malloc(sizeof(Function));
     if (!f)
     {
         perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
-    interface.fonctions = f;
+    interface.functions = f;
     interface.instance = "NCurses";
-    interface.fonctions->init_interface = init_text;
-    interface.fonctions->close_interface = close_text;
-    interface.fonctions->display = display_text;
-    interface.fonctions->input = input_text;
-    interface.fonctions->display_info = NULL;
-    interface.fonctions->menu = NULL;
+    interface.functions->init_interface = init_text;
+    interface.functions->close_interface = close_text;
+    interface.functions->display = display_text;
+    interface.functions->input = input_text;
+    interface.functions->display_info = NULL;
+    interface.functions->home_page = NULL;
+    interface.functions->end_screen = NULL;
     return interface;
 }
 
 userInterface nCursesInterface_init_()
 {
     userInterface interface;
-    Fonction *f = (Fonction *)malloc(sizeof(Fonction));
+    Function *f = (Function *)malloc(sizeof(Function));
     if (!f)
     {
         perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
-    interface.fonctions = f;
+    interface.functions = f;
     interface.instance = "NCurses";
-    interface.fonctions->init_interface = init_nCurses;
-    interface.fonctions->close_interface = close_nCurses;
-    interface.fonctions->display = display_nCurses;
-    interface.fonctions->input = input_nCurses;
-    interface.fonctions->display_info = display_info_nCurses;
-    interface.fonctions->menu = menu_nCurses;
+    interface.functions->init_interface = init_nCurses;
+    interface.functions->close_interface = close_nCurses;
+    interface.functions->display = display_nCurses;
+    interface.functions->input = input_nCurses;
+    interface.functions->display_info = display_info_nCurses;
+    interface.functions->home_page = home_page_nCurses;
+    interface.functions->end_screen = end_screen_nCurses;
     return interface;
 }
 
 userInterface sdlInterface_init_()
 {
     userInterface interface;
-    Fonction *f = (Fonction *)malloc(sizeof(Fonction));
+    Function *f = (Function *)malloc(sizeof(Function));
     if (!f)
     {
         perror("malloc()\n");
         exit(EXIT_FAILURE);
     }
-    interface.fonctions = f;
+    interface.functions = f;
     interface.instance = "SDL";
     // Pour l'instant à NULL, je fais d'abord l'affichage text/Ncurses
-    interface.fonctions->init_interface = NULL;
-    interface.fonctions->close_interface = NULL;
-    interface.fonctions->display = display_sdl;
-    interface.fonctions->input = NULL;
-    interface.fonctions->display_info = NULL;
-    interface.fonctions->menu = NULL;
+    interface.functions->init_interface = NULL;
+    interface.functions->close_interface = NULL;
+    interface.functions->display = display_sdl;
+    interface.functions->input = NULL;
+    interface.functions->display_info = NULL;
+    interface.functions->home_page = NULL;
+    interface.functions->end_screen = NULL;
     return interface;
 }
