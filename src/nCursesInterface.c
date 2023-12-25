@@ -65,7 +65,7 @@ void close_nCurses()
 }
 
 // Fonction pour calculer le délai en fonction du niveau (en utilisant les frames ou cellules de grille)
-int calculerDelai(int niveau) {
+int calculer_delai(int niveau) {
     int frames;
 
     // le nombre de frames/cellules de grille par pièce en fonction du niveau
@@ -112,13 +112,9 @@ int calculerDelai(int niveau) {
         case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28:
             frames = 2;
             break;
-        //Killscreen : seul mattéo pourrait survivre ici mais bon on sait jamais :)
-        case 29:
-            frames = 1;
-            break;
-
+        //Niveau >28 : Killscreen : seul mattéo pourrait survivre ici mais bon on sait jamais :)
         default:
-            frames = 48; // Valeur par défaut
+            frames = 1; //C'est la mort
             break;
     }
 
@@ -127,11 +123,10 @@ int calculerDelai(int niveau) {
     return delai;
 }
 
-
 // Récupère un input depuis NCurses et retourne le char correspondant dans le modele
 char input_nCurses(Tetris *tetris)
 {
-    int delai = calculerDelai(tetris->level);
+    int delai = calculer_delai(tetris->level);
 
     // on crée un timeout pour la fenetre
     timeout(delai);
