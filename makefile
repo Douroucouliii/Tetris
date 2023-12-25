@@ -11,7 +11,8 @@ else
 CFLAGS ?= -Wall -MMD -O3 -DNDEBUG
 endif
 
-LDFLAGS=-lncurses
+LDFLAGS=-lncurses -lSDL2
+CFLAGS += -ISDL2/include
 
 SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(addprefix $(OBJ_DIR)/, $(SRC:.c=.o))
