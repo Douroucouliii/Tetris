@@ -125,7 +125,7 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
 
     char input;
     do{
-        input = ui.functions->input();
+        input = ui.functions->input(tetris);
         // On affiche le menu
         ui.functions->home_page(tetris);
     } while(input!='0' && input!='1' && input!='2' && input!='3' && input!='4' && input!='5' && input!='6' && input!='7' && input!='8' && input!='9');
@@ -142,13 +142,14 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     while (!tetris->end)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
-        input = ui.functions->input();
+        input = ui.functions->input(tetris);
         switch (input)
         {
         case 'q':
             move_left_piece(tetris);
             break;
         case 's':
+        case ' ':
             // Si la piece ne peut pas aller plus bas, alors on génère une nouvelle piece
             if (!move_down_piece(tetris))
             {
@@ -177,7 +178,7 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
 
     //Ecran de fin de partie (q pour quitter la partie)
     do{
-        input = ui.functions->input();
+        input = ui.functions->input(tetris);
         // On affiche la fin de partie
         ui.functions->end_screen(tetris);
     } while(input!='q');

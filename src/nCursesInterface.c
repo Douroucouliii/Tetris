@@ -64,9 +64,78 @@ void close_nCurses()
     }
 }
 
+// Fonction pour calculer le délai en fonction du niveau (en utilisant les frames ou cellules de grille)
+int calculerDelai(int niveau) {
+    int frames;
+
+    // le nombre de frames/cellules de grille par pièce en fonction du niveau
+    switch (niveau) {
+        case 0:
+            frames = 48;
+            break;
+        case 1:
+            frames = 43;
+            break;
+        case 2:
+            frames = 38;
+            break;
+        case 3:
+            frames = 33;
+            break;
+        case 4:
+            frames = 28;
+            break;
+        case 5:
+            frames = 23;
+            break;
+        case 6:
+            frames = 18;
+            break;
+        case 7:
+            frames = 13;
+            break;
+        case 8:
+            frames = 8;
+            break;
+        case 9:
+            frames = 6;
+            break;
+        case 10: case 11: case 12:
+            frames = 5;
+            break;
+        case 13: case 14: case 15:
+            frames = 4;
+            break;
+        case 16: case 17: case 18:
+            frames = 3;
+            break;
+        case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28:
+            frames = 2;
+            break;
+        //Killscreen : seul mattéo pourrait survivre ici mais bon on sait jamais :)
+        case 29:
+            frames = 1;
+            break;
+
+        default:
+            frames = 48; // Valeur par défaut
+            break;
+    }
+
+    // Calculer le délai en fonction du nombre de frames par pièce
+    int delai = (frames * 1000) / 60; // Convertir les frames en millisecondes (60 frames par seconde)
+    return delai;
+}
+
+
 // Récupère un input depuis NCurses et retourne le char correspondant dans le modele
-char input_nCurses()
+char input_nCurses(Tetris *tetris)
 {
+    int delai = calculerDelai(tetris->level);
+
+    // on crée un timeout pour la fenetre
+    timeout(delai);
+
     char c = getch();
     switch (c)
     {
@@ -90,6 +159,7 @@ char input_nCurses()
         return 'e';
     case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
         return c;
+    case ERR:
     default:
         return ' ';
     }
