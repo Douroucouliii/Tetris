@@ -60,7 +60,7 @@ userInterface sdlInterface_init_()
     interface.functions = f;
     interface.instance = "SDL";
     // Pour l'instant à NULL, je fais d'abord l'affichage text/Ncurses
-    interface.functions->init_interface = NULL;
+    interface.functions->init_interface = init_SDL;
     interface.functions->close_interface = NULL;
     interface.functions->display = display_sdl;
     interface.functions->input = NULL;
