@@ -51,7 +51,8 @@ Tetris *tetris_init_()
     tetris->level = 0;
     tetris->nextPiece = NULL;
 
-    for(int i = 0; i < 7; i++){
+    for (int i = 0; i < 7; i++)
+    {
         tetris->pieceStats[i] = 0;
     }
 
@@ -126,15 +127,16 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     ui.functions->init_interface();
 
     char input;
-    do{
+    do
+    {
         input = ui.functions->input(tetris);
         // On affiche le menu
         ui.functions->home_page(tetris);
-    } while(input!='0' && input!='1' && input!='2' && input!='3' && input!='4' && input!='5' && input!='6' && input!='7' && input!='8' && input!='9');
+    } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
     tetris->level = atoi(&input);
 
     tetris->start = true;
-    
+
     // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
     get_piece(tetris);
 
@@ -184,12 +186,13 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
 
     tetris->start = false;
 
-    //Ecran de fin de partie (q pour quitter la partie)
-    do{
+    // Ecran de fin de partie (q pour quitter la partie)
+    do
+    {
         input = ui.functions->input(tetris);
         // On affiche la fin de partie
         ui.functions->end_screen(tetris);
-    } while(input!='q');
+    } while (input != 'q');
 
     // On ferme l'interface (fermer Ncurses ou SDL)
     ui.functions->close_interface();
@@ -203,17 +206,19 @@ PieceConfig *get_next_piece(Tetris *tetris)
 {
     int randomIndex = rand() % 7;
 
-    PieceConfig *nextPiece = (PieceConfig*)malloc(sizeof(PieceConfig));
-    if(!nextPiece){
+    PieceConfig *nextPiece = (PieceConfig *)malloc(sizeof(PieceConfig));
+    if (!nextPiece)
+    {
         perror("Erreur Malloc (NextPiece) \n");
         exit(EXIT_FAILURE);
-    }  
-    memcpy(nextPiece,tetris->tmpPiece[randomIndex],sizeof(PieceConfig));
+    }
+    memcpy(nextPiece, tetris->tmpPiece[randomIndex], sizeof(PieceConfig));
 
     return nextPiece;
 }
 
-void update_stats(Tetris *tetris, char name){
+void update_stats(Tetris *tetris, char name)
+{
     switch (name)
     {
     case 'T':
@@ -245,7 +250,7 @@ void update_stats(Tetris *tetris, char name){
 
 void update_piece(Tetris *tetris, PieceConfig *piece)
 {
-     for (int ind = 0; ind < piece->num_cells; ind++)
+    for (int ind = 0; ind < piece->num_cells; ind++)
     {
         int coord_x = piece->coords[ind][0];
         int coord_y = piece->coords[ind][1];
@@ -271,7 +276,7 @@ void update_piece(Tetris *tetris, PieceConfig *piece)
 
 // On ajoute une piece de tmpPiece dans le tableau
 void get_piece(Tetris *tetris)
-{   
+{
     if (!tetris->nextPiece)
     {
         tetris->nextPiece = get_next_piece(tetris);
@@ -452,13 +457,13 @@ bool can_rotate(Tetris *tetris, int rotationDirection)
 
         if (rotationDirection == 1)
         { // Rotation Droite
-            newCoords[i][0] = pivotX - deltaY;
-            newCoords[i][1] = pivotY + deltaX;
+            newCoords[i][0] = pivotX + deltaY;
+            newCoords[i][1] = pivotY - deltaX;
         }
         else if (rotationDirection == -1)
         { // Rotation Gauche
-            newCoords[i][0] = pivotX + deltaY;
-            newCoords[i][1] = pivotY - deltaX;
+            newCoords[i][0] = pivotX - deltaY;
+            newCoords[i][1] = pivotY + deltaX;
         }
 
         int coord_x = newCoords[i][0];
@@ -625,35 +630,43 @@ void add_score(Tetris *tetris, int score_line)
     tetris->score += score_line * (tetris->level + 1);
 }
 
-void sleep_NES(Tetris *tetris){
-    int nb=0;
-    int frame=0;
-    //On compte le nombre de ligne qui contienne au minimum 1 cellule pleine
-    for(int i=0; i<tetris->line; i++){
-        for(int j=0; j<tetris->column; j++){
-            if(tetris->board[i][j].isFull){
+void sleep_NES(Tetris *tetris)
+{
+    int nb = 0;
+    int frame = 0;
+    // On compte le nombre de ligne qui contienne au minimum 1 cellule pleine
+    for (int i = 0; i < tetris->line; i++)
+    {
+        for (int j = 0; j < tetris->column; j++)
+        {
+            if (tetris->board[i][j].isFull)
+            {
                 nb++;
                 break;
             }
         }
     }
-    //Calcule des frames qu'on va devoir attendre
-    if(nb<=2){
-        frame=10*nb;
-    }else{
-        frame=10*2;
-        nb-=2;
-        while(nb>=4){
-            frame+=2;
-            nb-=4;
+    // Calcule des frames qu'on va devoir attendre
+    if (nb <= 2)
+    {
+        frame = 10 * nb;
+    }
+    else
+    {
+        frame = 10 * 2;
+        nb -= 2;
+        while (nb >= 4)
+        {
+            frame += 2;
+            nb -= 4;
         }
     }
 
-    //Transformation des frames en milliseconde
-    int sleep_time = frame*1000/60;
+    // Transformation des frames en milliseconde
+    int sleep_time = frame * 1000 / 60;
 
-    //On sleep le programme (on convertit de milliseconde en microseconde)
-    usleep(sleep_time*1000);
+    // On sleep le programme (on convertit de milliseconde en microseconde)
+    usleep(sleep_time * 1000);
 }
 
 void clear_board(Tetris *tetris)
