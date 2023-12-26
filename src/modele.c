@@ -254,7 +254,7 @@ void update_piece(Tetris *tetris, PieceConfig *piece)
     {
         int coord_x = piece->coords[ind][0];
         int coord_y = piece->coords[ind][1];
-        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
+        if (coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             // La pièce est en dehors des limites du plateau, donc on a perdu :(
             tetris->end = true;
@@ -323,7 +323,10 @@ bool can_move(Tetris *tetris, int varX, int varY)
 
         temp_cells[tetris->nbBoardPiece - 1][i][0] = curr_x;
         temp_cells[tetris->nbBoardPiece - 1][i][1] = curr_y;
-        tetris->board[curr_x][curr_y].isFull = false;
+        if ((curr_x > 0 && curr_x < tetris->line) && (curr_y > 0 && curr_y < tetris->column))
+        {
+            tetris->board[curr_x][curr_y].isFull = false;
+        }
     }
 
     // Vérification si les nouvelles coordonnées sont valides
@@ -332,13 +335,13 @@ bool can_move(Tetris *tetris, int varX, int varY)
         int coord_x = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] + varX;
         int coord_y = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] + varY;
 
-        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
+        if (coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             // Restaurer l'état initial du plateau
             restore_board_state(tetris, temp_cells);
             return false;
         }
-        if (tetris->board[coord_x][coord_y].isFull)
+        if (tetris->board[coord_x][coord_y].isFull && ((coord_x > 0 && coord_x < tetris->line) && (coord_y > 0 && coord_y < tetris->column)))
         {
             // Restaurer l'état initial du plateau
             restore_board_state(tetris, temp_cells);
@@ -469,10 +472,16 @@ bool can_rotate(Tetris *tetris, int rotationDirection)
         int coord_x = newCoords[i][0];
         int coord_y = newCoords[i][1];
 
-        if (coord_x < 0 || coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column ||
-            (tetris->board[coord_x][coord_y].isFull && !is_same_as_old_coords(tetris, coord_x, coord_y, oldX, oldY)))
+        if (coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             return false;
+        }
+        else if ((coord_x >= 0 && coord_x < tetris->line) && (coord_y >= 0 && coord_y < tetris->column))
+        {
+            if (tetris->board[coord_x][coord_y].isFull && !is_same_as_old_coords(tetris, coord_x, coord_y, oldX, oldY))
+            {
+                return false;
+            }
         }
     }
 
