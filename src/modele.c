@@ -143,41 +143,48 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     // On affiche le jeu et les infos du jeu
     ui.functions->display(tetris);
     ui.functions->display_info(tetris);
-
-    // Boucle pour jouer à notre jeu
+    bool isSleeping = false;
     while (!tetris->end)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
         input = ui.functions->input(tetris);
-        switch (input)
+
+        // Check if sleeping
+        if (!isSleeping)
         {
-        case 'q':
-            move_left_piece(tetris);
-            break;
-        case 's':
-        case ' ':
-            // Si la piece ne peut pas aller plus bas, alors on génère une nouvelle piece
-            if (!move_down_piece(tetris))
+            switch (input)
             {
-                // Dans le cas où la piece descend, on refresh le plateau, on enleve les lignes pleines
-                // On fait un sleep avant de faire apparaitre la nouvelle piece (systeme NES, voir fonction)
-                refresh_board(tetris);
-                delete_all_line(tetris);
-                sleep_NES(tetris);
-                get_piece(tetris);
+            case 'q':
+                move_left_piece(tetris);
+                break;
+            case 's':
+            case ' ':
+                if (!move_down_piece(tetris))
+                {
+                    refresh_board(tetris);
+                    delete_all_line(tetris);
+
+                    isSleeping = true;
+
+                    sleep_NES(tetris);
+
+                    isSleeping = false;
+
+                    get_piece(tetris);
+                }
+                break;
+            case 'd':
+                move_right_piece(tetris);
+                break;
+            case 'a':
+                rotate_left(tetris);
+                break;
+            case 'e':
+                rotate_right(tetris);
+                break;
+            default:
+                break;
             }
-            break;
-        case 'd':
-            move_right_piece(tetris);
-            break;
-        case 'a':
-            rotate_left(tetris);
-            break;
-        case 'e':
-            rotate_right(tetris);
-            break;
-        default:
-            break;
         }
         refresh_board(tetris);
         ui.functions->display(tetris);
@@ -341,11 +348,14 @@ bool can_move(Tetris *tetris, int varX, int varY)
             restore_board_state(tetris, temp_cells);
             return false;
         }
-        if (tetris->board[coord_x][coord_y].isFull && ((coord_x > 0 && coord_x < tetris->line) && (coord_y > 0 && coord_y < tetris->column)))
+        if ((coord_x > 0 && coord_x < tetris->line) && (coord_y > 0 && coord_y < tetris->column))
         {
-            // Restaurer l'état initial du plateau
-            restore_board_state(tetris, temp_cells);
-            return false;
+            if (tetris->board[coord_x][coord_y].isFull)
+            {
+                // Restaurer l'état initial du plateau
+                restore_board_state(tetris, temp_cells);
+                return false;
+            }
         }
     }
 
