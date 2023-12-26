@@ -560,7 +560,7 @@ void refresh_board(Tetris *tetris)
         {
             int coord_x = p->coords[ind][0];
             int coord_y = p->coords[ind][1];
-            if (!(coord_x == -1 || coord_y == -1))
+            if ((coord_x >= 0 && coord_x < tetris->line) && (coord_y >= 0 && coord_y < tetris->column))
             {
                 tetris->board[coord_x][coord_y].isFull = true;
                 tetris->board[coord_x][coord_y].c = p->c;
