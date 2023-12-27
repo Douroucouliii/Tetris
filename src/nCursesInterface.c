@@ -137,27 +137,22 @@ char input_nCurses(Tetris *tetris)
     char c = getch();
     switch (c)
     {
-    case 'q':
-    case 'Q':
-        return 'q';
-    case 'd':
-    case 'D':
-        return 'd';
-    case 's':
-    case 'S':
-        return 's';
-    case 'z':
-    case 'Z':
-        return 'z';
-    case 'a':
-    case 'A':
-        return 'a';
-    case 'e':
-    case 'E':
-        return 'e';
+    //Déplacement/rotation de la pièce
+    case 'q':case 'd':case 's':case 'z':case 'a':case 'e':
+    //Relancer une partie
+    case 'r':
+    //Choix du niveau
     case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
         return c;
+        break;
+    //Déplacement/rotation de la pièce
+    case 'Q':case 'D':case 'S':case 'Z':case 'A':case 'E':
+        return c+'A'-'a';
+        break;
+    //x quand on sort du timeout (permet de sortir de l'attente de l'input et de faire descendre la pièce)
     case ERR:
+        return 'x';
+        break;
     default:
         return ' ';
     }
@@ -317,9 +312,10 @@ void end_screen_nCurses(Tetris *tetris){
     //Créer la fenêtre de fin de partie
     end_screen = newwin(term_rows, term_cols, 0, 0);
     box(end_screen, 0, 0);
-
+ 
+    mvwprintw(end_screen, term_rows / 2 - 2, term_cols / 2 - 13, "Your score : %d", tetris->score);
     mvwprintw(end_screen, term_rows / 2, term_cols / 2 - 13, "q pour quitter le jeu");
-    mvwprintw(end_screen, term_rows / 2 + 2, term_cols / 2 - 16, "et oui c'est fini :(");
+    mvwprintw(end_screen, term_rows / 2 + 2, term_cols / 2 - 16, "r pour relancer le jeu");
 
     wrefresh(end_screen);
 }

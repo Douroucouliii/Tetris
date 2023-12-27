@@ -108,6 +108,27 @@ void init_tmpPiece(Tetris *);
 void tetris_playGame(Tetris *, userInterface);
 
 /**
+ * @brief Fonction qui gère le menu du jeu Tetris
+ * @param tetris
+ * @param userInterface
+ */
+void homescreen(Tetris *, userInterface);
+
+/**
+ * @brief Fonction qui gère le menu du jeu Tetris
+ * @param tetris
+ * @param userInterface
+ */
+void game(Tetris *, userInterface);
+
+/**
+ * @brief Fonction qui gère le menu du jeu Tetris
+ * @param tetris
+ * @param userInterface
+ */
+void endscreen(Tetris *, userInterface);
+
+/**
  * @brief Fonction qui donne la prochaine pièce qui va apparaître sur le plateau.
  *
  * @param tetris
@@ -295,8 +316,8 @@ void clear_tmpPiece(Tetris *);
 void clear_pointeur_fct(userInterface);
 
 /**
- * @brief Libère la mémoire allouée pour toutes les structures du jeu Tetris
+ * @brief Libère la mémoire allouée pour toutes la structure du jeu Tetris
  * @param tetris
  * @param userInterface
  */
-void clear_all(Tetris *, userInterface);
+void clear_tetris(Tetris *, userInterface);
