@@ -61,9 +61,9 @@ userInterface sdlInterface_init_()
     interface.instance = "SDL";
     // Pour l'instant à NULL, je fais d'abord l'affichage text/Ncurses
     interface.functions->init_interface = init_SDL;
-    interface.functions->close_interface = NULL;
-    interface.functions->display = display_sdl;
-    interface.functions->input = NULL;
+    interface.functions->close_interface = close_SDL;
+    interface.functions->display = display_SDL;
+    interface.functions->input = input_SDL;
     interface.functions->display_info = NULL;
     interface.functions->home_page = NULL;
     interface.functions->end_screen = NULL;

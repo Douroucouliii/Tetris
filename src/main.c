@@ -25,8 +25,8 @@ int main()
     // Pour l'instant j'ai créé une interface nCurses, ensuite on fera la SDL
 
     // userInterface ui = textInterface_init_();
-    userInterface ui = nCursesInterface_init_();
-    // userInterface ui = sdlInterface_init_();
+    // userInterface ui = nCursesInterface_init_();
+    userInterface ui = sdlInterface_init_();
 
     tetris_playGame(game, ui);
 

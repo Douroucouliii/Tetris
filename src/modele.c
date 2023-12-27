@@ -126,12 +126,13 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
 
-    homescreen(tetris, ui);
+    // homescreen(tetris, ui);
     game(tetris, ui);
-    endscreen(tetris, ui);
+    // endscreen(tetris, ui);
 }
 
-void homescreen(Tetris *tetris, userInterface ui){
+void homescreen(Tetris *tetris, userInterface ui)
+{
     char input;
     do
     {
@@ -142,8 +143,9 @@ void homescreen(Tetris *tetris, userInterface ui){
     tetris->level = atoi(&input);
 }
 
-void game(Tetris* tetris, userInterface ui){
-    
+void game(Tetris *tetris, userInterface ui)
+{
+
     tetris->start = true;
 
     // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
@@ -151,56 +153,58 @@ void game(Tetris* tetris, userInterface ui){
 
     // On affiche le jeu et les infos du jeu
     ui.functions->display(tetris);
-    ui.functions->display_info(tetris);
+    // ui.functions->display_info(tetris);
 
     char input;
     while (!tetris->end)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
         input = ui.functions->input(tetris);
-        
+
         switch (input)
         {
-            case 'q':
-                move_left_piece(tetris);
-                break;
-            case 's':
-            case 'x':
-                if (!move_down_piece(tetris))
-                {
-                    //Quand une pièce arrive à destination, on enleve les lignes pleines, on fait un
-                    //petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
-                    refresh_board(tetris);
-                    delete_all_line(tetris);
-                    sleep_NES(tetris);
-                    get_piece(tetris);
-                }
-                break;
-            case 'd':
-                move_right_piece(tetris);
-                break;
-            case 'a':
-                rotate_left(tetris);
-                break;
-            case 'e':
-                rotate_right(tetris);
-                break;
-            default:
-                break;
+        case 'q':
+            move_left_piece(tetris);
+            break;
+        case 's':
+        case 'x':
+            if (!move_down_piece(tetris))
+            {
+                // Quand une pièce arrive à destination, on enleve les lignes pleines, on fait un
+                // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
+                refresh_board(tetris);
+                delete_all_line(tetris);
+                sleep_NES(tetris);
+                get_piece(tetris);
+            }
+            break;
+        case 'd':
+            move_right_piece(tetris);
+            break;
+        case 'a':
+            rotate_left(tetris);
+            break;
+        case 'e':
+            rotate_right(tetris);
+            break;
+        default:
+            break;
         }
 
         refresh_board(tetris);
         ui.functions->display(tetris);
-        ui.functions->display_info(tetris);
+        // ui.functions->display_info(tetris);
     }
 }
 
-void endscreen(Tetris* tetris, userInterface ui){
-    
+void endscreen(Tetris *tetris, userInterface ui)
+{
+
     tetris->start = false;
 
     FILE *f = fopen("data/highscore.txt", "a");
-    if(!f){
+    if (!f)
+    {
         perror("Erreur fopen(), impossible de sauvegarder le score\n");
         exit(EXIT_FAILURE);
     }
@@ -214,7 +218,8 @@ void endscreen(Tetris* tetris, userInterface ui){
         ui.functions->end_screen(tetris, f);
     } while (input != 'q' && input != 'r');
 
-    if(fclose(f)){
+    if (fclose(f))
+    {
         perror("Erreur fclose()\n");
         exit(EXIT_FAILURE);
     }
@@ -222,12 +227,14 @@ void endscreen(Tetris* tetris, userInterface ui){
     // On ferme l'interface (fermer Ncurses ou SDL)
     ui.functions->close_interface();
     clear_tetris(tetris, ui);
-    
-    //Rejouer si l'utilisateur à choisi de rejouer au lieu de quitter
-    if(input == 'r')
+
+    // Rejouer si l'utilisateur à choisi de rejouer au lieu de quitter
+    if (input == 'r')
     {
         tetris_playGame(tetris, ui);
-    }else{
+    }
+    else
+    {
         clear_pointeur_fct(ui);
     }
 }
