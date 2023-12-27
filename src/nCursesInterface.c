@@ -297,7 +297,7 @@ void home_page_nCurses(Tetris *tetris) {
     wrefresh(home_page);
 }
 
-void end_screen_nCurses(Tetris *tetris){
+void end_screen_nCurses(Tetris *tetris, FILE *f){
     //On supprime le menu
     wclear(win);
     wclear(score);
@@ -312,10 +312,22 @@ void end_screen_nCurses(Tetris *tetris){
     //Créer la fenêtre de fin de partie
     end_screen = newwin(term_rows, term_cols, 0, 0);
     box(end_screen, 0, 0);
+
+    //char name[50];
+
+    // Demander à l'utilisateur d'entrer son nom
+    /*mvwprintw(end_screen, term_rows / 2 - 2, term_cols / 2 - 13, "Enter your name: ");
+    echo();
+    scanw("%s", name);
+    */noecho();
+
+    // Écrire le nom de l'utilisateur et son score dans le fichier
+    //fprintf(f, "%s %d\n", name, tetris->score);
+
  
-    mvwprintw(end_screen, term_rows / 2 - 2, term_cols / 2 - 13, "Your score : %d", tetris->score);
-    mvwprintw(end_screen, term_rows / 2, term_cols / 2 - 13, "q pour quitter le jeu");
-    mvwprintw(end_screen, term_rows / 2 + 2, term_cols / 2 - 16, "r pour relancer le jeu");
+    mvwprintw(end_screen, term_rows / 2 - 4, term_cols / 2 - 13, "Your score : %d", tetris->score);
+    mvwprintw(end_screen, term_rows / 2, term_cols / 2 - 13, "q to quit");
+    mvwprintw(end_screen, term_rows / 2 + 2, term_cols / 2 - 16, "r to restart");
 
     wrefresh(end_screen);
 }

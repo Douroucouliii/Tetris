@@ -199,14 +199,25 @@ void endscreen(Tetris* tetris, userInterface ui){
     
     tetris->start = false;
 
+    FILE *f = fopen("data/highscore.txt", "a");
+    if(!f){
+        perror("Erreur fopen(), impossible de sauvegarder le score\n");
+        exit(EXIT_FAILURE);
+    }
+
     char input;
     // Ecran de fin de partie (q pour quitter la partie et r pour rejouer)
     do
     {
         input = ui.functions->input(tetris);
         // On affiche la fin de partie
-        ui.functions->end_screen(tetris);
+        ui.functions->end_screen(tetris, f);
     } while (input != 'q' && input != 'r');
+
+    if(fclose(f)){
+        perror("Erreur fclose()\n");
+        exit(EXIT_FAILURE);
+    }
 
     // On ferme l'interface (fermer Ncurses ou SDL)
     ui.functions->close_interface();

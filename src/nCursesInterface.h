@@ -9,4 +9,4 @@ int delay(int);
 char input_nCurses(Tetris *);
 void display_info_nCurses(Tetris *);
 void home_page_nCurses(Tetris *);
-void end_screen_nCurses(Tetris *);
+void end_screen_nCurses(Tetris *, FILE*);
