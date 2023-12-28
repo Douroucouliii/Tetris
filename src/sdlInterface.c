@@ -107,7 +107,7 @@ void initImgTextures()
 {
     for (color current = NOTHING; current <= GREEN; current++)
     {
-        size_t imagePathSize = strlen("images/") + strlen(ColorToString(current)) + strlen(".bmp") + 1;
+        size_t imagePathSize = strlen("assets/images/") + strlen(ColorToString(current)) + strlen(".bmp") + 1;
         char *imagePath = (char *)malloc(imagePathSize);
 
         if (imagePath == NULL)
@@ -182,7 +182,7 @@ void display_SDL(Tetris *tetris)
         return;
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 110, 255);
     SDL_RenderClear(renderer);
 
     for (int i = 0; i < tetris->line; i++)
@@ -255,28 +255,69 @@ char input_SDL(Tetris *tetris)
     return ' ';
 }
 
-void home_page_SDL(Tetris *tetris) {
+void displayButton(Button *button)
+{
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
+    // Définir le rectangle du bouton
+    SDL_Rect buttonRect = {button->rect.x, button->rect.y, button->rect.w, button->rect.h};
+
+    size_t imagePathSize = strlen("assets/images/") + strlen(button->text) + strlen(".bmp") + 1;
+    char *imagePath = (char *)malloc(imagePathSize);
+    if (imagePath == NULL)
+    {
+        fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image ( display button )\n");
+        free(imagePath);
+        close_SDL();
+    }
+
+    strcpy(imagePath, "assets/images/");
+    strcat(imagePath, button->text);
+    strcat(imagePath, ".bmp");
+
+    // Charger l'image du bouton
+    SDL_Surface *buttonSurface = SDL_LoadBMP(imagePath);
+    if (!buttonSurface)
+    {
+        fprintf(stderr, "Erreur : image du bouton non trouvé : %s\n", SDL_GetError());
+        SDL_FreeSurface(buttonSurface);
+        close_SDL();
+    }
+
+    // Créer la texture du bouton à partir de la surface
+    SDL_Texture *buttonTexture = SDL_CreateTextureFromSurface(renderer, buttonSurface);
+    if (!buttonTexture)
+    {
+        fprintf(stderr, "Erreur lors de la création de la texture du bouton : %s\n", SDL_GetError());
+        SDL_FreeSurface(buttonSurface);
+        SDL_DestroyTexture(buttonTexture);
+        return;
+    }
+
+    // Rendre le bouton à l'écran
+    SDL_RenderCopy(renderer, buttonTexture, NULL, &buttonRect);
+
+    // Libération correcte de la surface et de la texture du bouton
+    SDL_FreeSurface(buttonSurface);
+    SDL_DestroyTexture(buttonTexture);
+    free(imagePath);
+}
+
+void home_page_SDL(Tetris *tetris)
+{
+
+    // Définir la couleur de fond
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    //Ecrire un titre
-    /*
-    SDL_Color color = {255, 255, 255, 255};
-    TTF_Font *font = TTF_OpenFont(NULL, 25);
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, "TETRIS", color);
-    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    // Afficher les boutons
+    Button play = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 100, 500, 150}, "JOUER"};
+    Button options = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 100, 500, 150}, "OPTIONS"};
+    Button exit = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 300, 500, 150}, "EXIT"};
 
-    SDL_Rect textRect = {SCREEN_WIDTH / 2 - textSurface->w / 2, SCREEN_HEIGHT / 2 - textSurface->h / 2, textSurface->w, textSurface->h};
-    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);*
-    SDL_FreeSurface(textSurface);
-    SDL_DestroyTexture(textTexture);
-    */
+    displayButton(&play);
+    displayButton(&options);
+    displayButton(&exit);
 
-    //Afficher 3 boutons
-    Button button1 = {{SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 100, 200, 50}, "Jouer"};
-    Button button2 = {{SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2, 200, 50}, "Options"};
-    Button button3 = {{SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 100, 200, 50}, "Quitter"};
-
+    // Mettre à jour l'affichage
     SDL_RenderPresent(renderer);
 }
