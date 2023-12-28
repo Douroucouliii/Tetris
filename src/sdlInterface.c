@@ -321,6 +321,7 @@ void home_page_SDL(Tetris *tetris)
     bool run = true;
     while (run)
     {
+        SDL_RenderClear(renderer);
         // Afficher les boutons à chaque itération
         displayButton(&play);
         displayButton(&options);
