@@ -13,56 +13,7 @@ unsigned SCREEN_HEIGHT = 600;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
-void close_SDL()
-{
-    if (renderer != NULL)
-    {
-        SDL_DestroyRenderer(renderer);
-    }
-    if (window != NULL)
-    {
-        SDL_DestroyWindow(window);
-    }
-    SDL_Quit();
-}
-
-void init_SDL()
-{
-    if (0 != SDL_Init(SDL_INIT_VIDEO))
-    {
-        fprintf(stderr, "ERREUR SDL_Init : %s", SDL_GetError());
-        exit(EXIT_FAILURE);
-    }
-
-    // On récupère la taille de l'écran du joueur
-
-    SDL_DisplayMode mode;
-    if (SDL_GetDesktopDisplayMode(0, &mode) != 0)
-    {
-        printf("Erreur lors de la récupération de la taille de l'écran : %s", SDL_GetError());
-        close_SDL();
-    }
-    SCREEN_HEIGHT = mode.h;
-    SCREEN_WIDTH = mode.w;
-
-    // On crée notre fenêtre SDL
-    window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    if (window == NULL)
-    {
-        fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());
-        close_SDL();
-    }
-
-    // On crée le renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL)
-    {
-        fprintf(stderr, "Erreur SDL_CreateRenderer : %s", SDL_GetError());
-        close_SDL();
-    }
-
-    // SDL_SetwindowIcon() //c'est là ou on doit mettre l'icone
-}
+SDL_Texture *imageTexture[8];
 
 SDL_Surface *resizeSurface(SDL_Surface *originalSurface, int newWidth, int newHeight)
 {
@@ -118,6 +69,111 @@ char *ColorToString(color color)
     }
 }
 
+int GetIndiceByColor(color Couleur)
+{
+    for (color current = NOTHING; current <= GREEN; current++)
+    {
+        if (current == Couleur)
+        {
+            return current;
+        }
+    }
+    return -1;
+}
+
+void freeImgTextures()
+{
+    for (int i = 0; i < 8; i++)
+    {
+        SDL_DestroyTexture(imageTexture[i]);
+    }
+}
+
+void close_SDL()
+{
+    freeImgTextures();
+    if (renderer != NULL)
+    {
+        SDL_DestroyRenderer(renderer);
+    }
+    if (window != NULL)
+    {
+        SDL_DestroyWindow(window);
+    }
+    SDL_Quit();
+}
+
+void initImgTextures()
+{
+    for (color current = NOTHING; current <= GREEN; current++)
+    {
+        size_t imagePathSize = strlen("images/") + strlen(ColorToString(current)) + strlen(".bmp") + 1;
+        char *imagePath = (char *)malloc(imagePathSize);
+
+        if (imagePath == NULL)
+        {
+            fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image\n");
+            free(imagePath);
+            close_SDL();
+        }
+
+        strcpy(imagePath, "images/");
+        strcat(imagePath, ColorToString(current)); // On récupère NOTHING ( BLUE, YELLOW , ect)
+        strcat(imagePath, ".bmp");
+
+        SDL_Surface *image = SDL_LoadBMP(imagePath);
+        if (!image)
+        {
+            fprintf(stderr, "Erreur : image non trouvé : %s \n", SDL_GetError());
+            close_SDL();
+        }
+
+        int indice = GetIndiceByColor(current);
+        imageTexture[indice] = SDL_CreateTextureFromSurface(renderer, image);
+
+        SDL_FreeSurface(image);
+        free(imagePath);
+    }
+}
+
+void init_SDL()
+{
+    if (0 != SDL_Init(SDL_INIT_VIDEO))
+    {
+        fprintf(stderr, "ERREUR SDL_Init : %s", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    // On récupère la taille de l'écran du joueur
+
+    SDL_DisplayMode mode;
+    if (SDL_GetDesktopDisplayMode(0, &mode) != 0)
+    {
+        printf("Erreur lors de la récupération de la taille de l'écran : %s", SDL_GetError());
+        close_SDL();
+    }
+    SCREEN_HEIGHT = mode.h;
+    SCREEN_WIDTH = mode.w;
+
+    // On crée notre fenêtre SDL
+    window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    if (window == NULL)
+    {
+        fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());
+        close_SDL();
+    }
+
+    // On crée le renderer
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == NULL)
+    {
+        fprintf(stderr, "Erreur SDL_CreateRenderer : %s", SDL_GetError());
+        close_SDL();
+    }
+    initImgTextures();
+    // SDL_SetwindowIcon() //c'est là ou on doit mettre l'icone
+}
+
 void display_SDL(Tetris *tetris)
 {
     if (tetris == NULL)
@@ -136,50 +192,12 @@ void display_SDL(Tetris *tetris)
             SDL_Rect rect = {(SCREEN_WIDTH - tetris->column * CELL_SIZE) / 2 + j * CELL_SIZE,
                              (SCREEN_HEIGHT - tetris->line * CELL_SIZE) / 2 + i * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE};
+            int indice = GetIndiceByColor(tetris->board[i][j].c);
 
-            size_t imagePathSize = strlen("images/") + strlen(ColorToString(tetris->board[i][j].c)) + strlen(".bmp") + 1;
-            char *imagePath = (char *)malloc(imagePathSize);
-
-            if (imagePath == NULL)
-            {
-                fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image\n");
-                free(imagePath);
-                close_SDL();
-            }
-
-            strcpy(imagePath, "images/");
-            strcat(imagePath, ColorToString(tetris->board[i][j].c)); // On récupère NOTHING ( BLUE, YELLOW , ect)
-            strcat(imagePath, ".bmp");
-
-            SDL_Surface *image = SDL_LoadBMP(imagePath);
-            if (!image)
-            {
-                fprintf(stderr, "Erreur : image non trouvé : %s \n", SDL_GetError());
-                close_SDL();
-            }
-
-            SDL_Surface *resizedSurface = resizeSurface(image, CELL_SIZE, CELL_SIZE);
-            if (!resizedSurface)
-            {
-                SDL_FreeSurface(image);
-                close_SDL();
-            }
-
-            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, resizedSurface);
-            SDL_FreeSurface(image);
-            SDL_FreeSurface(resizedSurface);
-            if (!texture)
-            {
-                SDL_DestroyTexture(texture);
-                close_SDL();
-            }
-
-            if (SDL_RenderCopy(renderer, texture, NULL, &rect) != 0)
+            if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &rect) != 0)
             {
                 close_SDL();
             }
-            free(imagePath);
-            SDL_DestroyTexture(texture);
         }
     }
     SDL_RenderPresent(renderer);
