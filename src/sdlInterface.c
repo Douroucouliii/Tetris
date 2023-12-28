@@ -117,7 +117,7 @@ void initImgTextures()
             close_SDL();
         }
 
-        strcpy(imagePath, "images/");
+        strcpy(imagePath, "assets/images/");
         strcat(imagePath, ColorToString(current)); // On récupère NOTHING ( BLUE, YELLOW , ect)
         strcat(imagePath, ".bmp");
 
@@ -253,4 +253,30 @@ char input_SDL(Tetris *tetris)
     }
 
     return ' ';
+}
+
+void home_page_SDL(Tetris *tetris) {
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
+    SDL_RenderClear(renderer);
+
+    //Ecrire un titre
+    /*
+    SDL_Color color = {255, 255, 255, 255};
+    TTF_Font *font = TTF_OpenFont(NULL, 25);
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, "TETRIS", color);
+    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+    SDL_Rect textRect = {SCREEN_WIDTH / 2 - textSurface->w / 2, SCREEN_HEIGHT / 2 - textSurface->h / 2, textSurface->w, textSurface->h};
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);*
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+    */
+
+    //Afficher 3 boutons
+    Button button1 = {{SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 100, 200, 50}, "Jouer"};
+    Button button2 = {{SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2, 200, 50}, "Options"};
+    Button button3 = {{SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 100, 200, 50}, "Quitter"};
+
+    SDL_RenderPresent(renderer);
 }

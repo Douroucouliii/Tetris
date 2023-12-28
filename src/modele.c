@@ -126,8 +126,8 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
 
-    // homescreen(tetris, ui);
-    game(tetris, ui);
+    homescreen(tetris, ui);
+    //game(tetris, ui);
     // endscreen(tetris, ui);
 }
 
@@ -360,7 +360,7 @@ bool can_move(Tetris *tetris, int varX, int varY)
 
         temp_cells[tetris->nbBoardPiece - 1][i][0] = curr_x;
         temp_cells[tetris->nbBoardPiece - 1][i][1] = curr_y;
-        if ((curr_x > 0 && curr_x < tetris->line) && (curr_y > 0 && curr_y < tetris->column))
+        if ((curr_x >= 0 && curr_x < tetris->line) && (curr_y >= 0 && curr_y < tetris->column))
         {
             tetris->board[curr_x][curr_y].isFull = false;
         }
@@ -378,7 +378,7 @@ bool can_move(Tetris *tetris, int varX, int varY)
             restore_board_state(tetris, temp_cells);
             return false;
         }
-        if ((coord_x > 0 && coord_x < tetris->line) && (coord_y > 0 && coord_y < tetris->column))
+        if ((coord_x >= 0 && coord_x < tetris->line) && (coord_y >= 0 && coord_y < tetris->column))
         {
             if (tetris->board[coord_x][coord_y].isFull)
             {

@@ -65,7 +65,7 @@ userInterface sdlInterface_init_()
     interface.functions->display = display_SDL;
     interface.functions->input = input_SDL;
     interface.functions->display_info = NULL;
-    interface.functions->home_page = NULL;
+    interface.functions->home_page = home_page_SDL;
     interface.functions->end_screen = NULL;
     return interface;
 }
