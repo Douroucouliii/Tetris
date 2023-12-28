@@ -3,9 +3,11 @@
 #include "modele.h"
 #include "SDL2/SDL.h"
 
-typedef struct {
+typedef struct
+{
     SDL_Rect rect;
-    char* text;
+    char *text;
+    int selected;
 } Button;
 
 void init_SDL();

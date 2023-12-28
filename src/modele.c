@@ -127,7 +127,7 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     ui.functions->init_interface();
 
     homescreen(tetris, ui);
-    // game(tetris, ui);
+    game(tetris, ui);
     //  endscreen(tetris, ui);
 }
 

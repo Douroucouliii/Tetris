@@ -3,6 +3,7 @@
 #include "SDL2/SDL.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 // Taille des cases
 #define CELL_SIZE 50
 
@@ -292,6 +293,9 @@ void displayButton(Button *button)
         SDL_DestroyTexture(buttonTexture);
         return;
     }
+    SDL_Color rectColor = button->selected ? (SDL_Color){255, 0, 0, 255} : (SDL_Color){0, 0, 0, 255};
+    SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
+    SDL_RenderFillRect(renderer, &buttonRect);
 
     // Rendre le bouton à l'écran
     SDL_RenderCopy(renderer, buttonTexture, NULL, &buttonRect);
@@ -310,14 +314,75 @@ void home_page_SDL(Tetris *tetris)
     SDL_RenderClear(renderer);
 
     // Afficher les boutons
-    Button play = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 100, 500, 150}, "JOUER"};
-    Button options = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 100, 500, 150}, "OPTIONS"};
-    Button exit = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 300, 500, 150}, "EXIT"};
+    Button play = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 100, 500, 150}, "JOUER", 1};
+    Button options = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 100, 500, 150}, "OPTIONS", 0};
+    Button exit = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 300, 500, 150}, "EXIT", 0};
 
-    displayButton(&play);
-    displayButton(&options);
-    displayButton(&exit);
+    bool run = true;
+    while (run)
+    {
+        // Afficher les boutons à chaque itération
+        displayButton(&play);
+        displayButton(&options);
+        displayButton(&exit);
 
-    // Mettre à jour l'affichage
-    SDL_RenderPresent(renderer);
+        // Gestion des événements
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                close_SDL();
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_RETURN:
+                case SDLK_RETURN2:
+                case SDLK_KP_ENTER:
+                    run = false;
+                    if (play.selected == 1)
+                    {
+                        display_SDL(tetris);
+                    }
+                    else if (exit.selected == 1)
+                    {
+                        close_SDL();
+                    }
+                    break;
+                case SDLK_s:
+                case SDLK_DOWN:
+                    if (play.selected == 1)
+                    {
+                        options.selected = 1;
+                        play.selected = 0;
+                    }
+                    else if (options.selected == 1)
+                    {
+                        exit.selected = 1;
+                        options.selected = 0;
+                    }
+                    break;
+                case SDLK_z:
+                case SDLK_UP:
+                    if (options.selected == 1)
+                    {
+                        play.selected = 1;
+                        options.selected = 0;
+                    }
+                    else if (exit.selected == 1)
+                    {
+                        options.selected = 1;
+                        exit.selected = 0;
+                    }
+                    break;
+                }
+                break;
+            }
+        }
+
+        // Mettre à jour l'affichage
+        SDL_RenderPresent(renderer);
+    }
 }
