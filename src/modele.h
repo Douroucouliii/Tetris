@@ -294,6 +294,12 @@ void delete_line(Tetris *, int);
 void delete_all_line(Tetris *, userInterface);
 
 /**
+ * @brief Modifie la couleur de toutes les pieces aléatoirement (level up)
+ * @param tetris
+ */
+void switch_color(Tetris *);
+
+/**
  * @brief Fonction qui met à jour le score du joueur.
  * @param tetris
  * @param score_line

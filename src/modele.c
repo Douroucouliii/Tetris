@@ -252,6 +252,8 @@ void endscreen(Tetris *tetris, userInterface ui)
 
     tetris->state = END;
     if(ui.functions->play_sound) ui.functions->play_sound(8);
+    //Attendre 1 sec avant de mettre l'écran de fin (effet sonnore)
+    sleep(1);
 
     FILE *f = fopen("data/highscore.txt", "a");
     if (!f)
@@ -688,6 +690,7 @@ void delete_all_line(Tetris *tetris, userInterface ui)
             if (tetris->nbLines % 10 == 0)
             {
                 tetris->level++;
+                switch_color(tetris);
                 if(ui.functions->play_sound) ui.functions->play_sound(4);
             }
             i++;
@@ -715,6 +718,41 @@ void delete_all_line(Tetris *tetris, userInterface ui)
     }
     if(cpt == 4 && ui.functions->play_sound) ui.functions->play_sound(3);
     else if(cpt > 0 && ui.functions->play_sound) ui.functions->play_sound(2);
+}
+
+void switch_color(Tetris *tetris){
+    //Change les couleurs des pieces tmp de notre jeu, et change toutes les couleurs des pieces déjà presente dans le jeu
+    //Toujours couleurs différentes, attention à ne pas piocher NOTHING
+    color dejaPris[7];
+    int cpt=1;
+
+    dejaPris[0] = rand() % 7 + 1;
+    while(cpt < 7){
+    color c = rand() % 7 + 1;
+    int isDifferent = 1;
+    for (int i = 0; i < cpt; i++) {
+        if (dejaPris[i] == c) {
+            isDifferent = 0;
+            break;
+        }
+    }
+    if (isDifferent) {
+        dejaPris[cpt] = c;
+        cpt++;
+        }
+    }
+    for(int i=0; i<7; i++){
+        tetris->tmpPiece[i]->c = dejaPris[i];
+    }
+    //Si les pieces matche avec le nom, on remplace la couleur
+    for(int i=0; i<tetris->nbBoardPiece; i++){
+        PieceConfig *p = tetris->boardPiece[i];
+        for(int j=0; j<7; j++){
+            if(p->name == tetris->tmpPiece[j]->name){
+                p->c = tetris->tmpPiece[j]->c;
+            }
+        }
+    }
 }
 
 void add_score(Tetris *tetris, int score_line)
