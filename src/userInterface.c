@@ -24,6 +24,7 @@ userInterface textInterface_init_()
     interface.functions->display_info = NULL;
     interface.functions->home_page = NULL;
     interface.functions->end_screen = NULL;
+    interface.functions->play_sound = NULL;
     return interface;
 }
 
@@ -45,6 +46,7 @@ userInterface nCursesInterface_init_()
     interface.functions->display_info = display_info_nCurses;
     interface.functions->home_page = home_page_nCurses;
     interface.functions->end_screen = end_screen_nCurses;
+    interface.functions->play_sound = NULL;
     return interface;
 }
 
@@ -67,5 +69,6 @@ userInterface sdlInterface_init_()
     interface.functions->display_info = display_info_SDL;
     interface.functions->home_page = home_page_SDL;
     interface.functions->end_screen = end_screen_SDL;
+    interface.functions->play_sound = play_sound_SDL;
     return interface;
 }

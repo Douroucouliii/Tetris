@@ -178,6 +178,15 @@ void initMusicSound()
     musics[2] = Mix_LoadMUS("assets/music/end.mp3");
 
     // Initialiser les sons
+    sounds[0] = Mix_LoadWAV("assets/music/moove.wav");
+    sounds[1] = Mix_LoadWAV("assets/music/rotate.wav");
+    sounds[2] = Mix_LoadWAV("assets/music/line.wav");
+    sounds[3] = Mix_LoadWAV("assets/music/tetris.wav");
+    sounds[4] = Mix_LoadWAV("assets/music/levelup.wav");
+    sounds[5] = Mix_LoadWAV("assets/music/selection.wav");
+    sounds[6] = Mix_LoadWAV("assets/music/load.wav");
+    sounds[7] = Mix_LoadWAV("assets/music/fall.wav");
+    sounds[8] = Mix_LoadWAV("assets/music/gameover.wav");
 }
 
 void init_SDL()
@@ -227,8 +236,11 @@ void init_SDL()
     {
         fprintf(stderr, "Erreur Mix_OpenAudio : %s", SDL_GetError());
     }
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
     // Initialiser les musiques et les sons
     initMusicSound();
+    //Initialiser le nombre de canaux maximum
+    Mix_AllocateChannels(16);
 
     // Inialisation des textures des tuiles
     initImgTextures();
@@ -600,4 +612,12 @@ void end_screen_SDL(Tetris *tetris, FILE *f)
     SDL_Delay(3000);
 
     tetris->state = CLOSE;
+}
+
+void play_sound_SDL(int i){
+    // Jouer le son dans le tableau d'indice i
+    if(Mix_PlayChannel(-1, sounds[i], 0) == -1) {
+        printf("Mix_PlayChannel: %s\n", Mix_GetError());
+              
+    }
 }

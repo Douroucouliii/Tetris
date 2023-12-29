@@ -132,10 +132,12 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     {
         if (tetris->state == MENU)
         {
+            if(ui.functions->play_sound) ui.functions->play_sound(6);
             homescreen(tetris, ui);
         }
         else if (tetris->state == GAME)
         {
+            if(ui.functions->play_sound) ui.functions->play_sound(6);
             game(tetris, ui);
         }
         else if (tetris->state == END)
@@ -208,6 +210,7 @@ void game(Tetris *tetris, userInterface ui)
         {
         case 'q':
             move_left_piece(tetris);
+            if(ui.functions->play_sound) ui.functions->play_sound(0);
             break;
         case 's':
         case 'x':
@@ -216,19 +219,23 @@ void game(Tetris *tetris, userInterface ui)
                 // Quand une pièce arrive à destination, on enleve les lignes pleines, on fait un
                 // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
                 refresh_board(tetris);
-                delete_all_line(tetris);
+                delete_all_line(tetris, ui);
+                if(ui.functions->play_sound) ui.functions->play_sound(7);
                 // sleep_NES(tetris);
                 get_piece(tetris);
             }
             break;
         case 'd':
             move_right_piece(tetris);
+            if(ui.functions->play_sound) ui.functions->play_sound(0);
             break;
         case 'a':
             rotate_left(tetris);
+            if(ui.functions->play_sound) ui.functions->play_sound(1);
             break;
         case 'e':
             rotate_right(tetris);
+            if(ui.functions->play_sound) ui.functions->play_sound(1);
             break;
         default:
             break;
@@ -244,6 +251,7 @@ void endscreen(Tetris *tetris, userInterface ui)
 {
 
     tetris->state = END;
+    if(ui.functions->play_sound) ui.functions->play_sound(8);
 
     FILE *f = fopen("data/highscore.txt", "a");
     if (!f)
@@ -667,7 +675,7 @@ void delete_line(Tetris *tetris, int ligne)
     refresh_board(tetris);
 }
 
-void delete_all_line(Tetris *tetris)
+void delete_all_line(Tetris *tetris, userInterface ui)
 {
     int cpt = 0;
     for (int i = tetris->line - 1; i >= 0; i--)
@@ -680,6 +688,7 @@ void delete_all_line(Tetris *tetris)
             if (tetris->nbLines % 10 == 0)
             {
                 tetris->level++;
+                if(ui.functions->play_sound) ui.functions->play_sound(4);
             }
             i++;
         }
@@ -704,6 +713,8 @@ void delete_all_line(Tetris *tetris)
         perror("Error delete_all_line()\n");
         exit(EXIT_FAILURE);
     }
+    if(cpt == 4 && ui.functions->play_sound) ui.functions->play_sound(3);
+    else if(cpt > 0 && ui.functions->play_sound) ui.functions->play_sound(2);
 }
 
 void add_score(Tetris *tetris, int score_line)

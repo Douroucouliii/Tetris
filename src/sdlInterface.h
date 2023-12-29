@@ -107,3 +107,9 @@ void home_page_SDL(Tetris *);
  *
  */
 void end_screen_SDL(Tetris *, FILE*);
+
+/**
+ * @brief 
+ * 
+ */
+void play_sound_SDL(int);

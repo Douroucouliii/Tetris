@@ -289,8 +289,9 @@ void delete_line(Tetris *, int);
 /**
  * @brief Fonction qui enlève toutes les lignes complète de notre jeu Tetris et met à jour le score du joueur et son passage de level en level
  * @param tetris
+ * @param ui
  */
-void delete_all_line(Tetris *);
+void delete_all_line(Tetris *, userInterface);
 
 /**
  * @brief Fonction qui met à jour le score du joueur.
