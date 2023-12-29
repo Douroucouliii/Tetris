@@ -1,6 +1,7 @@
 #include "modele.h"
 #include "sdlInterface.h"
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_ttf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -104,37 +105,57 @@ void close_SDL()
     SDL_Quit();
 }
 
+char *GetImagePath(char *texte)
+{
+    size_t imagePathSize = strlen("assets/images/") + strlen(texte) + strlen(".bmp") + 1;
+
+    char *imagePath = (char *)malloc(imagePathSize);
+    if (imagePath == NULL)
+    {
+        fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image\n");
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(imagePath, "assets/images/");
+    strcat(imagePath, texte);
+    strcat(imagePath, ".bmp");
+
+    return imagePath;
+}
+
 void initImgTextures()
 {
     for (color current = NOTHING; current <= GREEN; current++)
     {
-        size_t imagePathSize = strlen("assets/images/") + strlen(ColorToString(current)) + strlen(".bmp") + 1;
-        char *imagePath = (char *)malloc(imagePathSize);
-
-        if (imagePath == NULL)
-        {
-            fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image\n");
-            free(imagePath);
-            close_SDL();
-        }
-
-        strcpy(imagePath, "assets/images/");
-        strcat(imagePath, ColorToString(current)); // On récupère NOTHING ( BLUE, YELLOW , ect)
-        strcat(imagePath, ".bmp");
-
-        SDL_Surface *image = SDL_LoadBMP(imagePath);
+        char *ImagePath = GetImagePath(ColorToString(current));
+        SDL_Surface *image = SDL_LoadBMP(ImagePath);
         if (!image)
         {
             fprintf(stderr, "Erreur : image non trouvé : %s \n", SDL_GetError());
             close_SDL();
+            exit(EXIT_FAILURE);
         }
 
         int indice = GetIndiceByColor(current);
         imageTexture[indice] = SDL_CreateTextureFromSurface(renderer, image);
 
         SDL_FreeSurface(image);
-        free(imagePath);
+        free(ImagePath);
     }
+}
+
+void set_icon()
+{
+    SDL_Surface *iconSurface = SDL_LoadBMP("assets/images/icon.bmp");
+    if (!iconSurface)
+    {
+        fprintf(stderr, "Erreur Chargement de l'icône : %s", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+    SDL_SetWindowIcon(window, iconSurface);
+    SDL_FreeSurface(iconSurface);
 }
 
 void init_SDL()
@@ -142,6 +163,7 @@ void init_SDL()
     if (0 != SDL_Init(SDL_INIT_VIDEO))
     {
         fprintf(stderr, "ERREUR SDL_Init : %s", SDL_GetError());
+        close_SDL();
         exit(EXIT_FAILURE);
     }
 
@@ -152,6 +174,7 @@ void init_SDL()
     {
         printf("Erreur lors de la récupération de la taille de l'écran : %s", SDL_GetError());
         close_SDL();
+        exit(EXIT_FAILURE);
     }
     SCREEN_HEIGHT = mode.h;
     SCREEN_WIDTH = mode.w;
@@ -162,6 +185,7 @@ void init_SDL()
     {
         fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());
         close_SDL();
+        exit(EXIT_FAILURE);
     }
 
     // On crée le renderer
@@ -170,9 +194,10 @@ void init_SDL()
     {
         fprintf(stderr, "Erreur SDL_CreateRenderer : %s", SDL_GetError());
         close_SDL();
+        exit(EXIT_FAILURE);
     }
     initImgTextures();
-    // SDL_SetwindowIcon() //c'est là ou on doit mettre l'icone
+    set_icon();
 }
 
 void display_SDL(Tetris *tetris)
@@ -183,24 +208,87 @@ void display_SDL(Tetris *tetris)
         return;
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 110, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    int offsetX = (SCREEN_WIDTH - tetris->column * CELL_SIZE) / 2;
+    int offsetY = (SCREEN_HEIGHT - tetris->line * CELL_SIZE) / 2;
 
     for (int i = 0; i < tetris->line; i++)
     {
         for (int j = 0; j < tetris->column; j++)
         {
-            SDL_Rect rect = {(SCREEN_WIDTH - tetris->column * CELL_SIZE) / 2 + j * CELL_SIZE,
-                             (SCREEN_HEIGHT - tetris->line * CELL_SIZE) / 2 + i * CELL_SIZE,
+            SDL_Rect rect = {(offsetX + j * CELL_SIZE),
+                             (offsetY + i * CELL_SIZE),
                              CELL_SIZE, CELL_SIZE};
             int indice = GetIndiceByColor(tetris->board[i][j].c);
 
             if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &rect) != 0)
             {
                 close_SDL();
+                exit(EXIT_FAILURE);
             }
         }
     }
+    SDL_RenderPresent(renderer);
+}
+
+void display_info_SDL(Tetris *tetris)
+{
+    // On est sur le même renderer que display
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+
+    // Affiche le score
+    // SDL_Rect score = {SCREEN_WIDTH - 200, SCREEN_HEIGHT - 150, 200, 150};
+    // SDL_RenderFillRect(renderer, &score);
+
+    // Affiche les Statistique de chaque pièce
+    SDL_Rect PieceStats = {250, 40, 400, (SCREEN_HEIGHT * 2 / 4) + 120};
+
+    int offsetY = 10;
+    int offsetX = 50;
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            int cellX = PieceStats.x - offsetX + tetris->tmpPiece[i]->coords[j][1] * (CELL_SIZE / 2);
+            int cellY = PieceStats.y + offsetY + tetris->tmpPiece[i]->coords[j][0] * (CELL_SIZE / 2);
+            int indice = GetIndiceByColor(tetris->tmpPiece[i]->c);
+            SDL_Rect cellRect = {cellX, cellY, CELL_SIZE / 2, CELL_SIZE / 2};
+
+            if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &cellRect) != 0)
+            {
+                close_SDL();
+                exit(EXIT_FAILURE);
+            }
+        }
+        offsetY += 100;
+    }
+    // Affiche le niveau
+    // SDL_Rect level = {250, SCREEN_HEIGHT - 200, 400, 100};
+    // SDL_RenderFillRect(renderer, &level);
+
+    // Affiche la prochaine pièce
+    SDL_Rect nextpiece = {SCREEN_WIDTH - 600, 40, 400, SCREEN_HEIGHT / 4};
+    SDL_RenderFillRect(renderer, &nextpiece);
+
+    offsetX = (nextpiece.w - CELL_SIZE) / 2 + 250;
+    offsetY = (nextpiece.h - CELL_SIZE) / 2 + 50;
+
+    for (int j = 0; j < 4; j++)
+    {
+        int cellX = nextpiece.x + offsetX - tetris->nextPiece->coords[j][1] * CELL_SIZE;
+        int cellY = nextpiece.y + offsetY - tetris->nextPiece->coords[j][0] * CELL_SIZE;
+        int indice = GetIndiceByColor(tetris->nextPiece->c);
+        SDL_Rect cellRect = {cellX, cellY, CELL_SIZE, CELL_SIZE};
+
+        if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &cellRect) != 0)
+        {
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+    }
+
     SDL_RenderPresent(renderer);
 }
 
@@ -214,6 +302,7 @@ char input_SDL(Tetris *tetris)
         {
         case SDL_QUIT:
             close_SDL();
+            exit(EXIT_SUCCESS);
             break;
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym)
@@ -262,19 +351,7 @@ void displayButton(Button *button)
     // Définir le rectangle du bouton
     SDL_Rect buttonRect = {button->rect.x, button->rect.y, button->rect.w, button->rect.h};
 
-    size_t imagePathSize = strlen("assets/images/") + strlen(button->text) + strlen(".bmp") + 1;
-    char *imagePath = (char *)malloc(imagePathSize);
-    if (imagePath == NULL)
-    {
-        fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image ( display button )\n");
-        free(imagePath);
-        close_SDL();
-    }
-
-    strcpy(imagePath, "assets/images/");
-    strcat(imagePath, button->text);
-    strcat(imagePath, ".bmp");
-
+    char *imagePath = GetImagePath(button->text);
     // Charger l'image du bouton
     SDL_Surface *buttonSurface = SDL_LoadBMP(imagePath);
     if (!buttonSurface)
@@ -282,6 +359,7 @@ void displayButton(Button *button)
         fprintf(stderr, "Erreur : image du bouton non trouvé : %s\n", SDL_GetError());
         SDL_FreeSurface(buttonSurface);
         close_SDL();
+        exit(EXIT_FAILURE);
     }
 
     // Créer la texture du bouton à partir de la surface
@@ -291,8 +369,9 @@ void displayButton(Button *button)
         fprintf(stderr, "Erreur lors de la création de la texture du bouton : %s\n", SDL_GetError());
         SDL_FreeSurface(buttonSurface);
         SDL_DestroyTexture(buttonTexture);
-        return;
+        exit(EXIT_FAILURE);
     }
+
     SDL_Color rectColor = button->selected ? (SDL_Color){255, 0, 0, 255} : (SDL_Color){0, 0, 0, 255};
     SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
     SDL_RenderFillRect(renderer, &buttonRect);
