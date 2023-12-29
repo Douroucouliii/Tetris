@@ -19,150 +19,9 @@ TTF_Font *font;
 
 SDL_Texture *imageTexture[8];
 
-SDL_Surface *resizeSurface(SDL_Surface *originalSurface, int newWidth, int newHeight)
-{
-    if (!originalSurface)
-    {
-        fprintf(stderr, "Erreur : surface d'origine non valide\n");
-        return NULL;
-    }
+Mix_Music **musics[3];
+Mix_Chunk **sounds[10];
 
-    // Crée une nouvelle surface avec la nouvelle taille
-    SDL_Surface *newSurface = SDL_CreateRGBSurface(0, newWidth, newHeight, originalSurface->format->BitsPerPixel,
-                                                   originalSurface->format->Rmask, originalSurface->format->Gmask,
-                                                   originalSurface->format->Bmask, originalSurface->format->Amask);
-    if (!newSurface)
-    {
-        fprintf(stderr, "Erreur lors de la création de la nouvelle surface : %s\n", SDL_GetError());
-        return NULL;
-    }
-
-    // Redimensionne l'image
-    if (SDL_BlitScaled(originalSurface, NULL, newSurface, NULL) != 0)
-    {
-        fprintf(stderr, "Erreur lors du redimensionnement de l'image : %s\n", SDL_GetError());
-        SDL_FreeSurface(newSurface);
-        return NULL;
-    }
-
-    return newSurface;
-}
-
-char *ColorToString(color color)
-{
-    switch (color)
-    {
-    case NOTHING:
-        return "NOTHING";
-    case BLUE:
-        return "BLUE";
-    case PURPLE:
-        return "PURPLE";
-    case RED:
-        return "RED";
-    case YELLOW:
-        return "YELLOW";
-    case GREEN:
-        return "GREEN";
-    case CYAN:
-        return "CYAN";
-    case ORANGE:
-        return "ORANGE";
-    default:
-        return "UNKNOWN";
-    }
-}
-
-int GetIndiceByColor(color Couleur)
-{
-    for (color current = NOTHING; current <= GREEN; current++)
-    {
-        if (current == Couleur)
-        {
-            return current;
-        }
-    }
-    return -1;
-}
-
-void freeImgTextures()
-{
-    for (int i = 0; i < 8; i++)
-    {
-        SDL_DestroyTexture(imageTexture[i]);
-    }
-}
-
-void close_SDL()
-{
-    freeImgTextures();
-    if (renderer != NULL)
-    {
-        SDL_DestroyRenderer(renderer);
-    }
-    if (window != NULL)
-    {
-        SDL_DestroyWindow(window);
-    }
-
-    //Fermer l'audio
-    Mix_CloseAudio();
-
-    SDL_Quit();
-}
-
-char *GetImagePath(char *texte)
-{
-    size_t imagePathSize = strlen("assets/images/") + strlen(texte) + strlen(".bmp") + 1;
-
-    char *imagePath = (char *)malloc(imagePathSize);
-    if (imagePath == NULL)
-    {
-        fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image\n");
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
-    strcpy(imagePath, "assets/images/");
-    strcat(imagePath, texte);
-    strcat(imagePath, ".bmp");
-
-    return imagePath;
-}
-
-void initImgTextures()
-{
-    for (color current = NOTHING; current <= GREEN; current++)
-    {
-        char *ImagePath = GetImagePath(ColorToString(current));
-        SDL_Surface *image = SDL_LoadBMP(ImagePath);
-        if (!image)
-        {
-            fprintf(stderr, "Erreur : image non trouvé : %s \n", SDL_GetError());
-            close_SDL();
-            exit(EXIT_FAILURE);
-        }
-
-        int indice = GetIndiceByColor(current);
-        imageTexture[indice] = SDL_CreateTextureFromSurface(renderer, image);
-
-        SDL_FreeSurface(image);
-        free(ImagePath);
-    }
-}
-
-void set_icon()
-{
-    SDL_Surface *iconSurface = SDL_LoadBMP("assets/images/icon.bmp");
-    if (!iconSurface)
-    {
-        fprintf(stderr, "Erreur Chargement de l'icône : %s", SDL_GetError());
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-    SDL_SetWindowIcon(window, iconSurface);
-    SDL_FreeSurface(iconSurface);
-}
 
 void init_SDL()
 {
@@ -212,11 +71,148 @@ void init_SDL()
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         fprintf(stderr, "Erreur Mix_OpenAudio : %s", SDL_GetError());
     }
+    //Initialiser les musiques et les sons
+    initMusicSound();
 
+    //Initialiser les textures des images
     initImgTextures();
 
     // Set une icone
     set_icon();
+}
+
+void initImgTextures()
+{
+    for (color current = NOTHING; current <= GREEN; current++)
+    {
+        char *ImagePath = GetImagePath(ColorToString(current));
+        SDL_Surface *image = SDL_LoadBMP(ImagePath);
+        if (!image)
+        {
+            fprintf(stderr, "Erreur : image non trouvé : %s \n", SDL_GetError());
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+
+        int indice = GetIndiceByColor(current);
+        imageTexture[indice] = SDL_CreateTextureFromSurface(renderer, image);
+
+        SDL_FreeSurface(image);
+        free(ImagePath);
+    }
+}
+
+void initMusicSound(){
+    //Charger les musiques
+    musics[0] = Mix_LoadMUS("assets/music/menu.mp3");
+    musics[1] = Mix_LoadMUS("assets/music/game.mp3");
+    musics[2] = Mix_LoadMUS("assets/music/end.mp3");
+
+    //Charger les sons
+    sounds[0] = NULL;
+    sounds[1] = NULL;
+    sounds[2] = NULL;
+    sounds[3] = NULL;
+    sounds[4] = NULL;
+    sounds[5] = NULL;
+    sounds[6] = NULL;
+    sounds[7] = NULL;
+    sounds[8] = NULL;
+    sounds[9] = NULL;
+
+    if (!musics[0] || !musics[1] || !musics[2])
+    {
+        fprintf(stderr, "Erreur lors du chargement de la musique : %s", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+}
+
+void home_page_SDL(Tetris *tetris)
+{
+    // Définir la couleur de fond
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    //Charger l'audio du menu
+    Mix_PlayMusic(musics[0], -1);
+
+    // Afficher les boutons
+    Button play = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 100, 500, 150}, "JOUER", 1};
+    Button options = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 100, 500, 150}, "OPTIONS", 0};
+    Button exit = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 300, 500, 150}, "EXIT", 0};
+
+    bool run = true;
+    while (run)
+    {
+        SDL_RenderClear(renderer);
+        // Afficher les boutons à chaque itération
+        displayButton(&play);
+        displayButton(&options);
+        displayButton(&exit);
+
+        // Gestion des événements
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                close_SDL();
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_RETURN:
+                case SDLK_RETURN2:
+                case SDLK_KP_ENTER:
+                    run = false;
+                    if (play.selected == 1)
+                    {
+                        display_SDL(tetris);
+                    }
+                    else if (exit.selected == 1)
+                    {
+                        close_SDL();
+                    }
+                    break;
+                case SDLK_s:
+                case SDLK_DOWN:
+                    if (play.selected == 1)
+                    {
+                        options.selected = 1;
+                        play.selected = 0;
+                    }
+                    else if (options.selected == 1)
+                    {
+                        exit.selected = 1;
+                        options.selected = 0;
+                    }
+                    break;
+                case SDLK_z:
+                case SDLK_UP:
+                    if (options.selected == 1)
+                    {
+                        play.selected = 1;
+                        options.selected = 0;
+                    }
+                    else if (exit.selected == 1)
+                    {
+                        options.selected = 1;
+                        exit.selected = 0;
+                    }
+                    break;
+                }
+                break;
+            }
+        }
+
+        // Mettre à jour l'affichage
+        SDL_RenderPresent(renderer);
+    }
+
+    // Libération de l'audio
+    Mix_FreeMusic(musics[0]);
 }
 
 void display_SDL(Tetris *tetris)
@@ -404,98 +400,126 @@ void displayButton(Button *button)
     free(imagePath);
 }
 
-void home_page_SDL(Tetris *tetris)
+SDL_Surface *resizeSurface(SDL_Surface *originalSurface, int newWidth, int newHeight)
 {
-
-    // Définir la couleur de fond
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
-    //Charger l'audio du menu
-    Mix_Music *menu = Mix_LoadMUS("assets/music/menu.mp3");
-    if (!menu)
+    if (!originalSurface)
     {
-        fprintf(stderr, "Erreur lors du chargement de l'audio : %s", SDL_GetError());
+        fprintf(stderr, "Erreur : surface d'origine non valide\n");
+        return NULL;
+    }
+
+    // Crée une nouvelle surface avec la nouvelle taille
+    SDL_Surface *newSurface = SDL_CreateRGBSurface(0, newWidth, newHeight, originalSurface->format->BitsPerPixel,
+                                                   originalSurface->format->Rmask, originalSurface->format->Gmask,
+                                                   originalSurface->format->Bmask, originalSurface->format->Amask);
+    if (!newSurface)
+    {
+        fprintf(stderr, "Erreur lors de la création de la nouvelle surface : %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    // Redimensionne l'image
+    if (SDL_BlitScaled(originalSurface, NULL, newSurface, NULL) != 0)
+    {
+        fprintf(stderr, "Erreur lors du redimensionnement de l'image : %s\n", SDL_GetError());
+        SDL_FreeSurface(newSurface);
+        return NULL;
+    }
+
+    return newSurface;
+}
+
+char *ColorToString(color color)
+{
+    switch (color)
+    {
+    case NOTHING:
+        return "NOTHING";
+    case BLUE:
+        return "BLUE";
+    case PURPLE:
+        return "PURPLE";
+    case RED:
+        return "RED";
+    case YELLOW:
+        return "YELLOW";
+    case GREEN:
+        return "GREEN";
+    case CYAN:
+        return "CYAN";
+    case ORANGE:
+        return "ORANGE";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+int GetIndiceByColor(color Couleur)
+{
+    for (color current = NOTHING; current <= GREEN; current++)
+    {
+        if (current == Couleur)
+        {
+            return current;
+        }
+    }
+    return -1;
+}
+
+char *GetImagePath(char *texte)
+{
+    size_t imagePathSize = strlen("assets/images/") + strlen(texte) + strlen(".bmp") + 1;
+
+    char *imagePath = (char *)malloc(imagePathSize);
+    if (imagePath == NULL)
+    {
+        fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image\n");
         close_SDL();
         exit(EXIT_FAILURE);
     }
-    Mix_PlayMusic(menu, -1);
 
+    strcpy(imagePath, "assets/images/");
+    strcat(imagePath, texte);
+    strcat(imagePath, ".bmp");
 
-    // Afficher les boutons
-    Button play = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 100, 500, 150}, "JOUER", 1};
-    Button options = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 100, 500, 150}, "OPTIONS", 0};
-    Button exit = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 300, 500, 150}, "EXIT", 0};
+    return imagePath;
+}
 
-    bool run = true;
-    while (run)
+void set_icon()
+{
+    SDL_Surface *iconSurface = SDL_LoadBMP("assets/images/icon.bmp");
+    if (!iconSurface)
     {
-        SDL_RenderClear(renderer);
-        // Afficher les boutons à chaque itération
-        displayButton(&play);
-        displayButton(&options);
-        displayButton(&exit);
+        fprintf(stderr, "Erreur Chargement de l'icône : %s", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+    SDL_SetWindowIcon(window, iconSurface);
+    SDL_FreeSurface(iconSurface);
+}
 
-        // Gestion des événements
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            switch (event.type)
-            {
-            case SDL_QUIT:
-                close_SDL();
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_RETURN:
-                case SDLK_RETURN2:
-                case SDLK_KP_ENTER:
-                    run = false;
-                    if (play.selected == 1)
-                    {
-                        display_SDL(tetris);
-                    }
-                    else if (exit.selected == 1)
-                    {
-                        close_SDL();
-                    }
-                    break;
-                case SDLK_s:
-                case SDLK_DOWN:
-                    if (play.selected == 1)
-                    {
-                        options.selected = 1;
-                        play.selected = 0;
-                    }
-                    else if (options.selected == 1)
-                    {
-                        exit.selected = 1;
-                        options.selected = 0;
-                    }
-                    break;
-                case SDLK_z:
-                case SDLK_UP:
-                    if (options.selected == 1)
-                    {
-                        play.selected = 1;
-                        options.selected = 0;
-                    }
-                    else if (exit.selected == 1)
-                    {
-                        options.selected = 1;
-                        exit.selected = 0;
-                    }
-                    break;
-                }
-                break;
-            }
-        }
+void freeImgTextures()
+{
+    for (int i = 0; i < 8; i++)
+    {
+        SDL_DestroyTexture(imageTexture[i]);
+    }
+}
 
-        // Mettre à jour l'affichage
-        SDL_RenderPresent(renderer);
+void close_SDL()
+{
+    freeImgTextures();
+    if (renderer != NULL)
+    {
+        SDL_DestroyRenderer(renderer);
+    }
+    if (window != NULL)
+    {
+        SDL_DestroyWindow(window);
     }
 
-    // Libération de l'audio
-    Mix_FreeMusic(menu);
+    //Fermer l'audio
+    Mix_CloseAudio();
+
+    SDL_Quit();
 }
