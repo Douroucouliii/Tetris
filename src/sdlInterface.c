@@ -239,7 +239,7 @@ void init_SDL()
     Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
     // Initialiser les musiques et les sons
     initMusicSound();
-    //Initialiser le nombre de canaux maximum
+    // Initialiser le nombre de canaux maximum
     Mix_AllocateChannels(16);
 
     // Inialisation des textures des tuiles
@@ -407,33 +407,124 @@ void display_info_SDL(Tetris *tetris)
     SDL_RenderPresent(renderer);
 }
 
+int delay_SDL(int niveau)
+{
+    int frames;
+
+    // le nombre de frames/cellules de grille par pièce en fonction du niveau
+    switch (niveau)
+    {
+    case 0:
+        frames = 48;
+        break;
+    case 1:
+        frames = 43;
+        break;
+    case 2:
+        frames = 38;
+        break;
+    case 3:
+        frames = 33;
+        break;
+    case 4:
+        frames = 28;
+        break;
+    case 5:
+        frames = 23;
+        break;
+    case 6:
+        frames = 18;
+        break;
+    case 7:
+        frames = 13;
+        break;
+    case 8:
+        frames = 8;
+        break;
+    case 9:
+        frames = 6;
+        break;
+    case 10:
+    case 11:
+    case 12:
+        frames = 5;
+        break;
+    case 13:
+    case 14:
+    case 15:
+        frames = 4;
+        break;
+    case 16:
+    case 17:
+    case 18:
+        frames = 3;
+        break;
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
+    case 26:
+    case 27:
+    case 28:
+        frames = 2;
+        break;
+    // Niveau >28 : Killscreen : seul mattéo pourrait survivre ici
+    default:
+        frames = 1; // C'est la mort
+        break;
+    }
+
+    // Calculer le délai en fonction du nombre de frames par pièce
+    int delai = (frames * 1000) / 60; // Convertir les frames en millisecondes (60 frames par seconde)
+    return delai;
+}
+
 char input_SDL(Tetris *tetris)
 {
     SDL_Event event;
 
-    while (SDL_PollEvent(&event))
+    int delayTime = delay_SDL(tetris->level);
+    int startTime = SDL_GetTicks();
+
+    while (1)
     {
-        switch (event.type)
+        SDL_Delay(10);
+
+        int elapsedTime = SDL_GetTicks() - startTime;
+
+        if (elapsedTime >= delayTime)
         {
-        case SDL_QUIT:
-            close_SDL();
-            exit(EXIT_SUCCESS);
-            break;
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.sym)
+            return 's';
+        }
+
+        // Vérifier les événements SDL
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
             {
-            case SDLK_q:
-                return 'q';
-            case SDLK_d:
-                return 'd';
-            case SDLK_s:
-                return 's';
-            case SDLK_a:
-                return 'a';
-            case SDLK_e:
-                return 'e';
+            case SDL_QUIT:
+                close_SDL();
+                exit(EXIT_SUCCESS);
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_q:
+                    return 'q';
+                case SDLK_d:
+                    return 'd';
+                case SDLK_s:
+                    return 's';
+                case SDLK_a:
+                    return 'a';
+                case SDLK_e:
+                    return 'e';
+                }
+                break;
             }
-            break;
         }
     }
 
@@ -614,10 +705,11 @@ void end_screen_SDL(Tetris *tetris, FILE *f)
     tetris->state = CLOSE;
 }
 
-void play_sound_SDL(int i){
+void play_sound_SDL(int i)
+{
     // Jouer le son dans le tableau d'indice i
-    if(Mix_PlayChannel(-1, sounds[i], 0) == -1) {
+    if (Mix_PlayChannel(-1, sounds[i], 0) == -1)
+    {
         printf("Mix_PlayChannel: %s\n", Mix_GetError());
-              
     }
 }

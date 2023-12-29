@@ -86,6 +86,13 @@ void display_info_SDL(Tetris *);
 /**
  * @brief
  *
+ * @return int
+ */
+int delay_SDL(int);
+
+/**
+ * @brief
+ *
  * @return char
  */
 char input_SDL(Tetris *);
@@ -106,10 +113,10 @@ void home_page_SDL(Tetris *);
  * @brief
  *
  */
-void end_screen_SDL(Tetris *, FILE*);
+void end_screen_SDL(Tetris *, FILE *);
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 void play_sound_SDL(int);
