@@ -129,7 +129,7 @@ char input_nCurses(Tetris *tetris)
     int delai = delay(tetris->level);
 
     //Si le jeu a commencé
-    if(tetris->start){
+    if(tetris->state == GAME){
         //On crée un timeout pour la fenetre pour faire descendre nos pieces
         timeout(delai);
     }
@@ -295,6 +295,16 @@ void home_page_nCurses(Tetris *tetris) {
     mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 16, "Entrez au clavier /!\\ verr num /!\\");
 
     wrefresh(home_page);
+
+    //Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
+
+    /*char input;
+    do
+    {
+        input = input_nCurses(tetris);
+    } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
+    tetris->level = atoi(&input);
+    tetris->state = GAME;*/
 }
 
 void end_screen_nCurses(Tetris *tetris, FILE *f){

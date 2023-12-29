@@ -43,8 +43,7 @@ Tetris *tetris_init_()
     // Compteur de piece dans le boardPiece
     tetris->nbBoardPiece = 0;
 
-    tetris->start = false;
-    tetris->end = false;
+    tetris->state = MENU;
 
     tetris->nbLines = 0;
     tetris->score = 0;
@@ -127,36 +126,65 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     ui.functions->init_interface();
 
     homescreen(tetris, ui);
-    game(tetris, ui);
-    //  endscreen(tetris, ui);
+
+    //On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
+    while(1){
+        if(tetris->state == MENU){
+            homescreen(tetris, ui);
+        }
+        else if(tetris->state == GAME){
+            game(tetris, ui);
+        }
+        else if(tetris->state == END){
+            endscreen(tetris, ui);
+            // On ferme l'interface (fermer Ncurses ou SDL)
+            ui.functions->close_interface();
+            clear_tetris(tetris, ui);
+            clear_pointeur_fct(ui);
+            return;
+        }
+        else if(tetris->state == OPTION){
+            return;
+        }
+        else{
+            perror("Erreur state\n");
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 void homescreen(Tetris *tetris, userInterface ui)
 {
+
+    ui.functions->home_page(tetris);
+
+    //Il faut essayer de déplacer ce bout de code qui suit dans le home page de ncurses pour gérer les input ncurses qui sont différent de SDL
+
+    //Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
     char input;
     do
     {
         input = ui.functions->input(tetris);
-        // On affiche le menu
         ui.functions->home_page(tetris);
     } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
     tetris->level = atoi(&input);
+    tetris->state = GAME;
 }
 
 void game(Tetris *tetris, userInterface ui)
 {
 
-    tetris->start = true;
+    tetris->state = GAME;
 
     // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
     get_piece(tetris);
 
     // On affiche le jeu et les infos du jeu
     ui.functions->display(tetris);
-    // ui.functions->display_info(tetris);
+    ui.functions->display_info(tetris);
 
     char input;
-    while (!tetris->end)
+    while (tetris->state != END)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
         input = ui.functions->input(tetris);
@@ -174,7 +202,7 @@ void game(Tetris *tetris, userInterface ui)
                 // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
                 refresh_board(tetris);
                 delete_all_line(tetris);
-                sleep_NES(tetris);
+                //sleep_NES(tetris);
                 get_piece(tetris);
             }
             break;
@@ -193,14 +221,14 @@ void game(Tetris *tetris, userInterface ui)
 
         refresh_board(tetris);
         ui.functions->display(tetris);
-        // ui.functions->display_info(tetris);
+        ui.functions->display_info(tetris);
     }
 }
 
 void endscreen(Tetris *tetris, userInterface ui)
 {
 
-    tetris->start = false;
+    tetris->state = END;
 
     FILE *f = fopen("data/highscore.txt", "a");
     if (!f)
@@ -224,19 +252,6 @@ void endscreen(Tetris *tetris, userInterface ui)
         exit(EXIT_FAILURE);
     }
 
-    // On ferme l'interface (fermer Ncurses ou SDL)
-    ui.functions->close_interface();
-    clear_tetris(tetris, ui);
-
-    // Rejouer si l'utilisateur à choisi de rejouer au lieu de quitter
-    if (input == 'r')
-    {
-        tetris_playGame(tetris, ui);
-    }
-    else
-    {
-        clear_pointeur_fct(ui);
-    }
 }
 
 PieceConfig *get_next_piece(Tetris *tetris)
@@ -294,13 +309,13 @@ void update_piece(Tetris *tetris, PieceConfig *piece)
         if (coord_x >= tetris->line || coord_y < 0 || coord_y >= tetris->column)
         {
             // La pièce est en dehors des limites du plateau, donc on a perdu :(
-            tetris->end = true;
+            tetris->state = END;
             return;
         }
         if (tetris->board[coord_x][coord_y].isFull == true)
         {
             // La case est déjà occupée, donc on a perdu :(
-            tetris->end = true;
+            tetris->state = END;
             return;
         }
         else

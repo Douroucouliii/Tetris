@@ -30,6 +30,19 @@ enum color
 typedef enum color color;
 
 /**
+ * @brief Une enumeration de differentes etats pour notre jeu Tetris.
+ *
+ */
+enum state
+{
+    MENU, /**< Etat du menu principal */
+    GAME, /**< Etat du jeu */
+    END,  /**< Etat de fin de jeu */
+    OPTION /**< Etat des options */
+};
+typedef enum state state;
+
+/**
  * @brief Structure de nos cellule pour notre Matrice ( Plateau du Tetris )
  *
  */
@@ -63,8 +76,7 @@ typedef struct Tetris
     PieceConfig **tmpPiece;   /**< Tableau des structures de toutes les pièces possibles pour notre Tetris*/
     PieceConfig **boardPiece; /**< Tableau des pièces déjà présente dans le Tetris      */
     int nbBoardPiece;         /**< Le nombre de pièces dans le tableau boardPiece       */
-    bool start;               /**< Indique si la partie est commencée                   */
-    bool end;                 /**< Indique si la partie est terminée                    */
+    state state;              /**< L'état actuel du jeu ( HOME, GAME, END, OPTION )     */
     int nbLines;              /**< Le nombre de ligne supprimées                        */
     int score;                /**< Le score du jeu ( On utilise le système de score de la NES )*/
     int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
