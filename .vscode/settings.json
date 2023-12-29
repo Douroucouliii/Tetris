@@ -1,7 +1,8 @@
 {
     "editor.colorDecorators": false,
     "files.associations": {
-        "userinterface.h": "c"
+        "userinterface.h": "c",
+        "sdl_mixer.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

@@ -125,13 +125,11 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
 
-    // homescreen(tetris, ui);
-    tetris->state = GAME;
-    // On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
-    while (1)
-    {
-        if (tetris->state == MENU)
-        {
+    homescreen(tetris, ui);
+
+    //On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
+    /*while(1){
+        if(tetris->state == MENU){
             homescreen(tetris, ui);
         }
         else if (tetris->state == GAME)
@@ -156,7 +154,7 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             perror("Erreur state\n");
             exit(EXIT_FAILURE);
         }
-    }
+    }*/
 }
 
 void homescreen(Tetris *tetris, userInterface ui)

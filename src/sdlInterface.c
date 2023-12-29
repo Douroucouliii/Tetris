@@ -2,6 +2,7 @@
 #include "sdlInterface.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
+#include "SDL2/SDL_mixer.h" 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -103,6 +104,10 @@ void close_SDL()
     {
         SDL_DestroyWindow(window);
     }
+
+    //Fermer l'audio
+    Mix_CloseAudio();
+
     SDL_Quit();
 }
 
@@ -202,6 +207,12 @@ void init_SDL()
     font = TTF_OpenFont("assets/ttf/Tetris.ttf", 52);
 
     // Inialisation des textures des tuiles
+
+    //On initialise l'audio
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        fprintf(stderr, "Erreur Mix_OpenAudio : %s", SDL_GetError());
+    }
+
     initImgTextures();
 
     // Set une icone
@@ -400,6 +411,17 @@ void home_page_SDL(Tetris *tetris)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    //Charger l'audio du menu
+    Mix_Music *menu = Mix_LoadMUS("assets/music/menu.mp3");
+    if (!menu)
+    {
+        fprintf(stderr, "Erreur lors du chargement de l'audio : %s", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+    Mix_PlayMusic(menu, -1);
+
+
     // Afficher les boutons
     Button play = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 100, 500, 150}, "JOUER", 1};
     Button options = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 + 100, 500, 150}, "OPTIONS", 0};
@@ -473,4 +495,7 @@ void home_page_SDL(Tetris *tetris)
         // Mettre à jour l'affichage
         SDL_RenderPresent(renderer);
     }
+
+    // Libération de l'audio
+    Mix_FreeMusic(menu);
 }
