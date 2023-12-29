@@ -99,7 +99,7 @@ void freeImgTextures()
 void close_SDL()
 {
 
-    //On libère la musique de fin
+    // On libère la musique de fin
     Mix_FreeMusic(musics[2]);
 
     freeImgTextures();
@@ -111,7 +111,7 @@ void close_SDL()
     {
         SDL_DestroyWindow(window);
     }
-    //On ferme l'audio
+    // On ferme l'audio
     Mix_CloseAudio();
 
     SDL_Quit();
@@ -170,13 +170,14 @@ void set_icon()
     SDL_FreeSurface(iconSurface);
 }
 
-void initMusicSound(){
-    //Initialiser les musiques
+void initMusicSound()
+{
+    // Initialiser les musiques
     musics[0] = Mix_LoadMUS("assets/music/menu.mp3");
     musics[1] = Mix_LoadMUS("assets/music/game.mp3");
     musics[2] = Mix_LoadMUS("assets/music/end.mp3");
 
-    //Initialiser les sons
+    // Initialiser les sons
 }
 
 void init_SDL()
@@ -222,10 +223,11 @@ void init_SDL()
     font = TTF_OpenFont("assets/ttf/Tetris.ttf", 52);
 
     // Initialisation de l'audio
-    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+    {
         fprintf(stderr, "Erreur Mix_OpenAudio : %s", SDL_GetError());
     }
-    //Initialiser les musiques et les sons
+    // Initialiser les musiques et les sons
     initMusicSound();
 
     // Inialisation des textures des tuiles
@@ -246,7 +248,7 @@ void display_SDL(Tetris *tetris)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    //On met la musique de jeu si elle n'est pas déjà en train de jouer
+    // On met la musique de jeu si elle n'est pas déjà en train de jouer
     if (!Mix_PlayingMusic())
     {
         Mix_PlayMusic(musics[1], -1);
@@ -277,12 +279,38 @@ void display_SDL(Tetris *tetris)
 
 void display_info_SDL(Tetris *tetris)
 {
-    // On est sur le même renderer que display
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
-
+    SDL_Color textColor = {255, 255, 255};
     // Affiche le score
-    // SDL_Rect score = {SCREEN_WIDTH - 200, SCREEN_HEIGHT - 150, 200, 150};
-    // SDL_RenderFillRect(renderer, &score);
+    SDL_Rect scoreRect = {SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 200, 50};
+    SDL_RenderFillRect(renderer, &scoreRect);
+
+    char scoreString[20];
+    snprintf(scoreString, sizeof(scoreString), "Score: %d", tetris->score);
+
+    SDL_Surface *scoreSurface = TTF_RenderText_Solid(font, scoreString, textColor);
+    SDL_Texture *scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+
+    SDL_Rect scoreTextRect = {scoreRect.x + 10, scoreRect.y + 10, scoreSurface->w, scoreSurface->h};
+    SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreTextRect);
+
+    SDL_FreeSurface(scoreSurface);
+    SDL_DestroyTexture(scoreTexture);
+
+    // Affiche le nombre de ligne
+    SDL_Rect linesRect = {SCREEN_WIDTH - 500, SCREEN_HEIGHT - 100, 200, 50};
+    SDL_RenderFillRect(renderer, &linesRect);
+
+    char linesString[20];
+    snprintf(linesString, sizeof(linesString), "Lines: %d", tetris->nbLines);
+
+    SDL_Surface *linesSurface = TTF_RenderText_Solid(font, linesString, textColor);
+    SDL_Texture *linesTexture = SDL_CreateTextureFromSurface(renderer, linesSurface);
+
+    SDL_Rect linesTextRect = {linesRect.x + 10, linesRect.y + 10, linesSurface->w, linesSurface->h};
+    SDL_RenderCopy(renderer, linesTexture, NULL, &linesTextRect);
+
+    SDL_FreeSurface(linesSurface);
+    SDL_DestroyTexture(linesTexture);
 
     // Affiche les Statistique de chaque pièce
     SDL_Rect PieceStats = {250, 40, 400, (SCREEN_HEIGHT * 2 / 4) + 120};
@@ -312,7 +340,6 @@ void display_info_SDL(Tetris *tetris)
         char numberString[10];
         snprintf(numberString, sizeof(numberString), "%d", number);
 
-        SDL_Color textColor = {255, 255, 255};
         SDL_Surface *textSurface = TTF_RenderText_Solid(font, numberString, textColor);
         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 
@@ -327,7 +354,6 @@ void display_info_SDL(Tetris *tetris)
             exit(EXIT_FAILURE);
         }
 
-        // Clean up text resources after rendering the text for this iteration
         SDL_DestroyTexture(textTexture);
         SDL_FreeSurface(textSurface);
 
@@ -335,8 +361,16 @@ void display_info_SDL(Tetris *tetris)
     }
 
     // Affiche le niveau
-    SDL_Rect level = {250, SCREEN_HEIGHT - 200, 400, 100};
-    SDL_RenderFillRect(renderer, &level);
+    char levelString[20];
+    sprintf(levelString, "Niveau %d", tetris->level);
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, levelString, textColor);
+    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+    SDL_Rect textRect = {300, SCREEN_HEIGHT - 150, textSurface->w, textSurface->h};
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
 
     // Affiche la prochaine pièce
     SDL_Rect nextpiece = {SCREEN_WIDTH - 600, 40, 400, SCREEN_HEIGHT / 4};
@@ -426,7 +460,13 @@ void displayButton(Button *button)
     SDL_RenderFillRect(renderer, &buttonRect);
 
     // Rendre le bouton à l'écran
-    SDL_RenderCopy(renderer, buttonTexture, NULL, &buttonRect);
+    if (SDL_RenderCopy(renderer, buttonTexture, NULL, &buttonRect) != 0)
+    {
+        close_SDL();
+        SDL_FreeSurface(buttonSurface);
+        SDL_DestroyTexture(buttonTexture);
+        exit(EXIT_FAILURE);
+    }
 
     // Libération correcte de la surface et de la texture du bouton
     SDL_FreeSurface(buttonSurface);
@@ -443,7 +483,7 @@ void home_page_SDL(Tetris *tetris)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    //Définir la musique
+    // Définir la musique
     Mix_PlayMusic(musics[0], -1);
 
     // Afficher les boutons
@@ -484,7 +524,7 @@ void home_page_SDL(Tetris *tetris)
                     {
                         tetris->state = CLOSE;
                     }
-                    else if(options.selected == 1)
+                    else if (options.selected == 1)
                     {
                         tetris->state = OPTION;
                     }
@@ -509,7 +549,8 @@ void home_page_SDL(Tetris *tetris)
                     break;
                 case SDLK_z:
                 case SDLK_UP:
-                    if(play.selected == 1){
+                    if (play.selected == 1)
+                    {
                         exit.selected = 1;
                         play.selected = 0;
                     }
@@ -537,7 +578,8 @@ void home_page_SDL(Tetris *tetris)
     Mix_FreeMusic(musics[0]);
 }
 
-void end_screen_SDL(Tetris *tetris, FILE *f){
+void end_screen_SDL(Tetris *tetris, FILE *f)
+{
 
     tetris->state = END;
 
@@ -545,16 +587,16 @@ void end_screen_SDL(Tetris *tetris, FILE *f){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    //On libère la musique du jeu
+    // On libère la musique du jeu
     Mix_FreeMusic(musics[1]);
 
-    //On met la musique de fin si elle n'est pas déjà en train de jouer
+    // On met la musique de fin si elle n'est pas déjà en train de jouer
     if (!Mix_PlayingMusic())
     {
         Mix_PlayMusic(musics[2], -1);
     }
 
-    //sleep 3 secondes
+    // sleep 3 secondes
     SDL_Delay(3000);
 
     tetris->state = CLOSE;
