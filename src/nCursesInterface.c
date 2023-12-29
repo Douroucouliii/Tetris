@@ -65,57 +65,74 @@ void close_nCurses()
 }
 
 // Fonction pour calculer le délai en fonction du niveau (en utilisant les frames ou cellules de grille)
-int delay(int niveau) {
+int delay(int niveau)
+{
     int frames;
 
     // le nombre de frames/cellules de grille par pièce en fonction du niveau
-    switch (niveau) {
-        case 0:
-            frames = 48;
-            break;
-        case 1:
-            frames = 43;
-            break;
-        case 2:
-            frames = 38;
-            break;
-        case 3:
-            frames = 33;
-            break;
-        case 4:
-            frames = 28;
-            break;
-        case 5:
-            frames = 23;
-            break;
-        case 6:
-            frames = 18;
-            break;
-        case 7:
-            frames = 13;
-            break;
-        case 8:
-            frames = 8;
-            break;
-        case 9:
-            frames = 6;
-            break;
-        case 10: case 11: case 12:
-            frames = 5;
-            break;
-        case 13: case 14: case 15:
-            frames = 4;
-            break;
-        case 16: case 17: case 18:
-            frames = 3;
-            break;
-        case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28:
-            frames = 2;
-            break;
-        //Niveau >28 : Killscreen : seul mattéo pourrait survivre ici mais bon on sait jamais :)
-        default:
-            frames = 1; //C'est la mort
-            break;
+    switch (niveau)
+    {
+    case 0:
+        frames = 48;
+        break;
+    case 1:
+        frames = 43;
+        break;
+    case 2:
+        frames = 38;
+        break;
+    case 3:
+        frames = 33;
+        break;
+    case 4:
+        frames = 28;
+        break;
+    case 5:
+        frames = 23;
+        break;
+    case 6:
+        frames = 18;
+        break;
+    case 7:
+        frames = 13;
+        break;
+    case 8:
+        frames = 8;
+        break;
+    case 9:
+        frames = 6;
+        break;
+    case 10:
+    case 11:
+    case 12:
+        frames = 5;
+        break;
+    case 13:
+    case 14:
+    case 15:
+        frames = 4;
+        break;
+    case 16:
+    case 17:
+    case 18:
+        frames = 3;
+        break;
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
+    case 26:
+    case 27:
+    case 28:
+        frames = 2;
+        break;
+    // Niveau >28 : Killscreen : seul mattéo pourrait survivre ici mais bon on sait jamais :)
+    default:
+        frames = 1; // C'est la mort
+        break;
     }
 
     // Calculer le délai en fonction du nombre de frames par pièce
@@ -128,28 +145,48 @@ char input_nCurses(Tetris *tetris)
 {
     int delai = delay(tetris->level);
 
-    //Si le jeu a commencé
-    if(tetris->state == GAME){
-        //On crée un timeout pour la fenetre pour faire descendre nos pieces
+    // Si le jeu a commencé
+    if (tetris->state == GAME)
+    {
+        // On crée un timeout pour la fenetre pour faire descendre nos pieces
         timeout(delai);
     }
 
     char c = getch();
     switch (c)
     {
-    //Déplacement/rotation de la pièce
-    case 'q':case 'd':case 's':case 'z':case 'a':case 'e':
-    //Relancer une partie
+    // Déplacement/rotation de la pièce
+    case 'q':
+    case 'd':
+    case 's':
+    case 'z':
+    case 'a':
+    case 'e':
+    // Relancer une partie
     case 'r':
-    //Choix du niveau
-    case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
+    // Choix du niveau
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
         return c;
         break;
-    //Déplacement/rotation de la pièce
-    case 'Q':case 'D':case 'S':case 'Z':case 'A':case 'E':
-        return c+'A'-'a';
+    // Déplacement/rotation de la pièce
+    case 'Q':
+    case 'D':
+    case 'S':
+    case 'Z':
+    case 'A':
+    case 'E':
+        return c + 'A' - 'a';
         break;
-    //x quand on sort du timeout (permet de sortir de l'attente de l'input et de faire descendre la pièce)
+    // x quand on sort du timeout (permet de sortir de l'attente de l'input et de faire descendre la pièce)
     case ERR:
         return 'x';
         break;
@@ -161,7 +198,7 @@ char input_nCurses(Tetris *tetris)
 // Affiche le tetris dans la console
 void display_nCurses(Tetris *tetris)
 {
-    //On supprime le menu
+    // On supprime le menu
     wclear(home_page);
 
     // La taille du terminal
@@ -203,7 +240,8 @@ void display_nCurses(Tetris *tetris)
     wrefresh(win);
 }
 
-void display_info_nCurses(Tetris *tetris){
+void display_info_nCurses(Tetris *tetris)
+{
     // La taille du terminal
     int term_rows, term_cols;
     getmaxyx(stdscr, term_rows, term_cols);
@@ -221,23 +259,28 @@ void display_info_nCurses(Tetris *tetris){
     mvwprintw(score, 3, 5, "Score : %d", tetris->score);
     mvwprintw(score, 6, 5, "Lignes : %d", tetris->nbLines);
 
-    //Afficher un fenetre à gauche pour les statistiques des pieces
-    piece_stats = newwin((int)(game_rows + 2) * 3/4, 20, game_starty, game_startx - 20);
-    box(piece_stats, 0, 0);   
+    // Afficher un fenetre à gauche pour les statistiques des pieces
+    piece_stats = newwin((int)(game_rows + 2) * 3 / 4, 20, game_starty, game_startx - 20);
+    box(piece_stats, 0, 0);
 
     // Afficher chaque pièce avec sa statistique dans la fenêtre pieceStats
-    for (int i = 0; i < 7; i++){
-        for (int j = 0; j < 4; j++){
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
             wattron(piece_stats, COLOR_PAIR(tetris->tmpPiece[i]->c));
-            //Le I est plus grand que les autres pièces donc on le décale un peu plus
-            if(i==6){
-                mvwprintw(piece_stats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 3, "  ");
-            }else{
-                mvwprintw(piece_stats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1]*2 - 5, "  ");
+            // Le I est plus grand que les autres pièces donc on le décale un peu plus
+            if (i == 6)
+            {
+                mvwprintw(piece_stats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1] * 2 - 3, "  ");
+            }
+            else
+            {
+                mvwprintw(piece_stats, i * 4 + 3 + tetris->tmpPiece[i]->coords[j][0], 2 + tetris->tmpPiece[i]->coords[j][1] * 2 - 5, "  ");
             }
             wattroff(piece_stats, COLOR_PAIR(tetris->tmpPiece[i]->c));
         }
-        //Ajouter la stat apres la piece
+        // Ajouter la stat apres la piece
         mvwprintw(piece_stats, i * 4 + 3, 14, "%d", tetris->pieceStats[i]);
     }
 
@@ -249,23 +292,27 @@ void display_info_nCurses(Tetris *tetris){
     // Afficher la prochaine piece
     next_piece = newwin(game_rows / 4 + 1, 20, game_starty, game_startx + game_cols + 2);
     box(next_piece, 0, 0);
-    for (int j = 0; j < 4; j++){
+    for (int j = 0; j < 4; j++)
+    {
         wattron(next_piece, COLOR_PAIR(tetris->nextPiece->c));
-        //Si la piece est un I ou un O on doit l'afficher différent car elle prend pas la meme place
-        if(tetris->nextPiece->name == 'I'){
+        // Si la piece est un I ou un O on doit l'afficher différent car elle prend pas la meme place
+        if (tetris->nextPiece->name == 'I')
+        {
             mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 4, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
             mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 5, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
-        }else if(tetris->nextPiece->name == 'O'){
+        }
+        else if (tetris->nextPiece->name == 'O')
+        {
             mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 3, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
             mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 4, tetris->nextPiece->coords[j][1] * 4 - 10, "    ");
-        }else{
+        }
+        else
+        {
             mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 3, tetris->nextPiece->coords[j][1] * 4 - 12, "    ");
             mvwprintw(next_piece, tetris->nextPiece->coords[j][0] * 2 + 4, tetris->nextPiece->coords[j][1] * 4 - 12, "    ");
         }
         wattroff(next_piece, COLOR_PAIR(tetris->nextPiece->c));
     }
-
-
 
     wrefresh(score);
     wrefresh(piece_stats);
@@ -273,7 +320,8 @@ void display_info_nCurses(Tetris *tetris){
     wrefresh(next_piece);
 }
 
-void home_page_nCurses(Tetris *tetris) {
+void home_page_nCurses(Tetris *tetris)
+{
     // La taille du terminal
     int term_rows, term_cols;
     getmaxyx(stdscr, term_rows, term_cols);
@@ -296,19 +344,20 @@ void home_page_nCurses(Tetris *tetris) {
 
     wrefresh(home_page);
 
-    //Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
+    // Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
 
-    /*char input;
+    char input;
     do
     {
         input = input_nCurses(tetris);
     } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
     tetris->level = atoi(&input);
-    tetris->state = GAME;*/
+    tetris->state = GAME;
 }
 
-void end_screen_nCurses(Tetris *tetris, FILE *f){
-    //On supprime le menu
+void end_screen_nCurses(Tetris *tetris, FILE *f)
+{
+    // On supprime le menu
     wclear(win);
     wclear(score);
     wclear(piece_stats);
@@ -319,22 +368,22 @@ void end_screen_nCurses(Tetris *tetris, FILE *f){
     int term_rows, term_cols;
     getmaxyx(stdscr, term_rows, term_cols);
 
-    //Créer la fenêtre de fin de partie
+    // Créer la fenêtre de fin de partie
     end_screen = newwin(term_rows, term_cols, 0, 0);
     box(end_screen, 0, 0);
 
-    //char name[50];
+    // char name[50];
 
     // Demander à l'utilisateur d'entrer son nom
     /*mvwprintw(end_screen, term_rows / 2 - 2, term_cols / 2 - 13, "Enter your name: ");
     echo();
     scanw("%s", name);
-    */noecho();
+    */
+    noecho();
 
     // Écrire le nom de l'utilisateur et son score dans le fichier
-    //fprintf(f, "%s %d\n", name, tetris->score);
+    // fprintf(f, "%s %d\n", name, tetris->score);
 
- 
     mvwprintw(end_screen, term_rows / 2 - 4, term_cols / 2 - 13, "Your score : %d", tetris->score);
     mvwprintw(end_screen, term_rows / 2, term_cols / 2 - 13, "q to quit");
     mvwprintw(end_screen, term_rows / 2 + 2, term_cols / 2 - 16, "r to restart");

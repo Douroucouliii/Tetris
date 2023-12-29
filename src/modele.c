@@ -127,9 +127,11 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
 
     homescreen(tetris, ui);
 
-    //On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
-    /*while(1){
-        if(tetris->state == MENU){
+    // On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
+    while (1)
+    {
+        if (tetris->state == MENU)
+        {
             homescreen(tetris, ui);
         }
         else if (tetris->state == GAME)
@@ -154,7 +156,7 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             perror("Erreur state\n");
             exit(EXIT_FAILURE);
         }
-    }*/
+    }
 }
 
 void homescreen(Tetris *tetris, userInterface ui)
@@ -169,6 +171,7 @@ void homescreen(Tetris *tetris, userInterface ui)
     do
     {
         input = ui.functions->input(tetris);
+        // On affiche le menu
         ui.functions->home_page(tetris);
     } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
     tetris->level = atoi(&input);
@@ -190,6 +193,7 @@ void game(Tetris *tetris, userInterface ui)
     char input;
     while (tetris->state != END)
     {
+
         // On récupère l'input selon l'interface (SDL ou NCurses)
         input = ui.functions->input(tetris);
 
@@ -254,6 +258,20 @@ void endscreen(Tetris *tetris, userInterface ui)
     {
         perror("Erreur fclose()\n");
         exit(EXIT_FAILURE);
+    }
+
+    // On ferme l'interface (fermer Ncurses ou SDL)
+    ui.functions->close_interface();
+    clear_tetris(tetris, ui);
+
+    // Rejouer si l'utilisateur à choisi de rejouer au lieu de quitter
+    if (input == 'r')
+    {
+        tetris_playGame(tetris, ui);
+    }
+    else
+    {
+        clear_pointeur_fct(ui);
     }
 }
 
