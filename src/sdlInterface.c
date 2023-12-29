@@ -18,8 +18,9 @@ SDL_Renderer *renderer = NULL;
 TTF_Font *font;
 
 SDL_Texture *imageTexture[8];
-Mix_Music **musics[3];
-Mix_Chunk **sounds[10];
+
+Mix_Music *musics[3];
+Mix_Chunk *sounds[10];
 
 SDL_Surface *resizeSurface(SDL_Surface *originalSurface, int newWidth, int newHeight)
 {
@@ -97,6 +98,10 @@ void freeImgTextures()
 
 void close_SDL()
 {
+
+    //On libère la musique de fin
+    Mix_FreeMusic(musics[2]);
+
     freeImgTextures();
     if (renderer != NULL)
     {
@@ -106,6 +111,9 @@ void close_SDL()
     {
         SDL_DestroyWindow(window);
     }
+    //On ferme l'audio
+    Mix_CloseAudio();
+
     SDL_Quit();
 }
 
@@ -162,6 +170,15 @@ void set_icon()
     SDL_FreeSurface(iconSurface);
 }
 
+void initMusicSound(){
+    //Initialiser les musiques
+    musics[0] = Mix_LoadMUS("assets/music/menu.mp3");
+    musics[1] = Mix_LoadMUS("assets/music/game.mp3");
+    musics[2] = Mix_LoadMUS("assets/music/end.mp3");
+
+    //Initialiser les sons
+}
+
 void init_SDL()
 {
     if (0 != SDL_Init(SDL_INIT_VIDEO))
@@ -204,6 +221,13 @@ void init_SDL()
     TTF_Init();
     font = TTF_OpenFont("assets/ttf/Tetris.ttf", 52);
 
+    // Initialisation de l'audio
+    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        fprintf(stderr, "Erreur Mix_OpenAudio : %s", SDL_GetError());
+    }
+    //Initialiser les musiques et les sons
+    initMusicSound();
+
     // Inialisation des textures des tuiles
     initImgTextures();
 
@@ -213,6 +237,9 @@ void init_SDL()
 
 void display_SDL(Tetris *tetris)
 {
+
+    tetris->state = GAME;
+
     if (tetris == NULL)
     {
         fprintf(stderr, "Erreur : pointeur Tetris NULL dans display_sdl");
@@ -221,6 +248,12 @@ void display_SDL(Tetris *tetris)
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    //On met la musique de jeu si elle n'est pas déjà en train de jouer
+    if (!Mix_PlayingMusic())
+    {
+        Mix_PlayMusic(musics[1], -1);
+    }
 
     int offsetX = (SCREEN_WIDTH - tetris->column * CELL_SIZE) / 2;
     int offsetY = (SCREEN_HEIGHT - tetris->line * CELL_SIZE) / 2;
@@ -427,9 +460,14 @@ void displayButton(Button *button)
 void home_page_SDL(Tetris *tetris)
 {
 
+    tetris->state = MENU;
+
     // Définir la couleur de fond
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    //Définir la musique
+    Mix_PlayMusic(musics[0], -1);
 
     // Afficher les boutons
     Button play = {{SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 100, 500, 150}, "JOUER", 1};
@@ -463,11 +501,15 @@ void home_page_SDL(Tetris *tetris)
                     run = false;
                     if (play.selected == 1)
                     {
-                        display_SDL(tetris);
+                        tetris->state = GAME;
                     }
                     else if (exit.selected == 1)
                     {
-                        close_SDL();
+                        tetris->state = CLOSE;
+                    }
+                    else if(options.selected == 1)
+                    {
+                        tetris->state = SELECTION;
                     }
                     break;
                 case SDLK_s:
@@ -504,4 +546,23 @@ void home_page_SDL(Tetris *tetris)
         // Mettre à jour l'affichage
         SDL_RenderPresent(renderer);
     }
+
+    // On libère les ressources musiques
+    Mix_FreeMusic(musics[0]);
+}
+
+void end_screen_SDL(Tetris *tetris, FILE *f){
+
+    tetris->state = END;
+
+    //On libère la musique du jeu
+    Mix_FreeMusic(musics[1]);
+
+    //On met la musique de fin si elle n'est pas déjà en train de jouer
+    if (!Mix_PlayingMusic())
+    {
+        Mix_PlayMusic(musics[2], -1);
+    }
+
+    tetris->state = CLOSE;
 }

@@ -101,3 +101,9 @@ void displayButton(Button *);
  *
  */
 void home_page_SDL(Tetris *);
+
+/**
+ * @brief
+ *
+ */
+void end_screen_SDL(Tetris *, FILE*);

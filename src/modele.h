@@ -38,6 +38,8 @@ enum state
     MENU,  /**< Etat du menu principal */
     GAME,  /**< Etat du jeu */
     END,   /**< Etat de fin de jeu */
+    CLOSE, /**< Etat de fermeture du jeu */
+    SELECTION, /**< Etat de selection de niveau*/
     OPTION /**< Etat des options */
 };
 typedef enum state state;

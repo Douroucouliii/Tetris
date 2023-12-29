@@ -141,6 +141,8 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
         else if (tetris->state == END)
         {
             endscreen(tetris, ui);
+        }
+        else if(tetris->state == CLOSE){
             // On ferme l'interface (fermer Ncurses ou SDL)
             ui.functions->close_interface();
             clear_tetris(tetris, ui);
@@ -165,9 +167,8 @@ void homescreen(Tetris *tetris, userInterface ui)
     ui.functions->home_page(tetris);
 
     // Il faut essayer de déplacer ce bout de code qui suit dans le home page de ncurses pour gérer les input ncurses qui sont différent de SDL
-
     // Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
-    char input;
+    /*char input;
     do
     {
         input = ui.functions->input(tetris);
@@ -175,6 +176,7 @@ void homescreen(Tetris *tetris, userInterface ui)
         ui.functions->home_page(tetris);
     } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
     tetris->level = atoi(&input);
+    */
     tetris->state = GAME;
 }
 
@@ -245,33 +247,22 @@ void endscreen(Tetris *tetris, userInterface ui)
         exit(EXIT_FAILURE);
     }
 
-    char input;
+    ui.functions->end_screen(tetris, f);
+
+    //Bout de code à faire dans le ncurses pour gérer les input
+    /*char input;
     // Ecran de fin de partie (q pour quitter la partie et r pour rejouer)
     do
     {
         input = ui.functions->input(tetris);
         // On affiche la fin de partie
         ui.functions->end_screen(tetris, f);
-    } while (input != 'q' && input != 'r');
+    } while (input != 'q' && input != 'r');*/
 
     if (fclose(f))
     {
         perror("Erreur fclose()\n");
         exit(EXIT_FAILURE);
-    }
-
-    // On ferme l'interface (fermer Ncurses ou SDL)
-    ui.functions->close_interface();
-    clear_tetris(tetris, ui);
-
-    // Rejouer si l'utilisateur à choisi de rejouer au lieu de quitter
-    if (input == 'r')
-    {
-        tetris_playGame(tetris, ui);
-    }
-    else
-    {
-        clear_pointeur_fct(ui);
     }
 }
 
