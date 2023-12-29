@@ -14,6 +14,7 @@ unsigned SCREEN_HEIGHT = 600;
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+TTF_Font *font;
 
 SDL_Texture *imageTexture[8];
 
@@ -196,7 +197,14 @@ void init_SDL()
         close_SDL();
         exit(EXIT_FAILURE);
     }
+    // Initialisation de la Font
+    TTF_Init();
+    font = TTF_OpenFont("assets/ttf/Tetris.ttf", 52);
+
+    // Inialisation des textures des tuiles
     initImgTextures();
+
+    // Set une icone
     set_icon();
 }
 
@@ -230,6 +238,7 @@ void display_SDL(Tetris *tetris)
             }
         }
     }
+    display_info_SDL(tetris);
     SDL_RenderPresent(renderer);
 }
 
@@ -265,12 +274,11 @@ void display_info_SDL(Tetris *tetris)
         offsetY += 100;
     }
     // Affiche le niveau
-    // SDL_Rect level = {250, SCREEN_HEIGHT - 200, 400, 100};
-    // SDL_RenderFillRect(renderer, &level);
+    SDL_Rect level = {250, SCREEN_HEIGHT - 200, 400, 100};
+    SDL_RenderFillRect(renderer, &level);
 
     // Affiche la prochaine pièce
     SDL_Rect nextpiece = {SCREEN_WIDTH - 600, 40, 400, SCREEN_HEIGHT / 4};
-    SDL_RenderFillRect(renderer, &nextpiece);
 
     offsetX = (nextpiece.w - CELL_SIZE) / 2 + 250;
     offsetY = (nextpiece.h - CELL_SIZE) / 2 + 50;

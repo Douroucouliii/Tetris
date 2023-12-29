@@ -125,17 +125,21 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
 
-    homescreen(tetris, ui);
-
-    //On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
-    while(1){
-        if(tetris->state == MENU){
+    // homescreen(tetris, ui);
+    tetris->state = GAME;
+    // On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
+    while (1)
+    {
+        if (tetris->state == MENU)
+        {
             homescreen(tetris, ui);
         }
-        else if(tetris->state == GAME){
+        else if (tetris->state == GAME)
+        {
             game(tetris, ui);
         }
-        else if(tetris->state == END){
+        else if (tetris->state == END)
+        {
             endscreen(tetris, ui);
             // On ferme l'interface (fermer Ncurses ou SDL)
             ui.functions->close_interface();
@@ -143,10 +147,12 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             clear_pointeur_fct(ui);
             return;
         }
-        else if(tetris->state == OPTION){
+        else if (tetris->state == OPTION)
+        {
             return;
         }
-        else{
+        else
+        {
             perror("Erreur state\n");
             exit(EXIT_FAILURE);
         }
@@ -158,9 +164,9 @@ void homescreen(Tetris *tetris, userInterface ui)
 
     ui.functions->home_page(tetris);
 
-    //Il faut essayer de déplacer ce bout de code qui suit dans le home page de ncurses pour gérer les input ncurses qui sont différent de SDL
+    // Il faut essayer de déplacer ce bout de code qui suit dans le home page de ncurses pour gérer les input ncurses qui sont différent de SDL
 
-    //Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
+    // Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
     char input;
     do
     {
@@ -202,7 +208,7 @@ void game(Tetris *tetris, userInterface ui)
                 // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
                 refresh_board(tetris);
                 delete_all_line(tetris);
-                //sleep_NES(tetris);
+                // sleep_NES(tetris);
                 get_piece(tetris);
             }
             break;
@@ -251,7 +257,6 @@ void endscreen(Tetris *tetris, userInterface ui)
         perror("Erreur fclose()\n");
         exit(EXIT_FAILURE);
     }
-
 }
 
 PieceConfig *get_next_piece(Tetris *tetris)
