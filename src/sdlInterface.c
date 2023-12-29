@@ -681,9 +681,100 @@ void home_page_SDL(Tetris *tetris)
     Mix_FreeMusic(musics[0]);
 }
 
+void player_name_screen(SDL_Color textColor, char *playerName)
+{
+    SDL_Rect textInputRect = {100, 100, 500, 50};
+    SDL_StartTextInput();
+
+    int quit = 0;
+    SDL_Event event;
+    while (!quit)
+    {
+        // Effacer l'écran
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+        // Gérer les événements
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                close_SDL();
+                exit(EXIT_SUCCESS);
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_RETURN:
+                    if (strcmp(playerName, "") == 0)
+                    {
+                        continue;
+                    }
+                    else if (strlen(playerName) > 0)
+                    {
+                        quit = 1;
+                        break;
+                    }
+                case SDLK_BACKSPACE:
+                    if (strlen(playerName) > 0)
+                    {
+                        playerName[strlen(playerName) - 1] = '\0';
+                    }
+                    break;
+                default:
+                    break;
+                }
+                break;
+            case SDL_TEXTINPUT:
+                if (strlen(playerName) < 20)
+                {
+                    strcat(playerName, event.text.text);
+                }
+                break;
+            }
+        }
+
+        // Afficher le nom du joueur
+        if (strlen(playerName) > 0)
+        {
+            SDL_Surface *textSurface = TTF_RenderText_Solid(font, playerName, textColor);
+            if (textSurface == NULL)
+            {
+                fprintf(stderr, "Erreur de rendu du texte : %s\n", TTF_GetError());
+                close_SDL();
+                exit(EXIT_FAILURE);
+            }
+            SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+            if (textTexture == NULL)
+            {
+                fprintf(stderr, "Erreur de création de texture : %s\n", SDL_GetError());
+                SDL_FreeSurface(textSurface);
+                close_SDL();
+                exit(EXIT_FAILURE);
+            }
+
+            SDL_Rect textRect = {textInputRect.x + 10, textInputRect.y + 10, textSurface->w, textSurface->h};
+            if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
+            {
+                fprintf(stderr, "Erreur de rendu de texture : %s\n", SDL_GetError());
+                SDL_FreeSurface(textSurface);
+                SDL_DestroyTexture(textTexture);
+                close_SDL();
+                exit(EXIT_FAILURE);
+            }
+
+            SDL_FreeSurface(textSurface);
+            SDL_DestroyTexture(textTexture);
+        }
+
+        SDL_RenderPresent(renderer);
+    }
+    SDL_StopTextInput();
+}
+
 void end_screen_SDL(Tetris *tetris, FILE *f)
 {
-
     tetris->state = END;
 
     // Définir la couleur de fond
@@ -698,10 +789,9 @@ void end_screen_SDL(Tetris *tetris, FILE *f)
     {
         Mix_PlayMusic(musics[2], -1);
     }
-
-    // sleep 3 secondes
-    SDL_Delay(3000);
-
+    SDL_Color textColor = {255, 255, 255};
+    char playerName[30];
+    player_name_screen(textColor, playerName);
     tetris->state = CLOSE;
 }
 
