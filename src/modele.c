@@ -149,9 +149,15 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             clear_pointeur_fct(ui);
             return;
         }
+
+        //Pas encore géré donc je close
         else if (tetris->state == OPTION)
         {
-            return;
+            tetris->state = CLOSE;
+        }
+        else if (tetris->state == SELECTION)
+        {
+            tetris->state = CLOSE;
         }
         else
         {
@@ -177,7 +183,6 @@ void homescreen(Tetris *tetris, userInterface ui)
     } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
     tetris->level = atoi(&input);
     */
-    tetris->state = GAME;
 }
 
 void game(Tetris *tetris, userInterface ui)

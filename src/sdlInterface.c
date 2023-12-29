@@ -237,9 +237,6 @@ void init_SDL()
 
 void display_SDL(Tetris *tetris)
 {
-
-    tetris->state = GAME;
-
     if (tetris == NULL)
     {
         fprintf(stderr, "Erreur : pointeur Tetris NULL dans display_sdl");
@@ -389,26 +386,6 @@ char input_SDL(Tetris *tetris)
                 return 'a';
             case SDLK_e:
                 return 'e';
-            case SDLK_0:
-                return '0';
-            case SDLK_1:
-                return '1';
-            case SDLK_2:
-                return '2';
-            case SDLK_3:
-                return '3';
-            case SDLK_4:
-                return '4';
-            case SDLK_5:
-                return '5';
-            case SDLK_6:
-                return '6';
-            case SDLK_7:
-                return '7';
-            case SDLK_8:
-                return '8';
-            case SDLK_9:
-                return '9';
             }
             break;
         }
@@ -509,7 +486,7 @@ void home_page_SDL(Tetris *tetris)
                     }
                     else if(options.selected == 1)
                     {
-                        tetris->state = SELECTION;
+                        tetris->state = OPTION;
                     }
                     break;
                 case SDLK_s:
@@ -524,10 +501,19 @@ void home_page_SDL(Tetris *tetris)
                         exit.selected = 1;
                         options.selected = 0;
                     }
+                    else if (exit.selected == 1)
+                    {
+                        play.selected = 1;
+                        exit.selected = 0;
+                    }
                     break;
                 case SDLK_z:
                 case SDLK_UP:
-                    if (options.selected == 1)
+                    if(play.selected == 1){
+                        exit.selected = 1;
+                        play.selected = 0;
+                    }
+                    else if (options.selected == 1)
                     {
                         play.selected = 1;
                         options.selected = 0;
@@ -555,6 +541,10 @@ void end_screen_SDL(Tetris *tetris, FILE *f){
 
     tetris->state = END;
 
+    // Définir la couleur de fond
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
     //On libère la musique du jeu
     Mix_FreeMusic(musics[1]);
 
@@ -563,6 +553,9 @@ void end_screen_SDL(Tetris *tetris, FILE *f){
     {
         Mix_PlayMusic(musics[2], -1);
     }
+
+    //sleep 3 secondes
+    SDL_Delay(3000);
 
     tetris->state = CLOSE;
 }
