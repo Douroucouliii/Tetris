@@ -4,7 +4,7 @@
 #include "SDL2/SDL.h"
 
 /**
- * @brief
+ * @brief C'est une structure qui permet d'imiter le comportement d'un bouton.
  *
  */
 typedef struct
@@ -15,58 +15,54 @@ typedef struct
 } Button;
 
 /**
- * @brief
- *
- * @return SDL_Surface*
- */
-SDL_Surface *resizeSurface(SDL_Surface *, int, int);
-
-/**
- * @brief
- *
+ * @brief C'est une fonction qui prend en paramètre une énumération de type color et qui retourne un char* correspondant à cette enum.
+ * @param color - Une énumération de couleur dans modele.h
  * @return char*
  */
 char *ColorToString(color);
 
 /**
- * @brief
- *
+ * @brief C'est une fonction qui retourne l'indice d'une couleur dans son énumération.
+ * @param color -  Une énumération de couleur dans modele.h
  * @return int
  */
 int GetIndiceByColor(color);
 
 /**
- * @brief
+ * @brief Une fonction qui permet de libérer la mémoire pour le Tableau ImgTextures.
  *
  */
 void freeImgTextures();
 
 /**
- * @brief
+ * @brief Une fonction qui permet de trouver le chemin ( char* ) dans le dossier images par rapport à son nom.
+ * Exemple :  On cherche BLUE qui donne notre tuile Bleu.
+ * On met alors en paramètre "BLUE" et celui-ci nous ressort : "assets/images/BLUE.bmp"
  *
  * @return char*
  */
 char *GetImagePath(char *);
 
 /**
- * @brief
+ * @brief Une fonction qui initialise le tableau ImgTextures qui prend toutes les textures de nos tuiles.
  *
  */
 void initImgTextures();
+
 /**
- * @brief Set the icon object
+ * @brief Une fonction qui met une icône sur notre fenêtre SDL
  *
  */
 void set_icon();
 
 /**
- * @brief
+ * @brief Cette fonction permet d'initialiser la plus part de nos besoins ( La fenêtre , ...)
  *
  */
 void init_SDL();
 
 /**
- * @brief
+ * @brief Cette fonction permet de quitter notre programme SDL
  *
  */
 void close_SDL();
@@ -75,11 +71,17 @@ void close_SDL();
  * @brief
  *
  */
+void initBackground();
+
+/**
+ * @brief Cette fonction affiche notre plateau de tetris
+ * @param tetris*
+ */
 void display_SDL(Tetris *);
 
 /**
- * @brief
- *
+ * @brief Cette fonction affiche la prochaine pièce, les statistiques des pièces, le score du joueur, les lignes,..
+ *@param tetris*
  */
 void display_info_SDL(Tetris *);
 

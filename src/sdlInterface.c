@@ -10,46 +10,19 @@
 #define CELL_SIZE 50
 
 // Par défaut
-unsigned SCREEN_WIDTH = 800;
-unsigned SCREEN_HEIGHT = 600;
+int SCREEN_WIDTH = 800;
+int SCREEN_HEIGHT = 600;
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
-TTF_Font *font;
+TTF_Font *font = NULL;
 
 SDL_Texture *imageTexture[8];
+SDL_Texture *backgroundTexture = NULL;
+SDL_Surface *backgroundSurface = NULL;
 
 Mix_Music *musics[3];
 Mix_Chunk *sounds[10];
-
-SDL_Surface *resizeSurface(SDL_Surface *originalSurface, int newWidth, int newHeight)
-{
-    if (!originalSurface)
-    {
-        fprintf(stderr, "Erreur : surface d'origine non valide\n");
-        return NULL;
-    }
-
-    // Crée une nouvelle surface avec la nouvelle taille
-    SDL_Surface *newSurface = SDL_CreateRGBSurface(0, newWidth, newHeight, originalSurface->format->BitsPerPixel,
-                                                   originalSurface->format->Rmask, originalSurface->format->Gmask,
-                                                   originalSurface->format->Bmask, originalSurface->format->Amask);
-    if (!newSurface)
-    {
-        fprintf(stderr, "Erreur lors de la création de la nouvelle surface : %s\n", SDL_GetError());
-        return NULL;
-    }
-
-    // Redimensionne l'image
-    if (SDL_BlitScaled(originalSurface, NULL, newSurface, NULL) != 0)
-    {
-        fprintf(stderr, "Erreur lors du redimensionnement de l'image : %s\n", SDL_GetError());
-        SDL_FreeSurface(newSurface);
-        return NULL;
-    }
-
-    return newSurface;
-}
 
 char *ColorToString(color color)
 {
@@ -96,6 +69,18 @@ void freeImgTextures()
     }
 }
 
+void cleanBackground()
+{
+    if (!backgroundSurface)
+    {
+        SDL_FreeSurface(backgroundSurface);
+    }
+    if (!backgroundTexture)
+    {
+        SDL_DestroyTexture(backgroundTexture);
+    }
+}
+
 void close_SDL()
 {
 
@@ -113,7 +98,8 @@ void close_SDL()
     }
     // On ferme l'audio
     Mix_CloseAudio();
-
+    TTF_CloseFont(font);
+    cleanBackground();
     SDL_Quit();
 }
 
@@ -152,6 +138,14 @@ void initImgTextures()
         int indice = GetIndiceByColor(current);
         imageTexture[indice] = SDL_CreateTextureFromSurface(renderer, image);
 
+        if (!imageTexture[indice])
+        {
+            fprintf(stderr, "Erreur : texture image non charger : %s \n", SDL_GetError());
+            SDL_FreeSurface(image);
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+
         SDL_FreeSurface(image);
         free(ImagePath);
     }
@@ -189,6 +183,28 @@ void initMusicSound()
     sounds[8] = Mix_LoadWAV("assets/music/gameover.wav");
 }
 
+void initBackground()
+{
+
+    if (!backgroundTexture && !backgroundSurface)
+    {
+        char *imageBack = GetImagePath("fond");
+        backgroundSurface = SDL_LoadBMP(imageBack);
+        if (!backgroundSurface)
+        {
+            fprintf(stderr, "Erreur lors du chargement de l'image de fond : %s \n", SDL_GetError());
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+
+        SDL_Surface *resize = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+        SDL_BlitScaled(backgroundSurface, NULL, resize, NULL);
+
+        backgroundTexture = SDL_CreateTextureFromSurface(renderer, resize);
+        SDL_FreeSurface(resize);
+    }
+}
+
 void init_SDL()
 {
     if (0 != SDL_Init(SDL_INIT_VIDEO))
@@ -211,7 +227,7 @@ void init_SDL()
     SCREEN_WIDTH = mode.w;
 
     // On crée notre fenêtre SDL
-    window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if (window == NULL)
     {
         fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());
@@ -227,9 +243,10 @@ void init_SDL()
         close_SDL();
         exit(EXIT_FAILURE);
     }
+
     // Initialisation de la Font
     TTF_Init();
-    font = TTF_OpenFont("assets/ttf/Tetris.ttf", 52);
+    font = TTF_OpenFont("assets/ttf/calibri.ttf", 42);
 
     // Initialisation de l'audio
     if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
@@ -237,13 +254,18 @@ void init_SDL()
         fprintf(stderr, "Erreur Mix_OpenAudio : %s", SDL_GetError());
     }
     Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+
     // Initialiser les musiques et les sons
     initMusicSound();
+
     // Initialiser le nombre de canaux maximum
     Mix_AllocateChannels(16);
 
     // Inialisation des textures des tuiles
     initImgTextures();
+
+    // Initialisation de l'image du background
+    initBackground();
 
     // Set une icone
     set_icon();
@@ -253,12 +275,20 @@ void display_SDL(Tetris *tetris)
 {
     if (tetris == NULL)
     {
-        fprintf(stderr, "Erreur : pointeur Tetris NULL dans display_sdl");
-        return;
+        fprintf(stderr, "Erreur : Pointeur Tetris NULL dans display_SDL");
+        close_SDL();
+        exit(EXIT_FAILURE);
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    if (SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL) != 0)
+    {
+        fprintf(stderr, "Erreur lors du rendu de l'image de fond : %s \n", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
 
     // On met la musique de jeu si elle n'est pas déjà en train de jouer
     if (!Mix_PlayingMusic())
@@ -289,44 +319,62 @@ void display_SDL(Tetris *tetris)
     SDL_RenderPresent(renderer);
 }
 
-void display_info_SDL(Tetris *tetris)
+void AffichageTexte(char *texte, SDL_Rect rect, SDL_Color textColor)
 {
-    SDL_Color textColor = {255, 255, 255};
-    // Affiche le score
-    SDL_Rect scoreRect = {SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 200, 50};
-    SDL_RenderFillRect(renderer, &scoreRect);
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, texte, textColor);
+    if (!textSurface)
+    {
+        fprintf(stderr, "Erreur Surface (Affichage Texte) : %s\n", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
 
-    char scoreString[20];
-    snprintf(scoreString, sizeof(scoreString), "Score: %d", tetris->score);
+    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    if (!textTexture)
+    {
+        fprintf(stderr, "Erreur Texture (Affichage Texte) : %s\n", SDL_GetError());
+        SDL_FreeSurface(textSurface);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
 
-    SDL_Surface *scoreSurface = TTF_RenderText_Solid(font, scoreString, textColor);
-    SDL_Texture *scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+    SDL_Rect textRect = {rect.x + 10, rect.y + 10, textSurface->w, textSurface->h};
+    if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
+    {
+        SDL_FreeSurface(textSurface);
+        SDL_DestroyTexture(textTexture);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
 
-    SDL_Rect scoreTextRect = {scoreRect.x + 10, scoreRect.y + 10, scoreSurface->w, scoreSurface->h};
-    SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreTextRect);
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+}
 
-    SDL_FreeSurface(scoreSurface);
-    SDL_DestroyTexture(scoreTexture);
+void AfficheNextPiece(Tetris *tetris)
+{
+    SDL_Rect nextpiece = {SCREEN_WIDTH - 780, 0, 400, SCREEN_HEIGHT / 4};
 
-    // Affiche le nombre de ligne
-    SDL_Rect linesRect = {SCREEN_WIDTH - 500, SCREEN_HEIGHT - 100, 200, 50};
-    SDL_RenderFillRect(renderer, &linesRect);
+    int offsetX = (nextpiece.w - CELL_SIZE) / 2 + 250;
+    int offsetY = (nextpiece.h - CELL_SIZE) / 2 + 50;
 
-    char linesString[20];
-    snprintf(linesString, sizeof(linesString), "Lines: %d", tetris->nbLines);
+    for (int j = 0; j < 4; j++)
+    {
+        int cellX = nextpiece.x + offsetX - tetris->nextPiece->coords[j][1] * CELL_SIZE;
+        int cellY = nextpiece.y + offsetY - tetris->nextPiece->coords[j][0] * CELL_SIZE;
+        int indice = GetIndiceByColor(tetris->nextPiece->c);
+        SDL_Rect cellRect = {cellX, cellY, CELL_SIZE, CELL_SIZE};
 
-    SDL_Surface *linesSurface = TTF_RenderText_Solid(font, linesString, textColor);
-    SDL_Texture *linesTexture = SDL_CreateTextureFromSurface(renderer, linesSurface);
+        if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &cellRect) != 0)
+        {
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+    }
+}
 
-    SDL_Rect linesTextRect = {linesRect.x + 10, linesRect.y + 10, linesSurface->w, linesSurface->h};
-    SDL_RenderCopy(renderer, linesTexture, NULL, &linesTextRect);
-
-    SDL_FreeSurface(linesSurface);
-    SDL_DestroyTexture(linesTexture);
-
-    // Affiche les Statistique de chaque pièce
-    SDL_Rect PieceStats = {250, 40, 400, (SCREEN_HEIGHT * 2 / 4) + 120};
-
+void AfficheStatPiece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
+{
     int offsetY = 10;
     int offsetX = 50;
     int textOffsetX = 150;
@@ -335,8 +383,8 @@ void display_info_SDL(Tetris *tetris)
     {
         for (int j = 0; j < 4; j++)
         {
-            int cellX = PieceStats.x - offsetX + tetris->tmpPiece[i]->coords[j][1] * (CELL_SIZE / 2);
-            int cellY = PieceStats.y + offsetY + tetris->tmpPiece[i]->coords[j][0] * (CELL_SIZE / 2);
+            int cellX = rect.x - offsetX + tetris->tmpPiece[i]->coords[j][1] * (CELL_SIZE / 2);
+            int cellY = rect.y + offsetY + tetris->tmpPiece[i]->coords[j][0] * (CELL_SIZE / 2);
             int indice = GetIndiceByColor(tetris->tmpPiece[i]->c);
             SDL_Rect cellRect = {cellX, cellY, CELL_SIZE / 2, CELL_SIZE / 2};
 
@@ -355,8 +403,8 @@ void display_info_SDL(Tetris *tetris)
         SDL_Surface *textSurface = TTF_RenderText_Solid(font, numberString, textColor);
         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 
-        int textX = PieceStats.x + offsetX + textOffsetX;
-        int textY = PieceStats.y + offsetY;
+        int textX = rect.x + offsetX + textOffsetX;
+        int textY = rect.y + offsetY;
 
         SDL_Rect textRect = {textX, textY, textSurface->w, textSurface->h};
 
@@ -369,40 +417,64 @@ void display_info_SDL(Tetris *tetris)
         SDL_DestroyTexture(textTexture);
         SDL_FreeSurface(textSurface);
 
-        offsetY += 100;
+        offsetY += 80;
+    }
+}
+
+void display_info_SDL(Tetris *tetris)
+{
+    if (tetris == NULL)
+    {
+        fprintf(stderr, "Erreur : pointeur Tetris NULL dans display_info_SDL");
+        close_SDL();
+        exit(EXIT_FAILURE);
     }
 
-    // Affiche le niveau
+    SDL_Color textColor = {255, 255, 255};
+
+    // Affiche le titre score
+    SDL_Rect scoreRect = {SCREEN_WIDTH - 680, SCREEN_HEIGHT - 335, 200, 50};
+    AffichageTexte("Score", scoreRect, textColor);
+
+    // Affiche le score du joueur
+    SDL_Rect scoreP = {SCREEN_WIDTH - 650, SCREEN_HEIGHT - 280, 200, 50};
+
+    char ScoreString[10];
+    snprintf(ScoreString, sizeof(ScoreString), "%d", tetris->score);
+    AffichageTexte(ScoreString, scoreP, textColor);
+
+    // Affiche le titre Stats
+    SDL_Rect Stats = {450, 20, 100, 40};
+    AffichageTexte("Count", Stats, textColor);
+
+    // Affiche les Statistique de chaque pièce
+    SDL_Rect PieceStats = {450, 80, 400, (SCREEN_HEIGHT * 2 / 4) + 120};
+    AfficheStatPiece(tetris, PieceStats, textColor);
+
+    // Affiche du titre niveau
+    SDL_Rect NameLevel = {450, SCREEN_HEIGHT - 340, 100, 40};
+    AffichageTexte("Level", NameLevel, textColor);
+
+    // Affichage du Niveau du joueur
+    SDL_Rect rectLevel = {550, SCREEN_HEIGHT - 220, 100, 40};
     char levelString[20];
-    sprintf(levelString, "Niveau %d", tetris->level);
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, levelString, textColor);
-    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    sprintf(levelString, "%d", tetris->level);
 
-    SDL_Rect textRect = {300, SCREEN_HEIGHT - 150, textSurface->w, textSurface->h};
-    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+    AffichageTexte(levelString, rectLevel, textColor);
 
-    SDL_FreeSurface(textSurface);
-    SDL_DestroyTexture(textTexture);
+    //  Affiche le nombre de ligne clear par le joueur
+    SDL_Rect linesRect = {450, SCREEN_HEIGHT - 150, 100, 40};
+
+    char LineString[20];
+    snprintf(LineString, sizeof(LineString), "Line clear : %d", tetris->nbLines);
+    AffichageTexte(LineString, linesRect, textColor);
+
+    // Affiche le titre Next
+    SDL_Rect nextP = {SCREEN_WIDTH - 680, 20, 100, 40};
+    AffichageTexte("Next", nextP, textColor);
 
     // Affiche la prochaine pièce
-    SDL_Rect nextpiece = {SCREEN_WIDTH - 600, 40, 400, SCREEN_HEIGHT / 4};
-
-    offsetX = (nextpiece.w - CELL_SIZE) / 2 + 250;
-    offsetY = (nextpiece.h - CELL_SIZE) / 2 + 50;
-
-    for (int j = 0; j < 4; j++)
-    {
-        int cellX = nextpiece.x + offsetX - tetris->nextPiece->coords[j][1] * CELL_SIZE;
-        int cellY = nextpiece.y + offsetY - tetris->nextPiece->coords[j][0] * CELL_SIZE;
-        int indice = GetIndiceByColor(tetris->nextPiece->c);
-        SDL_Rect cellRect = {cellX, cellY, CELL_SIZE, CELL_SIZE};
-
-        if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &cellRect) != 0)
-        {
-            close_SDL();
-            exit(EXIT_FAILURE);
-        }
-    }
+    AfficheNextPiece(tetris);
 
     SDL_RenderPresent(renderer);
 }
@@ -485,46 +557,46 @@ int delay_SDL(int niveau)
 char input_SDL(Tetris *tetris)
 {
     SDL_Event event;
-
     int delayTime = delay_SDL(tetris->level);
     int startTime = SDL_GetTicks();
+    int lastDescentTime = startTime;
 
-    while (1)
+    // Attendre un événement ou jusqu'à ce que le délai soit écoulé
+    while (SDL_PollEvent(&event) || (SDL_GetTicks() - startTime < delayTime))
     {
         SDL_Delay(10);
 
-        int elapsedTime = SDL_GetTicks() - startTime;
-
-        if (elapsedTime >= delayTime)
+        if (event.type == SDL_QUIT)
         {
-            return 's';
+            close_SDL();
+            exit(EXIT_SUCCESS);
         }
-
-        // Vérifier les événements SDL
-        while (SDL_PollEvent(&event))
+        else if (event.type == SDL_KEYDOWN)
         {
-            switch (event.type)
+            switch (event.key.keysym.sym)
             {
-            case SDL_QUIT:
-                close_SDL();
-                exit(EXIT_SUCCESS);
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_q:
-                    return 'q';
-                case SDLK_d:
-                    return 'd';
-                case SDLK_s:
-                    return 's';
-                case SDLK_a:
-                    return 'a';
-                case SDLK_e:
-                    return 'e';
-                }
-                break;
+            case SDLK_q:
+                return 'q';
+            case SDLK_d:
+                return 'd';
+            case SDLK_s:
+                return 's';
+            case SDLK_a:
+                return 'a';
+            case SDLK_e:
+                return 'e';
             }
+        }
+        else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+        {
+            // Juste pour savoir si l'écran a était ou non resize par le joueur
+            SDL_GetWindowSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
+        }
+        int currentTime = SDL_GetTicks();
+        if (currentTime - lastDescentTime >= delayTime)
+        {
+            lastDescentTime = currentTime;
+            return 's';
         }
     }
 
