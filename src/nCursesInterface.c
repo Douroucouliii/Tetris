@@ -186,9 +186,9 @@ char input_nCurses(Tetris *tetris)
     case 'E':
         return c + 'A' - 'a';
         break;
-    // x quand on sort du timeout (permet de sortir de l'attente de l'input et de faire descendre la pièce)
+    // s quand on sort du timeout (permet de sortir de l'attente de l'input et de faire descendre la pièce)
     case ERR:
-        return 'x';
+        return 's';
         break;
     default:
         return ' ';

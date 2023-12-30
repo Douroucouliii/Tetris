@@ -228,7 +228,6 @@ void game(Tetris *tetris, userInterface ui)
             if(ui.functions->play_sound) ui.functions->play_sound(0);
             break;
         case 's':
-        case 'x':
             if (!move_down_piece(tetris))
             {
                 // Quand une pièce arrive à destination, on enleve les lignes pleines, on fait un
@@ -236,7 +235,7 @@ void game(Tetris *tetris, userInterface ui)
                 refresh_board(tetris);
                 delete_all_line(tetris, ui);
                 if(ui.functions->play_sound) ui.functions->play_sound(7);
-                sleep_NES(tetris);
+                
                 get_piece(tetris);
             }
             break;
