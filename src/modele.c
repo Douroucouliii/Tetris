@@ -257,17 +257,7 @@ void endscreen(Tetris *tetris, userInterface ui)
     //Attendre 1 sec avant de mettre l'écran de fin (effet sonnore)
     sleep(1);
 
-    ui.functions->end_screen(tetris, tetris->file);
-
-    //Bout de code à faire dans le ncurses pour gérer les input
-    /*char input;
-    // Ecran de fin de partie (q pour quitter la partie et r pour rejouer)
-    do
-    {
-        input = ui.functions->input(tetris);
-        // On affiche la fin de partie
-        ui.functions->end_screen(tetris, f);
-    } while (input != 'q' && input != 'r');*/
+    ui.functions->end_screen(tetris);
 }
 
 PieceConfig *get_next_piece(Tetris *tetris)

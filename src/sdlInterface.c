@@ -845,7 +845,7 @@ void player_name_screen(SDL_Color textColor, char *playerName)
     SDL_StopTextInput();
 }
 
-void end_screen_SDL(Tetris *tetris, FILE *f)
+void end_screen_SDL(Tetris *tetris)
 {
     tetris->state = END;
 

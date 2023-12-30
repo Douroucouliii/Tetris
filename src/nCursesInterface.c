@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "modele.h"
 #include "nCursesInterface.h"
@@ -320,26 +321,25 @@ void home_page_nCurses(Tetris *tetris)
     mvwprintw(home_page, term_rows / 4 + 5, term_cols / 2 - 18, "  MM   MMMMMM   MM   M   \"M MMMMM MMMMMM");
 
     // Affichage du reste du menu
-    mvwprintw(home_page, term_rows / 2, term_cols / 2 - 13, "Choisissez un niveau : (0-19)");
-    mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 18, "(Ecrire le niveau puis appuyer sur entrée)");
+    mvwprintw(home_page, term_rows / 2, term_cols / 2 - 13, "Select a level : (0-19)");
+    mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 22, "(write a number between 0 and 19 and press enter)");
 
-    char texte_saisi[100];
-    curs_set(1); // Affiche le curseur dans la fenêtre
+    char number[2];
     do{
-        mvwgetnstr(home_page, term_rows / 2 + 4, term_cols / 2, texte_saisi, sizeof(texte_saisi) - 1);
-    } while(atoi(texte_saisi) < 0 || atoi(texte_saisi) > 19);
+        mvwgetnstr(home_page, term_rows / 2 + 4, term_cols / 2, number, sizeof(number));
+    } while(atoi(number) < 0 || atoi(number) > 19);
 
     wrefresh(home_page);
 
-    tetris->level = atoi(texte_saisi);
+    tetris->level = atoi(number);
 
     
     tetris->state = GAME;
 }
 
-void end_screen_nCurses(Tetris *tetris, FILE *f)
+void end_screen_nCurses(Tetris *tetris)
 {
-    // On supprime le menu
+    // On supprime le jeu
     wclear(win);
     wclear(score);
     wclear(piece_stats);
@@ -354,21 +354,69 @@ void end_screen_nCurses(Tetris *tetris, FILE *f)
     end_screen = newwin(term_rows, term_cols, 0, 0);
     box(end_screen, 0, 0);
 
-    // char name[50];
+    int isHighscore = 0;
 
-    // Demander à l'utilisateur d'entrer son nom
-    /*mvwprintw(end_screen, term_rows / 2 - 2, term_cols / 2 - 13, "Enter your name: ");
-    echo();
-    scanw("%s", name);
-    */
-    noecho();
+    //Affichage END !
+    mvwprintw(end_screen, term_rows / 4 - 5, term_cols / 2 - 18, "  ______           _   _ ");
+    mvwprintw(end_screen, term_rows / 4 - 4, term_cols / 2 - 18, " |  ____|         | | | |");
+    mvwprintw(end_screen, term_rows / 4 - 3, term_cols / 2 - 18, " | |__   _ __   __| | | |");
+    mvwprintw(end_screen, term_rows / 4 - 2, term_cols / 2 - 18, " |  __| | '_ \\ / _` | | |");
+    mvwprintw(end_screen, term_rows / 4 - 1, term_cols / 2 - 18, " | |____| | | | (_| | |_|");
+    mvwprintw(end_screen, term_rows / 4, term_cols / 2 - 18, " |______|_| |_|\\__,_| (_)");
 
-    // Écrire le nom de l'utilisateur et son score dans le fichier
-    // fprintf(f, "%s %d\n", name, tetris->score);
+    // Affichage du titre des high scores
+    mvwprintw(end_screen, term_rows / 4 + 8, term_cols / 2 - 10, "=== Highscore ===");
 
-    mvwprintw(end_screen, term_rows / 2 - 4, term_cols / 2 - 13, "Your score : %d", tetris->score);
-    mvwprintw(end_screen, term_rows / 2, term_cols / 2 - 13, "q to quit");
-    mvwprintw(end_screen, term_rows / 2 + 2, term_cols / 2 - 16, "r to restart");
+    // Lecture des highscores à partir du fichier
+    Highscore highscores[10];
+    for (int i = 0; i < 10; i++) {
+        if (fscanf(tetris->file, "%s %d", highscores[i].name, &highscores[i].score) != 2) {
+            highscores[i].score = 0;
+            highscores[i].name = "N/A";
+        }
+        if (tetris->score > highscores[i].score) {
+            isHighscore = 1;
+        }
+        mvwprintw(end_screen, term_rows / 4 + i + 10, term_cols / 2 - 4, highscores[i].name, highscores[i].score);
+    }
+
+    // Si le score du joueur est parmi les meilleurs scores, lui demander son nom
+    if (isHighscore) {
+        mvwprintw(end_screen, term_rows / 2 + 9, term_cols / 2 - 18, "It's a highscore !");
+        mvwprintw(end_screen, term_rows / 2 + 10, term_cols / 2 - 18, "Enter your name : (write your name and press enter)");
+        char player_name[10];
+        mvwgetnstr(end_screen, term_rows / 2 + 4, term_cols / 2, player_name, sizeof(player_name) - 1);
+
+        // Mettre à jour les meilleurs scores avec le nouveau score
+        int position = 0;
+        for (int i = 0; i < 10; i++) {
+            if (tetris->score > highscores[i].score) {
+                position = i;
+                break;
+            }
+        }
+        for (int i = 0; i < position; i++) {
+            fprintf(tetris->file, "%s %d\n", highscores[i].name, highscores[i].score);
+        }
+        fprintf(tetris->file, "%s %d\n", player_name, tetris->score);
+        for (int i = position; i < 10 - 1; i++) {
+            fprintf(tetris->file, "%s %d\n", highscores[i].name, highscores[i].score);
+        }
+        fclose(tetris->file);
+    }else {
+        mvwprintw(end_screen, term_rows / 2 + 10, term_cols / 2, "This is not an highscore, try again !");
+    }
+
+    // Affichage des options pour rejouer ou quitter
+    mvwprintw(end_screen, term_rows / 2 + 12, term_cols / 2 - 18, "Appuyez sur R pour rejouer");
+    mvwprintw(end_screen, term_rows / 2 + 13, term_cols / 2 - 18, "Appuyez sur Q pour quitter");
+
+    // Attendre que l'utilisateur appuie sur R ou Q
+    char c[2];
+    do{
+        mvwgetnstr(end_screen, term_rows / 2 + 4, term_cols / 2, c, sizeof(c));
+    }while(strcmp(c, "R") != 0 && strcmp(c, "r") != 0 && strcmp(c, "Q") != 0 && strcmp(c, "q") != 0);
+    if(strcmp(c, "q") == 0 || strcmp(c,"Q") == 0) tetris->state = CLOSE;
 
     wrefresh(end_screen);
 }
