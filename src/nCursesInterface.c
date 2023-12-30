@@ -145,12 +145,8 @@ char input_nCurses(Tetris *tetris)
 {
     int delai = delay(tetris->level);
 
-    // Si le jeu a commencé
-    if (tetris->state == GAME)
-    {
-        // On crée un timeout pour la fenetre pour faire descendre nos pieces
-        timeout(delai);
-    }
+    // On crée un timeout pour la fenetre pour faire descendre nos pieces
+    timeout(delai);
 
     char c = getch();
     switch (c)
@@ -159,29 +155,14 @@ char input_nCurses(Tetris *tetris)
     case 'q':
     case 'd':
     case 's':
-    case 'z':
     case 'a':
     case 'e':
-    // Relancer une partie
-    case 'r':
-    // Choix du niveau
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
         return c;
         break;
     // Déplacement/rotation de la pièce
     case 'Q':
     case 'D':
     case 'S':
-    case 'Z':
     case 'A':
     case 'E':
         return c + 'A' - 'a';
@@ -339,19 +320,20 @@ void home_page_nCurses(Tetris *tetris)
     mvwprintw(home_page, term_rows / 4 + 5, term_cols / 2 - 18, "  MM   MMMMMM   MM   M   \"M MMMMM MMMMMM");
 
     // Affichage du reste du menu
-    mvwprintw(home_page, term_rows / 2, term_cols / 2 - 13, "Choisissez un niveau : (0-9)");
-    mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 16, "Entrez au clavier /!\\ verr num /!\\");
+    mvwprintw(home_page, term_rows / 2, term_cols / 2 - 13, "Choisissez un niveau : (0-19)");
+    mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 18, "(Ecrire le niveau puis appuyer sur entrée)");
+
+    char texte_saisi[100];
+    curs_set(1); // Affiche le curseur dans la fenêtre
+    do{
+        mvwgetnstr(home_page, term_rows / 2 + 4, term_cols / 2, texte_saisi, sizeof(texte_saisi) - 1);
+    } while(atoi(texte_saisi) < 0 || atoi(texte_saisi) > 19);
 
     wrefresh(home_page);
 
-    // Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
+    tetris->level = atoi(texte_saisi);
 
-    char input;
-    do
-    {
-        input = input_nCurses(tetris);
-    } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
-    tetris->level = atoi(&input);
+    
     tetris->state = GAME;
 }
 

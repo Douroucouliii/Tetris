@@ -130,7 +130,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
 
-    userInterface ui = SDL;
+    userInterface ui = nCurses;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -188,18 +188,6 @@ void homescreen(Tetris *tetris, userInterface ui)
 {
 
     ui.functions->home_page(tetris);
-
-    // Il faut essayer de déplacer ce bout de code qui suit dans le home page de ncurses pour gérer les input ncurses qui sont différent de SDL
-    // Maintenant on récupère l'input de l'utilisateur pour choisir le niveau
-    /*char input;
-    do
-    {
-        input = ui.functions->input(tetris);
-        // On affiche le menu
-        ui.functions->home_page(tetris);
-    } while (input != '0' && input != '1' && input != '2' && input != '3' && input != '4' && input != '5' && input != '6' && input != '7' && input != '8' && input != '9');
-    tetris->level = atoi(&input);
-    */
 }
 
 void game(Tetris *tetris, userInterface ui)
