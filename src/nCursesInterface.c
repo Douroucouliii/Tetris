@@ -368,29 +368,44 @@ void end_screen_nCurses(Tetris *tetris)
     mvwprintw(end_screen, term_rows / 4 + 4, term_cols / 2 - 10, "=== Highscore ===");
 
     // Lecture des highscores à partir du fichier
-    Highscore highscores[10];
-    Highscore h;
-    h.name = (char *)malloc(sizeof(char) * 21);
-    if (!h.name)
+    int numHighscores = 10; // On ne récup que les 10 premiers du fichiers
+    Highscore *highscores = (Highscore *)malloc(sizeof(Highscore));
+
+    for (int i = 0; i < numHighscores; i++)
     {
-        fprintf(stderr, "Erreur d'allocation de mémoire pour le nom.\n");
-        exit(EXIT_FAILURE);
+        highscores[i].name = (char *)malloc(sizeof(char) * 21);
+        if (!highscores[i].name)
+        {
+            fprintf(stderr, "Erreur d'allocation de mémoire pour le nom.\n");
+            exit(EXIT_FAILURE);
+        }
     }
-    int ind = 0;
-    while (!feof(tetris->file))
+
+    for (int i = 0; i < numHighscores; i++)
     {
         int pos = 0;
         char c;
-        while ((c = fgetc(tetris->file)) != ',')
+        // Lecture du nom
+        while ((c = fgetc(tetris->file)) != ',' && c != EOF)
         {
-            h.name[pos++] = c;
+            highscores[i].name[pos++] = c;
         }
-        h.name[pos] = '\0';
-        fscanf(tetris->file, "%d", &h.score);
-        highscores[ind] = h;
-        ind++;
+        highscores[i].name[pos] = '\0';
+
+        // Lecture du score
+        fscanf(tetris->file, "%d", &highscores[i].score);
+
+        // On passe le saut à la ligne
+        if (i < numHighscores - 1)
+        {
+            while ((c = fgetc(tetris->file)) != '\n' && c != EOF)
+            {
+                // Ignorer les caractères jusqu'à la fin de la ligne
+            }
+        }
     }
-    for (int i = 0; i < 10; i++)
+
+    for (int i = 0; i < numHighscores; i++)
     {
         if (tetris->score > highscores[i].score)
         {
@@ -410,7 +425,13 @@ void end_screen_nCurses(Tetris *tetris)
         mvwprintw(end_screen, term_rows / 2 + 8, term_cols / 2 - 11, "Your name is : %s", player_name);
         // Mettre à jour les meilleurs scores avec le nouveau score
         // Effacer tout le contenu du fichier
-        freopen(NULL, "w", tetris->file);
+        tetris->file = freopen("data/highscore.txt", "w", tetris->file);
+        if (tetris->file == NULL)
+        {
+            fprintf(stderr, "Erreur lors de la réouverture du fichier.\n");
+            exit(EXIT_FAILURE);
+        }
+
         int position = 0;
         for (int i = 0; i < 10; i++)
         {
@@ -422,12 +443,12 @@ void end_screen_nCurses(Tetris *tetris)
         }
         for (int i = 0; i < position; i++)
         {
-            fprintf(tetris->file, "%s %d\n", highscores[i].name, highscores[i].score);
+            fprintf(tetris->file, "%s,%d\n", highscores[i].name, highscores[i].score);
         }
-        fprintf(tetris->file, "%s %d\n", player_name, tetris->score);
+        fprintf(tetris->file, "%s,%d\n", player_name, tetris->score);
         for (int i = position; i < 10 - 1; i++)
         {
-            fprintf(tetris->file, "%s %d\n", highscores[i].name, highscores[i].score);
+            fprintf(tetris->file, "%s,%d\n", highscores[i].name, highscores[i].score);
         }
         fclose(tetris->file);
     }
@@ -436,8 +457,7 @@ void end_screen_nCurses(Tetris *tetris)
         mvwprintw(end_screen, term_rows / 2 + 8, term_cols / 2 - 20, "This is not an highscore, try again !");
     }
 
-    // Free les mallocs
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < numHighscores; i++)
     {
         free(highscores[i].name);
     }
@@ -447,7 +467,6 @@ void end_screen_nCurses(Tetris *tetris)
     mvwprintw(end_screen, term_rows / 2 + 13, term_cols / 2 - 12, "Press Q to quit");
 
     wrefresh(end_screen);
-
     // Attendre que l'utilisateur appuie sur R ou Q
     char c;
     do

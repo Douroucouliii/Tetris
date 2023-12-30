@@ -55,7 +55,7 @@ Tetris *tetris_init_()
         tetris->pieceStats[i] = 0;
     }
 
-    tetris->file = fopen("data/highscore.txt", "a");
+    tetris->file = fopen("data/highscore.txt", "r");
     if (!tetris->file)
     {
         perror("Erreur fopen(), impossible de sauvegarder le score\n");
