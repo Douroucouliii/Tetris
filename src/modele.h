@@ -84,6 +84,7 @@ typedef struct Tetris
     PieceConfig *nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
     int pieceStats[7];        /**< Tableau des statistiques de pièces                   */
     FILE *file;               /**< Fichier de sauvegarde des highscore                  */
+    bool isPanic;             /**< Indique si le joueur est en mode panic (proche de la mort)*/
 } Tetris;
 
 /**
@@ -312,6 +313,12 @@ void add_score(Tetris *, int);
  * @param tetris
  */
 void sleep_NES(Tetris *);
+
+/**
+ * @brief Fonction qui met à jour la variable isPanic de notre jeu Tetris en fonction de si le joueur est proche de la mort ou non
+ * @param tetris
+ */
+void is_panic(Tetris *);
 
 /**
  * @brief Fonction qui permet de liberer l'espace alloué à notre plateau de jeu

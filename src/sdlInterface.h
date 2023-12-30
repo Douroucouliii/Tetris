@@ -20,20 +20,20 @@ typedef struct
  * @param color - Une énumération de couleur dans modele.h
  * @return char*
  */
-char *ColorToString(color);
+char *color_to_string(color);
 
 /**
  * @brief C'est une fonction qui retourne l'indice d'une couleur dans son énumération.
  * @param color -  Une énumération de couleur dans modele.h
  * @return int
  */
-int GetIndiceByColor(color);
+int get_indice_by_color(color);
 
 /**
  * @brief Une fonction qui permet de libérer la mémoire pour le Tableau ImgTextures.
  *
  */
-void freeImgTextures();
+void clear_img_textures();
 
 /**
  * @brief Une fonction qui permet de trouver le chemin ( char* ) dans le dossier images par rapport à son nom.
@@ -42,13 +42,13 @@ void freeImgTextures();
  *
  * @return char*
  */
-char *GetImagePath(char *);
+char *get_image_path(char *);
 
 /**
  * @brief Une fonction qui initialise le tableau ImgTextures qui prend toutes les textures de nos tuiles.
  *
  */
-void initImgTextures();
+void init_img_textures();
 
 /**
  * @brief Une fonction qui met une icône sur notre fenêtre SDL
@@ -72,7 +72,7 @@ void close_SDL();
  * @brief
  *
  */
-void initBackground();
+void init_background();
 
 /**
  * @brief Cette fonction affiche notre plateau de tetris
@@ -104,13 +104,13 @@ char input_SDL(Tetris *);
  * @brief
  *
  */
-void displayButton(Button *, TTF_Font *);
+void display_button(Button *, TTF_Font *);
 
 /**
  * @brief
  *
  */
-void displayImageButton(Button *);
+void display_image_button(Button *);
 /**
  * @brief
  *
@@ -122,13 +122,13 @@ void home_page_SDL(Tetris *);
  *
  * @return int
  */
-int isPointInsideRect(int, int, SDL_Rect);
+int is_point_inside_rect(int, int, SDL_Rect);
 
 /**
  * @brief
  *
  */
-void levelSelection_SDL(Tetris *);
+void level_selection_SDL(Tetris *);
 
 /**
  * @brief
