@@ -369,7 +369,7 @@ void end_screen_nCurses(Tetris *tetris)
 
     // Lecture des highscores à partir du fichier
     int numHighscores = 10; // On ne récup que les 10 premiers du fichiers
-    Highscore *highscores = (Highscore *)malloc(sizeof(Highscore));
+    Highscore *highscores = (Highscore *)malloc(10 * sizeof(Highscore));
 
     for (int i = 0; i < numHighscores; i++)
     {
@@ -411,7 +411,7 @@ void end_screen_nCurses(Tetris *tetris)
         {
             isHighscore = 1;
         }
-        mvwprintw(end_screen, term_rows / 4 + i + 6, term_cols / 2 - 4, "%s %d", highscores[i].name, highscores[i].score);
+        mvwprintw(end_screen, term_rows / 4 + i + 6, term_cols / 2 - 6, "%s %d", highscores[i].name, highscores[i].score);
     }
 
     // Si le score du joueur est parmi les meilleurs scores, lui demander son nom
@@ -461,12 +461,14 @@ void end_screen_nCurses(Tetris *tetris)
     {
         free(highscores[i].name);
     }
+    free(highscores);
 
     // Affichage des options pour rejouer ou quitter
     mvwprintw(end_screen, term_rows / 2 + 12, term_cols / 2 - 12, "Press R to play");
     mvwprintw(end_screen, term_rows / 2 + 13, term_cols / 2 - 12, "Press Q to quit");
 
     wrefresh(end_screen);
+
     // Attendre que l'utilisateur appuie sur R ou Q
     char c;
     do

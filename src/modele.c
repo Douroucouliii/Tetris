@@ -131,7 +131,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
 
-    userInterface ui = SDL;
+    userInterface ui = nCurses;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -872,5 +872,5 @@ void clear_tetris(Tetris *t, userInterface ui)
     clear_boardPiece(t);
     clear_tmpPiece(t);
     free(t->nextPiece);
-    free(t);
+    //free(t);
 }
