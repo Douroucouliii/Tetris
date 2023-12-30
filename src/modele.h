@@ -84,6 +84,7 @@ typedef struct Tetris
     int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
     PieceConfig *nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
     int pieceStats[7];        /**< Tableau des statistiques de pièces                   */
+    FILE *file;               /**< Fichier de sauvegarde des highscore                  */
 } Tetris;
 
 /**
@@ -117,9 +118,10 @@ void init_tmpPiece(Tetris *);
  * @brief Fonction qui permet au joueur de jouer au Tetris avec l'interface voulu ( NCurses ou SDL )
  *
  * @param tetris
- * @param userInterface
+ * @param nCurse
+ * @param SDL
  */
-void tetris_playGame(Tetris *, userInterface);
+void tetris_playGame(Tetris *, userInterface, userInterface);
 
 /**
  * @brief Fonction qui gère le menu du jeu Tetris

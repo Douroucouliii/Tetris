@@ -55,6 +55,14 @@ Tetris *tetris_init_()
         tetris->pieceStats[i] = 0;
     }
 
+    tetris->file = fopen("data/highscore.txt", "a");
+    if (!tetris->file)
+    {
+        perror("Erreur fopen(), impossible de sauvegarder le score\n");
+        exit(EXIT_FAILURE);
+    }
+
+
     return tetris;
 }
 
@@ -118,9 +126,11 @@ void init_tmpPiece(Tetris *tetris)
     tetris->tmpPiece = tmpPiece;
 }
 
-void tetris_playGame(Tetris *tetris, userInterface ui)
+void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
+
+    userInterface ui = SDL;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -149,6 +159,11 @@ void tetris_playGame(Tetris *tetris, userInterface ui)
             ui.functions->close_interface();
             clear_tetris(tetris, ui);
             clear_pointeur_fct(ui);
+            if (fclose(tetris->file))
+            {
+                perror("Erreur fclose()\n");
+                exit(EXIT_FAILURE);
+            }
             return;
         }
 
@@ -221,7 +236,7 @@ void game(Tetris *tetris, userInterface ui)
                 refresh_board(tetris);
                 delete_all_line(tetris, ui);
                 if(ui.functions->play_sound) ui.functions->play_sound(7);
-                // sleep_NES(tetris);
+                sleep_NES(tetris);
                 get_piece(tetris);
             }
             break;
@@ -255,14 +270,7 @@ void endscreen(Tetris *tetris, userInterface ui)
     //Attendre 1 sec avant de mettre l'écran de fin (effet sonnore)
     sleep(1);
 
-    FILE *f = fopen("data/highscore.txt", "a");
-    if (!f)
-    {
-        perror("Erreur fopen(), impossible de sauvegarder le score\n");
-        exit(EXIT_FAILURE);
-    }
-
-    ui.functions->end_screen(tetris, f);
+    ui.functions->end_screen(tetris, tetris->file);
 
     //Bout de code à faire dans le ncurses pour gérer les input
     /*char input;
@@ -273,12 +281,6 @@ void endscreen(Tetris *tetris, userInterface ui)
         // On affiche la fin de partie
         ui.functions->end_screen(tetris, f);
     } while (input != 'q' && input != 'r');*/
-
-    if (fclose(f))
-    {
-        perror("Erreur fclose()\n");
-        exit(EXIT_FAILURE);
-    }
 }
 
 PieceConfig *get_next_piece(Tetris *tetris)
