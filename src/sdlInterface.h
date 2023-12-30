@@ -2,6 +2,7 @@
 
 #include "modele.h"
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_ttf.h"
 
 /**
  * @brief C'est une structure qui permet d'imiter le comportement d'un bouton.
@@ -103,13 +104,31 @@ char input_SDL(Tetris *);
  * @brief
  *
  */
-void displayButton(Button *);
+void displayButton(Button *, TTF_Font *);
 
 /**
  * @brief
  *
  */
+void displayImageButton(Button *);
+/**
+ * @brief
+ *
+ */
 void home_page_SDL(Tetris *);
+
+/**
+ * @brief
+ *
+ * @return int
+ */
+int isPointInsideRect(int, int, SDL_Rect);
+
+/**
+ * @brief
+ *
+ */
+void levelSelection_SDL(Tetris *);
 
 /**
  * @brief

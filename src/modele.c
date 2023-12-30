@@ -62,7 +62,6 @@ Tetris *tetris_init_()
         exit(EXIT_FAILURE);
     }
 
-
     return tetris;
 }
 
@@ -142,19 +141,22 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
     {
         if (tetris->state == MENU)
         {
-            if(ui.functions->play_sound) ui.functions->play_sound(6);
+            if (ui.functions->play_sound)
+                ui.functions->play_sound(6);
             homescreen(tetris, ui);
         }
         else if (tetris->state == GAME)
         {
-            if(ui.functions->play_sound) ui.functions->play_sound(6);
+            if (ui.functions->play_sound)
+                ui.functions->play_sound(6);
             game(tetris, ui);
         }
         else if (tetris->state == END)
         {
             endscreen(tetris, ui);
         }
-        else if(tetris->state == CLOSE){
+        else if (tetris->state == CLOSE)
+        {
             // On ferme l'interface (fermer Ncurses ou SDL)
             ui.functions->close_interface();
             clear_tetris(tetris, ui);
@@ -167,12 +169,8 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
             return;
         }
 
-        //Pas encore géré donc je close
+        // Pas encore géré donc je close
         else if (tetris->state == OPTION)
-        {
-            tetris->state = CLOSE;
-        }
-        else if (tetris->state == SELECTION)
         {
             tetris->state = CLOSE;
         }
@@ -213,7 +211,8 @@ void game(Tetris *tetris, userInterface ui)
         {
         case 'q':
             move_left_piece(tetris);
-            if(ui.functions->play_sound) ui.functions->play_sound(0);
+            if (ui.functions->play_sound)
+                ui.functions->play_sound(0);
             break;
         case 's':
             if (!move_down_piece(tetris))
@@ -222,22 +221,26 @@ void game(Tetris *tetris, userInterface ui)
                 // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
                 refresh_board(tetris);
                 delete_all_line(tetris, ui);
-                if(ui.functions->play_sound) ui.functions->play_sound(7);
-                
+                if (ui.functions->play_sound)
+                    ui.functions->play_sound(7);
+
                 get_piece(tetris);
             }
             break;
         case 'd':
             move_right_piece(tetris);
-            if(ui.functions->play_sound) ui.functions->play_sound(0);
+            if (ui.functions->play_sound)
+                ui.functions->play_sound(0);
             break;
         case 'a':
             rotate_left(tetris);
-            if(ui.functions->play_sound) ui.functions->play_sound(1);
+            if (ui.functions->play_sound)
+                ui.functions->play_sound(1);
             break;
         case 'e':
             rotate_right(tetris);
-            if(ui.functions->play_sound) ui.functions->play_sound(1);
+            if (ui.functions->play_sound)
+                ui.functions->play_sound(1);
             break;
         default:
             break;
@@ -253,8 +256,9 @@ void endscreen(Tetris *tetris, userInterface ui)
 {
 
     tetris->state = END;
-    if(ui.functions->play_sound) ui.functions->play_sound(8);
-    //Attendre 1 sec avant de mettre l'écran de fin (effet sonnore)
+    if (ui.functions->play_sound)
+        ui.functions->play_sound(8);
+    // Attendre 1 sec avant de mettre l'écran de fin (effet sonnore)
     sleep(1);
 
     ui.functions->end_screen(tetris);
@@ -670,7 +674,8 @@ void delete_all_line(Tetris *tetris, userInterface ui)
             {
                 tetris->level++;
                 switch_color(tetris);
-                if(ui.functions->play_sound) ui.functions->play_sound(4);
+                if (ui.functions->play_sound)
+                    ui.functions->play_sound(4);
             }
             i++;
         }
@@ -695,39 +700,50 @@ void delete_all_line(Tetris *tetris, userInterface ui)
         perror("Error delete_all_line()\n");
         exit(EXIT_FAILURE);
     }
-    if(cpt == 4 && ui.functions->play_sound) ui.functions->play_sound(3);
-    else if(cpt > 0 && ui.functions->play_sound) ui.functions->play_sound(2);
+    if (cpt == 4 && ui.functions->play_sound)
+        ui.functions->play_sound(3);
+    else if (cpt > 0 && ui.functions->play_sound)
+        ui.functions->play_sound(2);
 }
 
-void switch_color(Tetris *tetris){
-    //Change les couleurs des pieces tmp de notre jeu, et change toutes les couleurs des pieces déjà presente dans le jeu
-    //Toujours couleurs différentes, attention à ne pas piocher NOTHING
+void switch_color(Tetris *tetris)
+{
+    // Change les couleurs des pieces tmp de notre jeu, et change toutes les couleurs des pieces déjà presente dans le jeu
+    // Toujours couleurs différentes, attention à ne pas piocher NOTHING
     color dejaPris[7];
-    int cpt=1;
+    int cpt = 1;
 
     dejaPris[0] = rand() % 7 + 1;
-    while(cpt < 7){
-    color c = rand() % 7 + 1;
-    int isDifferent = 1;
-    for (int i = 0; i < cpt; i++) {
-        if (dejaPris[i] == c) {
-            isDifferent = 0;
-            break;
+    while (cpt < 7)
+    {
+        color c = rand() % 7 + 1;
+        int isDifferent = 1;
+        for (int i = 0; i < cpt; i++)
+        {
+            if (dejaPris[i] == c)
+            {
+                isDifferent = 0;
+                break;
+            }
+        }
+        if (isDifferent)
+        {
+            dejaPris[cpt] = c;
+            cpt++;
         }
     }
-    if (isDifferent) {
-        dejaPris[cpt] = c;
-        cpt++;
-        }
-    }
-    for(int i=0; i<7; i++){
+    for (int i = 0; i < 7; i++)
+    {
         tetris->tmpPiece[i]->c = dejaPris[i];
     }
-    //Si les pieces matche avec le nom, on remplace la couleur
-    for(int i=0; i<tetris->nbBoardPiece; i++){
+    // Si les pieces matche avec le nom, on remplace la couleur
+    for (int i = 0; i < tetris->nbBoardPiece; i++)
+    {
         PieceConfig *p = tetris->boardPiece[i];
-        for(int j=0; j<7; j++){
-            if(p->name == tetris->tmpPiece[j]->name){
+        for (int j = 0; j < 7; j++)
+        {
+            if (p->name == tetris->tmpPiece[j]->name)
+            {
                 p->c = tetris->tmpPiece[j]->c;
             }
         }
