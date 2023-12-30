@@ -83,8 +83,20 @@ void cleanBackground()
 
 void close_SDL()
 {
-    // On libère la musique de fin
-    Mix_FreeMusic(musics[2]);
+    for(int i = 0; i < 3; i++)
+    {
+        if(musics[i])
+        {
+            Mix_FreeMusic(musics[i]);
+        }
+    }
+    for(int i = 0; i < 9; i++)
+    {
+        if(sounds[i])
+        {
+            Mix_FreeChunk(sounds[i]);
+        }
+    }
 
     Mix_CloseAudio();
     TTF_CloseFont(font);
@@ -763,13 +775,15 @@ SDL_Texture *initBackgroundMenu()
     return MenuTexture;
 }
 
-int isPointInsideRect(int x, int y, SDL_Rect rect)
+int isPointInsideRect(int x, int y, SDL_Rect rect)  
 {
     return (x >= rect.x && x < rect.x + rect.w && y >= rect.y && y < rect.y + rect.h);
 }
 
 void levelSelection_SDL(Tetris *tetris)
 {
+
+    play_sound_SDL(6);
 
     // Créer le fond d'écran
     SDL_Texture *MenuTexture = initBackgroundMenu();
@@ -862,7 +876,6 @@ void levelSelection_SDL(Tetris *tetris)
                 case SDLK_ESCAPE:
                     run = false;
                     tetris->state = MENU;
-                    home_page_SDL(tetris);
                     break;
                 }
                 break;
@@ -1039,8 +1052,6 @@ void home_page_SDL(Tetris *tetris)
     TTF_CloseFont(tetrisFont);
     // On libère le Menutexture
     SDL_DestroyTexture(MenuTexture);
-    // On libère les ressources musiques
-    Mix_FreeMusic(musics[0]);
 }
 
 void player_name_screen(SDL_Color textColor, char *playerName)
@@ -1145,9 +1156,6 @@ void end_screen_SDL(Tetris *tetris)
     // Définir la couleur de fond
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-
-    // On libère la musique du jeu
-    Mix_FreeMusic(musics[1]);
 
     // On met la musique de fin si elle n'est pas déjà en train de jouer
     if (!Mix_PlayingMusic())
