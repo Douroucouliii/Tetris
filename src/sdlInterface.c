@@ -922,14 +922,17 @@ void level_selection_SDL(Tetris *tetris)
                     break;
                 case SDLK_s:
                 case SDLK_DOWN:
+                    play_sound_SDL(5);
                     selectedLevel = (selectedLevel + 5) % numLevels;
                     break;
                 case SDLK_z:
                 case SDLK_UP:
+                    play_sound_SDL(5);
                     selectedLevel = (selectedLevel - 5 + numLevels) % numLevels;
                     break;
                 case SDLK_d:
                 case SDLK_RIGHT:
+                    play_sound_SDL(5);
                     if (selectedLevel == numLevels - 1)
                     {
                         // If we are on the last level, go to the back button
@@ -953,6 +956,7 @@ void level_selection_SDL(Tetris *tetris)
                     break;
                 case SDLK_q:
                 case SDLK_LEFT:
+                    play_sound_SDL(5);
                     if (selectedLevel == numLevels)
                     {
                         // If we are on the back button, go to the last level
