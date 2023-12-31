@@ -120,13 +120,6 @@ void home_page_SDL(Tetris *);
 /**
  * @brief
  *
- * @return int
- */
-int is_point_inside_rect(int, int, SDL_Rect);
-
-/**
- * @brief
- *
  */
 void level_selection_SDL(Tetris *);
 
