@@ -104,7 +104,7 @@ char input_SDL(Tetris *);
  * @brief
  *
  */
-void display_button(Button *, TTF_Font *);
+void display_button(Button *);
 
 /**
  * @brief

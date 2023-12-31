@@ -25,6 +25,91 @@ Mix_Music *musics[4];
 Mix_Chunk *sounds[10];
 Mix_Music *currentMusic;
 
+// CLEAR & CLOSE
+
+void clear_img_textures()
+{
+    for (int i = 0; i < 8; i++)
+    {
+        SDL_DestroyTexture(imageTexture[i]);
+    }
+}
+
+void clear_background()
+{
+    if (backgroundSurface)
+    {
+        SDL_FreeSurface(backgroundSurface);
+    }
+    if (backgroundTexture)
+    {
+        SDL_DestroyTexture(backgroundTexture);
+    }
+}
+
+void free_levels(Button levelButton[], int numLevels)
+{
+    for (int i = 0; i < numLevels; i++)
+    {
+        free(levelButton[i].text);
+    }
+}
+
+void close_SDL()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        if (musics[i])
+        {
+            Mix_FreeMusic(musics[i]);
+        }
+    }
+    for (int i = 0; i < 10; i++)
+    {
+        if (sounds[i])
+        {
+            Mix_FreeChunk(sounds[i]);
+        }
+    }
+
+    Mix_CloseAudio();
+
+    if (font != NULL)
+    {
+        TTF_CloseFont(font);
+    }
+
+    clear_background();
+    clear_img_textures();
+
+    if (renderer != NULL)
+    {
+        SDL_DestroyRenderer(renderer);
+    }
+    if (window != NULL)
+    {
+        SDL_DestroyWindow(window);
+    }
+
+    TTF_Quit();
+
+    SDL_Quit();
+}
+
+// GET & UTILS
+
+int get_indice_by_color(color Couleur)
+{
+    for (color current = NOTHING; current <= GREEN; current++)
+    {
+        if (current == Couleur)
+        {
+            return current;
+        }
+    }
+    return -1;
+}
+
 char *color_to_string(color color)
 {
     switch (color)
@@ -50,71 +135,6 @@ char *color_to_string(color color)
     }
 }
 
-int get_indice_by_color(color Couleur)
-{
-    for (color current = NOTHING; current <= GREEN; current++)
-    {
-        if (current == Couleur)
-        {
-            return current;
-        }
-    }
-    return -1;
-}
-
-void clear_img_textures()
-{
-    for (int i = 0; i < 8; i++)
-    {
-        SDL_DestroyTexture(imageTexture[i]);
-    }
-}
-
-void clear_background()
-{
-    if (backgroundSurface)
-    {
-        SDL_FreeSurface(backgroundSurface);
-    }
-    if (backgroundTexture)
-    {
-        SDL_DestroyTexture(backgroundTexture);
-    }
-}
-
-void close_SDL()
-{
-    for (int i = 0; i < 4; i++)
-    {
-        if (musics[i])
-        {
-            Mix_FreeMusic(musics[i]);
-        }
-    }
-    for (int i = 0; i < 10; i++)
-    {
-        if (sounds[i])
-        {
-            Mix_FreeChunk(sounds[i]);
-        }
-    }
-
-    Mix_CloseAudio();
-    TTF_CloseFont(font);
-    clear_background();
-    clear_img_textures();
-
-    if (renderer != NULL)
-    {
-        SDL_DestroyRenderer(renderer);
-    }
-    if (window != NULL)
-    {
-        SDL_DestroyWindow(window);
-    }
-    SDL_Quit();
-}
-
 char *get_image_path(char *texte)
 {
     size_t imagePathSize = strlen("assets/images/") + strlen(texte) + strlen(".bmp") + 1;
@@ -133,6 +153,8 @@ char *get_image_path(char *texte)
 
     return imagePath;
 }
+
+// INIT & SET
 
 void init_img_textures()
 {
@@ -222,6 +244,34 @@ void init_background()
     }
 }
 
+SDL_Texture *init_background_menu()
+{
+    char *imageBack = get_image_path("menu");
+    SDL_Surface *MenuSurface = SDL_LoadBMP(imageBack);
+    if (!MenuSurface)
+    {
+        fprintf(stderr, "Erreur lors du chargement de l'image du Menu: %s \n", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Surface *resize = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    SDL_BlitScaled(MenuSurface, NULL, resize, NULL);
+
+    SDL_Texture *MenuTexture = SDL_CreateTextureFromSurface(renderer, resize);
+    if (!MenuTexture)
+    {
+        fprintf(stderr, "Erreur lors du chargement de la texture du Menu: %s \n", SDL_GetError());
+        SDL_FreeSurface(MenuSurface);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_FreeSurface(resize);
+    SDL_FreeSurface(MenuSurface);
+    return MenuTexture;
+}
+
 void init_SDL()
 {
     if (0 != SDL_Init(SDL_INIT_VIDEO))
@@ -297,73 +347,205 @@ void init_SDL()
     set_icon();
 }
 
-void display_SDL(Tetris *tetris)
+// DISPLAY TOOLS MENU & SELECTIONS
+
+void display_image_button(Button *button)
 {
-    if (tetris == NULL)
+    // Définir le rectangle du bouton
+    SDL_Rect buttonRect = {button->rect.x, button->rect.y, button->rect.w, button->rect.h};
+
+    char *imagePath = get_image_path(button->text);
+    // Charger l'image du bouton
+    SDL_Surface *buttonSurface = SDL_LoadBMP(imagePath);
+    if (!buttonSurface)
     {
-        fprintf(stderr, "Erreur : Pointeur Tetris NULL dans display_SDL");
+        fprintf(stderr, "Erreur : image du bouton non trouvé : %s\n", SDL_GetError());
+        free(imagePath);
         close_SDL();
         exit(EXIT_FAILURE);
     }
-    SDL_RenderClear(renderer);
 
-    if (SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL) != 0)
+    // Créer la texture du bouton à partir de la surface
+    SDL_Texture *buttonTexture = SDL_CreateTextureFromSurface(renderer, buttonSurface);
+    if (!buttonTexture)
     {
-        fprintf(stderr, "Erreur lors du rendu de l'image de fond : %s \n", SDL_GetError());
+        fprintf(stderr, "Erreur lors de la création de la texture du bouton : %s\n", SDL_GetError());
+        free(imagePath);
+        SDL_FreeSurface(buttonSurface);
         close_SDL();
         exit(EXIT_FAILURE);
     }
-
-    // On met la musique de jeu si elle n'est pas déjà en train de jouer (en fonction du mode panic)
-    if (tetris->isPanic)
+    SDL_Color rectColor;
+    if (button->selected)
     {
-        if (currentMusic != musics[3])
-        {
-            Mix_HaltMusic();
-            Mix_PlayMusic(musics[3], -1);
-            currentMusic = musics[3];
-        }
+        rectColor.r = 0;
+        rectColor.g = 0;
+        rectColor.b = 110;
+        rectColor.a = 255;
     }
     else
     {
-        if (currentMusic != musics[1])
-        {
-            Mix_HaltMusic();
-            Mix_PlayMusic(musics[1], -1);
-            currentMusic = musics[1];
-        }
-        // Si la musique n'est pas lancé, on la lance
-        if (!Mix_PlayingMusic())
-        {
-            Mix_PlayMusic(musics[1], -1);
-            currentMusic = musics[1];
-        }
+        rectColor.r = 0;
+        rectColor.g = 0;
+        rectColor.b = 0;
+        rectColor.a = 0;
     }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
+    SDL_RenderFillRect(renderer, &buttonRect);
 
-    int offsetX = (SCREEN_WIDTH - tetris->column * CELL_SIZE) / 2;
-    int offsetY = (SCREEN_HEIGHT - tetris->line * CELL_SIZE) / 2;
-
-    offsetY -= 30;
-
-    for (int i = 0; i < tetris->line; i++)
+    // Rendre le bouton à l'écran
+    if (SDL_RenderCopy(renderer, buttonTexture, NULL, &buttonRect) != 0)
     {
-        for (int j = 0; j < tetris->column; j++)
-        {
-            SDL_Rect rect = {(offsetX + j * CELL_SIZE),
-                             (offsetY + i * CELL_SIZE),
-                             CELL_SIZE, CELL_SIZE};
-            int indice = get_indice_by_color(tetris->board[i][j].c);
-
-            if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &rect) != 0)
-            {
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
-        }
+        fprintf(stderr, "Erreur Impossible de faire le rendu : %s\n", SDL_GetError());
+        free(imagePath);
+        SDL_FreeSurface(buttonSurface);
+        SDL_DestroyTexture(buttonTexture);
+        close_SDL();
+        exit(EXIT_FAILURE);
     }
-    display_info_SDL(tetris);
-    SDL_RenderPresent(renderer);
+
+    // Libération de la surface et de la texture du bouton
+    free(imagePath);
+    SDL_FreeSurface(buttonSurface);
+    SDL_DestroyTexture(buttonTexture);
 }
+
+void display_button(Button *button)
+{
+    TTF_Font *Textfont = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
+    if (!font)
+    {
+        fprintf(stderr, "Erreur lors de l'ouverture de la police du titre : %s\n", TTF_GetError());
+        TTF_CloseFont(Textfont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    // Définir la couleur du texte
+    SDL_Color textColor = {255, 255, 255};
+
+    // Créer la surface du texte du bouton
+    SDL_Surface *buttonTextSurface = TTF_RenderText_Solid(Textfont, button->text, textColor);
+    if (!buttonTextSurface)
+    {
+        fprintf(stderr, "Erreur : texte du bouton non rendu : %s\n", SDL_GetError());
+        TTF_CloseFont(Textfont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    // Créer la texture du texte du bouton à partir de la surface
+    SDL_Texture *buttonTextTexture = SDL_CreateTextureFromSurface(renderer, buttonTextSurface);
+    if (!buttonTextTexture)
+    {
+        fprintf(stderr, "Erreur lors de la création de la texture du bouton : %s\n", SDL_GetError());
+        SDL_FreeSurface(buttonTextSurface);
+        TTF_CloseFont(Textfont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Color rectColor;
+    if (button->selected)
+    {
+        rectColor.r = 0;
+        rectColor.g = 0;
+        rectColor.b = 110;
+        rectColor.a = 255;
+    }
+    else
+    {
+        rectColor.r = 0;
+        rectColor.g = 0;
+        rectColor.b = 0;
+        rectColor.a = 0;
+    }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
+    SDL_RenderFillRect(renderer, &button->rect);
+
+    // Rendre le texte du bouton à l'écran
+    if (SDL_RenderCopy(renderer, buttonTextTexture, NULL, &button->rect) != 0)
+    {
+        SDL_FreeSurface(buttonTextSurface);
+        SDL_DestroyTexture(buttonTextTexture);
+        TTF_CloseFont(Textfont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    // Libérer la surface et la texture du texte du bouton
+    TTF_CloseFont(Textfont);
+    SDL_FreeSurface(buttonTextSurface);
+    SDL_DestroyTexture(buttonTextTexture);
+}
+
+SDL_Texture *display_title(char *texte, SDL_Color textColor)
+{
+    // On charge la font pour le titre
+    TTF_Font *TextFont = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
+    if (!TextFont)
+    {
+        fprintf(stderr, "Erreur lors de l'ouverture de la police du titre : %s\n", TTF_GetError());
+        TTF_CloseFont(TextFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    // Titre Surface
+    SDL_Surface *titleSurface = TTF_RenderText_Solid(TextFont, texte, textColor);
+    if (!titleSurface)
+    {
+        fprintf(stderr, "Erreur : texte du titre non rendu : %s\n", SDL_GetError());
+        TTF_CloseFont(TextFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Texture *titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
+    if (!titleTexture)
+    {
+        fprintf(stderr, "Erreur lors de la création de la texture du titre : %s\n", SDL_GetError());
+        SDL_FreeSurface(titleSurface);
+        TTF_CloseFont(TextFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    // On libère ceux qu'on peut
+    TTF_CloseFont(TextFont);
+    SDL_FreeSurface(titleSurface);
+
+    return titleTexture;
+}
+
+void create_level_buttons(Button *levelButtons, int numLevels, int buttonWidth, int buttonHeight, int buttonSpacing, int levelsPerRow)
+{
+    for (int i = 0; i < numLevels; i++)
+    {
+        int row = i / levelsPerRow;
+        int col = i % levelsPerRow;
+        int x = col * (buttonWidth + buttonSpacing) + 450;
+        int y = row * (buttonHeight + buttonSpacing) + 250;
+
+        levelButtons[i].rect = (SDL_Rect){x, y, buttonWidth, buttonHeight};
+        levelButtons[i].selected = 0;
+        int textLength = snprintf(NULL, 0, "%d", i);
+
+        char *texte = (char *)malloc((textLength + 1) * sizeof(char));
+        if (texte == NULL)
+        {
+            fprintf(stderr, "Erreur d'allocation de mémoire.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        snprintf(texte, textLength + 1, "%d", i);
+        levelButtons[i].text = texte;
+    }
+}
+
+// DISPLAY TOOLS GAME
 
 void display_txt(char *texte, SDL_Rect rect, SDL_Color textColor)
 {
@@ -480,63 +662,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
     }
 }
 
-void display_info_SDL(Tetris *tetris)
-{
-    if (tetris == NULL)
-    {
-        fprintf(stderr, "Erreur : pointeur Tetris NULL dans display_info_SDL");
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
-    SDL_Color textColor = {255, 255, 255};
-
-    // Affiche le titre score
-    SDL_Rect scoreRect = {SCREEN_WIDTH - 680, SCREEN_HEIGHT - 335, 200, 50};
-    display_txt("Score", scoreRect, textColor);
-
-    // Affiche le score du joueur
-    SDL_Rect scoreP = {SCREEN_WIDTH - 650, SCREEN_HEIGHT - 280, 200, 50};
-
-    char ScoreString[10];
-    snprintf(ScoreString, sizeof(ScoreString), "%d", tetris->score);
-    display_txt(ScoreString, scoreP, textColor);
-
-    // Affiche le titre Stats
-    SDL_Rect Stats = {450, 20, 100, 40};
-    display_txt("Statistics", Stats, textColor);
-
-    // Affiche les Statistique de chaque pièce
-    SDL_Rect PieceStats = {450, 80, 400, (SCREEN_HEIGHT * 2 / 4) + 120};
-    display_stat_piece(tetris, PieceStats, textColor);
-
-    // Affiche du titre niveau
-    SDL_Rect NameLevel = {450, SCREEN_HEIGHT - 340, 100, 40};
-    display_txt("Level", NameLevel, textColor);
-
-    // Affichage du Niveau du joueur
-    SDL_Rect rectLevel = {550, SCREEN_HEIGHT - 220, 100, 40};
-    char levelString[20];
-    sprintf(levelString, "%d", tetris->level);
-
-    display_txt(levelString, rectLevel, textColor);
-
-    //  Affiche le nombre de ligne clear par le joueur
-    SDL_Rect linesRect = {450, SCREEN_HEIGHT - 150, 100, 40};
-
-    char LineString[20];
-    snprintf(LineString, sizeof(LineString), "Line clear: %d", tetris->nbLines);
-    display_txt(LineString, linesRect, textColor);
-
-    // Affiche le titre Next
-    SDL_Rect nextP = {SCREEN_WIDTH - 680, 20, 100, 40};
-    display_txt("Next", nextP, textColor);
-
-    // Affiche la prochaine pièce
-    display_next_piece(tetris);
-
-    SDL_RenderPresent(renderer);
-}
+// EVENTS GAME
 
 int delay_SDL(int niveau)
 {
@@ -663,196 +789,314 @@ char input_SDL(Tetris *tetris)
     return ' ';
 }
 
-void display_image_button(Button *button)
+// DISPLAY GAME
+
+void display_SDL(Tetris *tetris)
 {
-    // Définir le rectangle du bouton
-    SDL_Rect buttonRect = {button->rect.x, button->rect.y, button->rect.w, button->rect.h};
-
-    char *imagePath = get_image_path(button->text);
-    // Charger l'image du bouton
-    SDL_Surface *buttonSurface = SDL_LoadBMP(imagePath);
-    if (!buttonSurface)
+    if (tetris == NULL)
     {
-        fprintf(stderr, "Erreur : image du bouton non trouvé : %s\n", SDL_GetError());
-        free(imagePath);
+        fprintf(stderr, "Erreur : Pointeur Tetris NULL dans display_SDL");
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+    SDL_RenderClear(renderer);
+
+    if (SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL) != 0)
+    {
+        fprintf(stderr, "Erreur lors du rendu de l'image de fond : %s \n", SDL_GetError());
         close_SDL();
         exit(EXIT_FAILURE);
     }
 
-    // Créer la texture du bouton à partir de la surface
-    SDL_Texture *buttonTexture = SDL_CreateTextureFromSurface(renderer, buttonSurface);
-    if (!buttonTexture)
+    // On met la musique de jeu si elle n'est pas déjà en train de jouer (en fonction du mode panic)
+    if (tetris->isPanic)
     {
-        fprintf(stderr, "Erreur lors de la création de la texture du bouton : %s\n", SDL_GetError());
-        free(imagePath);
-        SDL_FreeSurface(buttonSurface);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-    SDL_Color rectColor;
-    if (button->selected)
-    {
-        rectColor.r = 0;
-        rectColor.g = 0;
-        rectColor.b = 110;
-        rectColor.a = 255;
+        if (currentMusic != musics[3])
+        {
+            Mix_HaltMusic();
+            Mix_PlayMusic(musics[3], -1);
+            currentMusic = musics[3];
+        }
     }
     else
     {
-        rectColor.r = 0;
-        rectColor.g = 0;
-        rectColor.b = 0;
-        rectColor.a = 0;
+        if (currentMusic != musics[1])
+        {
+            Mix_HaltMusic();
+            Mix_PlayMusic(musics[1], -1);
+            currentMusic = musics[1];
+        }
+        // Si la musique n'est pas lancé, on la lance
+        if (!Mix_PlayingMusic())
+        {
+            Mix_PlayMusic(musics[1], -1);
+            currentMusic = musics[1];
+        }
     }
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
-    SDL_RenderFillRect(renderer, &buttonRect);
 
-    // Rendre le bouton à l'écran
-    if (SDL_RenderCopy(renderer, buttonTexture, NULL, &buttonRect) != 0)
+    int offsetX = (SCREEN_WIDTH - tetris->column * CELL_SIZE) / 2;
+    int offsetY = (SCREEN_HEIGHT - tetris->line * CELL_SIZE) / 2;
+
+    offsetY -= 30;
+
+    for (int i = 0; i < tetris->line; i++)
     {
-        fprintf(stderr, "Erreur Impossible de faire le rendu : %s\n", SDL_GetError());
-        free(imagePath);
-        SDL_FreeSurface(buttonSurface);
-        SDL_DestroyTexture(buttonTexture);
+        for (int j = 0; j < tetris->column; j++)
+        {
+            SDL_Rect rect = {(offsetX + j * CELL_SIZE),
+                             (offsetY + i * CELL_SIZE),
+                             CELL_SIZE, CELL_SIZE};
+            int indice = get_indice_by_color(tetris->board[i][j].c);
+
+            if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &rect) != 0)
+            {
+                close_SDL();
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+    display_info_SDL(tetris);
+    SDL_RenderPresent(renderer);
+}
+
+void display_info_SDL(Tetris *tetris)
+{
+    if (tetris == NULL)
+    {
+        fprintf(stderr, "Erreur : pointeur Tetris NULL dans display_info_SDL");
         close_SDL();
         exit(EXIT_FAILURE);
     }
 
-    // Libération de la surface et de la texture du bouton
-    free(imagePath);
-    SDL_FreeSurface(buttonSurface);
-    SDL_DestroyTexture(buttonTexture);
-}
-
-void display_button(Button *button, TTF_Font *font)
-{
-    // Définir la couleur du texte
     SDL_Color textColor = {255, 255, 255};
 
-    // Créer la surface du texte du bouton
-    SDL_Surface *buttonTextSurface = TTF_RenderText_Solid(font, button->text, textColor);
-    if (!buttonTextSurface)
-    {
-        fprintf(stderr, "Erreur : texte du bouton non rendu : %s\n", SDL_GetError());
-        TTF_CloseFont(font);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
+    // Affiche le titre score
+    SDL_Rect scoreRect = {SCREEN_WIDTH - 680, SCREEN_HEIGHT - 335, 200, 50};
+    display_txt("Score", scoreRect, textColor);
 
-    // Créer la texture du texte du bouton à partir de la surface
-    SDL_Texture *buttonTextTexture = SDL_CreateTextureFromSurface(renderer, buttonTextSurface);
-    if (!buttonTextTexture)
-    {
-        fprintf(stderr, "Erreur lors de la création de la texture du bouton : %s\n", SDL_GetError());
-        SDL_FreeSurface(buttonTextSurface);
-        TTF_CloseFont(font);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
+    // Affiche le score du joueur
+    SDL_Rect scoreP = {SCREEN_WIDTH - 650, SCREEN_HEIGHT - 280, 200, 50};
 
-    SDL_Color rectColor;
-    if (button->selected)
-    {
-        rectColor.r = 0;
-        rectColor.g = 0;
-        rectColor.b = 110;
-        rectColor.a = 255;
-    }
-    else
-    {
-        rectColor.r = 0;
-        rectColor.g = 0;
-        rectColor.b = 0;
-        rectColor.a = 0;
-    }
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
-    SDL_RenderFillRect(renderer, &button->rect);
+    char ScoreString[10];
+    snprintf(ScoreString, sizeof(ScoreString), "%d", tetris->score);
+    display_txt(ScoreString, scoreP, textColor);
 
-    // Rendre le texte du bouton à l'écran
-    if (SDL_RenderCopy(renderer, buttonTextTexture, NULL, &button->rect) != 0)
-    {
-        SDL_FreeSurface(buttonTextSurface);
-        SDL_DestroyTexture(buttonTextTexture);
-        TTF_CloseFont(font);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
+    // Affiche le titre Stats
+    SDL_Rect Stats = {450, 20, 100, 40};
+    display_txt("Statistics", Stats, textColor);
 
-    // Libérer la surface et la texture du texte du bouton
-    SDL_FreeSurface(buttonTextSurface);
-    SDL_DestroyTexture(buttonTextTexture);
+    // Affiche les Statistique de chaque pièce
+    SDL_Rect PieceStats = {450, 80, 400, (SCREEN_HEIGHT * 2 / 4) + 120};
+    display_stat_piece(tetris, PieceStats, textColor);
+
+    // Affiche du titre niveau
+    SDL_Rect NameLevel = {450, SCREEN_HEIGHT - 340, 100, 40};
+    display_txt("Level", NameLevel, textColor);
+
+    // Affichage du Niveau du joueur
+    SDL_Rect rectLevel = {550, SCREEN_HEIGHT - 220, 100, 40};
+    char levelString[20];
+    sprintf(levelString, "%d", tetris->level);
+
+    display_txt(levelString, rectLevel, textColor);
+
+    //  Affiche le nombre de ligne clear par le joueur
+    SDL_Rect linesRect = {450, SCREEN_HEIGHT - 150, 100, 40};
+
+    char LineString[20];
+    snprintf(LineString, sizeof(LineString), "Line clear: %d", tetris->nbLines);
+    display_txt(LineString, linesRect, textColor);
+
+    // Affiche le titre Next
+    SDL_Rect nextP = {SCREEN_WIDTH - 680, 20, 100, 40};
+    display_txt("Next", nextP, textColor);
+
+    // Affiche la prochaine pièce
+    display_next_piece(tetris);
+
+    SDL_RenderPresent(renderer);
 }
 
-SDL_Texture *init_background_menu()
+// EVENTS MENU & SELECTION
+
+int home_page_events(Button *play, Button *options, Button *exit, Tetris *tetris)
 {
-    char *imageBack = get_image_path("menu");
-    SDL_Surface *MenuSurface = SDL_LoadBMP(imageBack);
-    if (!MenuSurface)
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
     {
-        fprintf(stderr, "Erreur lors du chargement de l'image du Menu: %s \n", SDL_GetError());
-        close_SDL();
-        exit(EXIT_FAILURE);
+        switch (event.type)
+        {
+        case SDL_QUIT:
+            close_SDL();
+            break;
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym)
+            {
+            case SDLK_RETURN:
+            case SDLK_RETURN2:
+            case SDLK_KP_ENTER:
+                if (play->selected == 1)
+                {
+                    level_selection_SDL(tetris);
+                }
+                else if (exit->selected == 1)
+                {
+                    tetris->state = CLOSE;
+                }
+                else if (options->selected == 1)
+                {
+                    tetris->state = OPTION;
+                }
+                return 1; // Evènement traités
+            case SDLK_s:
+            case SDLK_DOWN:
+                play_sound_SDL(5);
+                if (play->selected == 1)
+                {
+                    options->selected = 1;
+                    play->selected = 0;
+                }
+                else if (options->selected == 1)
+                {
+                    exit->selected = 1;
+                    options->selected = 0;
+                }
+                else if (exit->selected == 1)
+                {
+                    play->selected = 1;
+                    exit->selected = 0;
+                }
+                break;
+            case SDLK_z:
+            case SDLK_UP:
+                play_sound_SDL(5);
+                if (play->selected == 1)
+                {
+                    exit->selected = 1;
+                    play->selected = 0;
+                }
+                else if (options->selected == 1)
+                {
+                    play->selected = 1;
+                    options->selected = 0;
+                }
+                else if (exit->selected == 1)
+                {
+                    options->selected = 1;
+                    exit->selected = 0;
+                }
+                break;
+            }
+            break;
+        }
     }
-
-    SDL_Surface *resize = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
-    SDL_BlitScaled(MenuSurface, NULL, resize, NULL);
-
-    SDL_Texture *MenuTexture = SDL_CreateTextureFromSurface(renderer, resize);
-    if (!MenuTexture)
-    {
-        fprintf(stderr, "Erreur lors du chargement de la texture du Menu: %s \n", SDL_GetError());
-        SDL_FreeSurface(MenuSurface);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
-    SDL_FreeSurface(resize);
-    SDL_FreeSurface(MenuSurface);
-    return MenuTexture;
+    return 0;
 }
+
+int level_selection_events(int *selectedLevel, Button *backButton, Button levelButtons[], int numLevels)
+{
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+        case SDL_QUIT:
+            close_SDL();
+            break;
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym)
+            {
+            case SDLK_ESCAPE:
+                return 1; // Retour au home
+            case SDLK_s:
+            case SDLK_DOWN:
+                play_sound_SDL(5);
+                *selectedLevel = (*selectedLevel + 5) % numLevels;
+                break;
+            case SDLK_z:
+            case SDLK_UP:
+                play_sound_SDL(5);
+                *selectedLevel = (*selectedLevel - 5 + numLevels) % numLevels;
+                break;
+            case SDLK_d:
+            case SDLK_RIGHT:
+                play_sound_SDL(5);
+                if (*selectedLevel == numLevels - 1)
+                {
+                    backButton->selected = 1;
+                    levelButtons[*selectedLevel].selected = 0;
+                    *selectedLevel = numLevels;
+                }
+                else if (*selectedLevel == numLevels)
+                {
+                    backButton->selected = 0;
+                    levelButtons[0].selected = 1;
+                    *selectedLevel = 0;
+                }
+                else
+                {
+                    backButton->selected = 0;
+                    levelButtons[*selectedLevel].selected = 0;
+                    *selectedLevel = (*selectedLevel + 1) % numLevels;
+                }
+                break;
+            case SDLK_q:
+            case SDLK_LEFT:
+                play_sound_SDL(5);
+                if (*selectedLevel == numLevels)
+                {
+                    backButton->selected = 0;
+                    levelButtons[numLevels - 1].selected = 1;
+                    *selectedLevel = numLevels - 1;
+                }
+                else if (*selectedLevel == 0)
+                {
+                    backButton->selected = 1;
+                    levelButtons[0].selected = 0;
+                    *selectedLevel = numLevels;
+                }
+                else
+                {
+                    backButton->selected = 0;
+                    levelButtons[*selectedLevel].selected = 0;
+                    *selectedLevel = (*selectedLevel - 1 + numLevels) % numLevels;
+                }
+                break;
+            case SDLK_RETURN:
+            case SDLK_RETURN2:
+            case SDLK_KP_ENTER:
+                if (*selectedLevel == numLevels)
+                {
+                    return 1; // Retour
+                }
+                else
+                {
+                    return 2; // Niveau selectionner
+                }
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
+// DISPLAY MENU & SELECTION
 
 void level_selection_SDL(Tetris *tetris)
 {
 
     play_sound_SDL(6);
 
+    SDL_Color textColor = {255, 255, 255};
+
     // Créer le fond d'écran
     SDL_Texture *MenuTexture = init_background_menu();
 
-    // Charger la police pour le titre
-    TTF_Font *TextFont = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
-    if (!TextFont)
-    {
-        fprintf(stderr, "Erreur lors de l'ouverture de la police du titre : %s\n", TTF_GetError());
-        TTF_Quit();
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
-    SDL_Color textColor = {255, 255, 255};
-    // Titre
-    SDL_Surface *titleSurface = TTF_RenderText_Solid(TextFont, "Level Selection", textColor);
-    if (!titleSurface)
-    {
-        fprintf(stderr, "Erreur : texte du titre non rendu : %s\n", SDL_GetError());
-        TTF_CloseFont(TextFont);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
-    SDL_Texture *titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
-    if (!titleTexture)
-    {
-        fprintf(stderr, "Erreur lors de la création de la texture du titre : %s\n", SDL_GetError());
-        SDL_FreeSurface(titleSurface);
-        TTF_CloseFont(TextFont);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
+    // Créer le titre
+    SDL_Texture *TitleTexture = display_title("Level Selection", textColor);
 
     Button backButton = {{SCREEN_WIDTH - 400, SCREEN_HEIGHT - 200, 300, 100}, "Retour", 0};
+
     const int numLevels = 20;
     Button levelButtons[numLevels];
     int buttonWidth = 100;
@@ -860,27 +1104,7 @@ void level_selection_SDL(Tetris *tetris)
     int buttonSpacing = 100;
     int levelsPerRow = 5;
 
-    for (int i = 0; i < numLevels; i++)
-    {
-        int row = i / levelsPerRow;
-        int col = i % levelsPerRow;
-        int x = col * (buttonWidth + buttonSpacing) + 450;
-        int y = row * (buttonHeight + buttonSpacing) + 250;
-        levelButtons[i].rect = (SDL_Rect){x, y, buttonWidth, buttonHeight};
-        levelButtons[i].selected = 0;
-        int textLength = snprintf(NULL, 0, "%d", i);
-        char *texte = (char *)malloc((textLength + 1) * sizeof(char));
-
-        // Vérifier si l'allocation de mémoire a réussi
-        if (texte == NULL)
-        {
-            fprintf(stderr, "Erreur d'allocation de mémoire.\n");
-            exit(EXIT_FAILURE);
-        }
-
-        snprintf(texte, textLength + 1, "%d", i);
-        levelButtons[i].text = texte;
-    }
+    create_level_buttons(levelButtons, numLevels, buttonWidth, buttonHeight, buttonSpacing, levelsPerRow);
 
     int selectedLevel = 0;
 
@@ -892,129 +1116,45 @@ void level_selection_SDL(Tetris *tetris)
 
         // Afficher le titre
         SDL_Rect titleRect = {SCREEN_WIDTH / 2 - 800, 50, 600, 200};
-        SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+        SDL_RenderCopy(renderer, TitleTexture, NULL, &titleRect);
 
         // Afficher le bouton de retour
-        display_button(&backButton, TextFont);
+        display_button(&backButton);
 
         // Affiche les boutons selectionnés ( Niveaux )
         for (int i = 0; i < numLevels; i++)
         {
             levelButtons[i].selected = (i == selectedLevel) ? 1 : 0;
-            display_button(&levelButtons[i], TextFont);
+            display_button(&levelButtons[i]);
         }
 
-        // Gestion des événements
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+        int eventResult = level_selection_events(&selectedLevel, &backButton, levelButtons, numLevels);
+
+        if (eventResult == 1)
         {
-            switch (event.type)
-            {
-            case SDL_QUIT:
-                close_SDL();
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_ESCAPE:
-                    run = false;
-                    tetris->state = MENU;
-                    break;
-                case SDLK_s:
-                case SDLK_DOWN:
-                    play_sound_SDL(5);
-                    selectedLevel = (selectedLevel + 5) % numLevels;
-                    break;
-                case SDLK_z:
-                case SDLK_UP:
-                    play_sound_SDL(5);
-                    selectedLevel = (selectedLevel - 5 + numLevels) % numLevels;
-                    break;
-                case SDLK_d:
-                case SDLK_RIGHT:
-                    play_sound_SDL(5);
-                    if (selectedLevel == numLevels - 1)
-                    {
-                        // If we are on the last level, go to the back button
-                        backButton.selected = 1;
-                        levelButtons[selectedLevel].selected = 0;
-                        selectedLevel = numLevels;
-                    }
-                    else if (selectedLevel == numLevels)
-                    {
-                        // If we are on the back button, go to the first level
-                        backButton.selected = 0;
-                        levelButtons[0].selected = 1;
-                        selectedLevel = 0;
-                    }
-                    else
-                    {
-                        backButton.selected = 0;
-                        levelButtons[selectedLevel].selected = 0;
-                        selectedLevel = (selectedLevel + 1) % numLevels;
-                    }
-                    break;
-                case SDLK_q:
-                case SDLK_LEFT:
-                    play_sound_SDL(5);
-                    if (selectedLevel == numLevels)
-                    {
-                        // If we are on the back button, go to the last level
-                        backButton.selected = 0;
-                        levelButtons[numLevels - 1].selected = 1;
-                        selectedLevel = numLevels - 1;
-                    }
-                    else if (selectedLevel == 0)
-                    {
-                        // If we are on the first level, go to the back button
-                        backButton.selected = 1;
-                        levelButtons[0].selected = 0;
-                        selectedLevel = numLevels;
-                    }
-                    else
-                    {
-                        backButton.selected = 0;
-                        levelButtons[selectedLevel].selected = 0;
-                        selectedLevel = (selectedLevel - 1 + numLevels) % numLevels;
-                    }
-                    break;
-                case SDLK_RETURN:
-                case SDLK_RETURN2:
-                case SDLK_KP_ENTER:
-                    if (selectedLevel == numLevels)
-                    {
-                        run = false;
-                        tetris->state = MENU;
-                    }
-                    else
-                    {
-                        run = false;
-                        tetris->level = selectedLevel;
-                        tetris->state = GAME;
-                    }
-                    break;
-                }
-            }
+            run = false;
+            tetris->state = MENU;
         }
+        else if (eventResult == 2)
+        {
+            run = false;
+            tetris->level = selectedLevel;
+            tetris->state = GAME;
+        }
+
         // Mettre à jour l'affichage
         SDL_RenderPresent(renderer);
     }
 
     // Libérer les ressources
-    for (int i = 0; i < numLevels; i++)
-    {
-        free(levelButtons[i].text);
-    }
+    free_levels(levelButtons, numLevels);
 
     SDL_DestroyTexture(MenuTexture);
-    SDL_FreeSurface(titleSurface);
-    SDL_DestroyTexture(titleTexture);
-    TTF_CloseFont(TextFont);
+    SDL_DestroyTexture(TitleTexture);
 }
 
 void home_page_SDL(Tetris *tetris)
 {
-
     tetris->state = MENU;
     SDL_Texture *MenuTexture = init_background_menu();
 
@@ -1027,33 +1167,10 @@ void home_page_SDL(Tetris *tetris)
         currentMusic = musics[0];
     }
 
-    // Affiche TETRIS
-    TTF_Font *tetrisFont = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
-    if (!tetrisFont)
-    {
-        fprintf(stderr, "Erreur lors de l'ouverture de la nouvelle police : %s\n", TTF_GetError());
-        TTF_Quit();
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
     SDL_Color textColor = {255, 255, 255};
-    SDL_Surface *tetrisTextSurface = TTF_RenderText_Solid(tetrisFont, "TETRIS", textColor);
-    if (!tetrisTextSurface)
-    {
-        fprintf(stderr, "Erreur : texte TETRIS non rendu : %s\n", SDL_GetError());
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
 
-    SDL_Texture *tetrisTextTexture = SDL_CreateTextureFromSurface(renderer, tetrisTextSurface);
-    if (!tetrisTextTexture)
-    {
-        fprintf(stderr, "Erreur lors de la création de la texture TETRIS : %s\n", SDL_GetError());
-        SDL_FreeSurface(tetrisTextSurface);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
+    SDL_Texture *tetrisTextTexture = display_title("TETRIS", textColor);
+
     // Afficher les boutons
     Button play = {{SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 100, 400, 150}, "JOUER", 1};
     Button options = {{SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 100, 400, 150}, "OPTIONS", 0};
@@ -1074,86 +1191,20 @@ void home_page_SDL(Tetris *tetris)
         display_image_button(&options);
         display_image_button(&exit);
 
-        // Gestion des événements
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+        if (home_page_events(&play, &options, &exit, tetris))
         {
-            switch (event.type)
-            {
-            case SDL_QUIT:
-                close_SDL();
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_RETURN:
-                case SDLK_RETURN2:
-                case SDLK_KP_ENTER:
-                    run = false;
-                    if (play.selected == 1)
-                    {
-                        // On va a la selection
-                        level_selection_SDL(tetris);
-                    }
-                    else if (exit.selected == 1)
-                    {
-                        tetris->state = CLOSE;
-                    }
-                    else if (options.selected == 1)
-                    {
-                        tetris->state = OPTION;
-                    }
-                    break;
-                case SDLK_s:
-                case SDLK_DOWN:
-                    play_sound_SDL(5);
-                    if (play.selected == 1)
-                    {
-                        options.selected = 1;
-                        play.selected = 0;
-                    }
-                    else if (options.selected == 1)
-                    {
-                        exit.selected = 1;
-                        options.selected = 0;
-                    }
-                    else if (exit.selected == 1)
-                    {
-                        play.selected = 1;
-                        exit.selected = 0;
-                    }
-                    break;
-                case SDLK_z:
-                case SDLK_UP:
-                    play_sound_SDL(5);
-                    if (play.selected == 1)
-                    {
-                        exit.selected = 1;
-                        play.selected = 0;
-                    }
-                    else if (options.selected == 1)
-                    {
-                        play.selected = 1;
-                        options.selected = 0;
-                    }
-                    else if (exit.selected == 1)
-                    {
-                        options.selected = 1;
-                        exit.selected = 0;
-                    }
-                    break;
-                }
-                break;
-            }
+            run = false;
         }
 
         // Mettre à jour l'affichage
         SDL_RenderPresent(renderer);
     }
-    TTF_CloseFont(tetrisFont);
     // On libère le Menutexture
+    SDL_DestroyTexture(tetrisTextTexture);
     SDL_DestroyTexture(MenuTexture);
 }
+
+// DISPLAY END & HIGHSCORE
 
 void player_name_screen(SDL_Color textColor, char *playerName)
 {
@@ -1270,6 +1321,7 @@ void end_screen_SDL(Tetris *tetris)
     tetris->state = CLOSE;
 }
 
+// SOUNDS
 void play_sound_SDL(int i)
 {
     // Vérifier si la bibliothèque SDL Mixer est initialisée
