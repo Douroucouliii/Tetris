@@ -131,7 +131,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
 
-    userInterface ui = nCurses;
+    userInterface ui = SDL;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -212,9 +212,7 @@ void game(Tetris *tetris, userInterface ui)
         switch (input)
         {
         case 'q':
-            move_left_piece(tetris);
-            if (ui.functions->play_sound)
-                ui.functions->play_sound(0);
+            if(move_left_piece(tetris) && ui.functions->play_sound) ui.functions->play_sound(0);
             break;
         case 's':
             if (!move_down_piece(tetris))
@@ -232,9 +230,7 @@ void game(Tetris *tetris, userInterface ui)
             }
             break;
         case 'd':
-            move_right_piece(tetris);
-            if (ui.functions->play_sound)
-                ui.functions->play_sound(0);
+            if(move_right_piece(tetris) && ui.functions->play_sound) ui.functions->play_sound(0);
             break;
         case 'a':
             rotate_left(tetris);
@@ -796,6 +792,8 @@ void sleep_NES(Tetris *tetris)
 
     // On sleep le programme (on convertit de milliseconde en microseconde)
     usleep(sleep_time * 1000);
+
+ 
 }
 
 void is_panic(Tetris *tetris){
