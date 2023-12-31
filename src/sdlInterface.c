@@ -84,16 +84,16 @@ void clear_background()
 
 void close_SDL()
 {
-    for(int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
-        if(musics[i])
+        if (musics[i])
         {
             Mix_FreeMusic(musics[i]);
         }
     }
-    for(int i = 0; i < 10; i++)
+    for (int i = 0; i < 10; i++)
     {
-        if(sounds[i])
+        if (sounds[i])
         {
             Mix_FreeChunk(sounds[i]);
         }
@@ -315,8 +315,10 @@ void display_SDL(Tetris *tetris)
     }
 
     // On met la musique de jeu si elle n'est pas déjà en train de jouer (en fonction du mode panic)
-    if(tetris->isPanic){
-        if(currentMusic != musics[3]){
+    if (tetris->isPanic)
+    {
+        if (currentMusic != musics[3])
+        {
             Mix_HaltMusic();
             Mix_PlayMusic(musics[3], -1);
             currentMusic = musics[3];
@@ -324,12 +326,13 @@ void display_SDL(Tetris *tetris)
     }
     else
     {
-        if(currentMusic != musics[1]){
+        if (currentMusic != musics[1])
+        {
             Mix_HaltMusic();
             Mix_PlayMusic(musics[1], -1);
             currentMusic = musics[1];
         }
-        //Si la musique n'est pas lancé, on la lance
+        // Si la musique n'est pas lancé, on la lance
         if (!Mix_PlayingMusic())
         {
             Mix_PlayMusic(musics[1], -1);
@@ -748,8 +751,23 @@ void display_button(Button *button, TTF_Font *font)
         exit(EXIT_FAILURE);
     }
 
-    // Dessiner le rectangle du bouton avec la couleur appropriée
-    SDL_SetRenderDrawColor(renderer, 0, 0, 110, 255);
+    SDL_Color rectColor;
+    if (button->selected)
+    {
+        rectColor.r = 0;
+        rectColor.g = 0;
+        rectColor.b = 110;
+        rectColor.a = 255;
+    }
+    else
+    {
+        rectColor.r = 0;
+        rectColor.g = 0;
+        rectColor.b = 0;
+        rectColor.a = 0;
+    }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
     SDL_RenderFillRect(renderer, &button->rect);
 
     // Rendre le texte du bouton à l'écran
@@ -795,11 +813,6 @@ SDL_Texture *init_background_menu()
     return MenuTexture;
 }
 
-int is_point_inside_rect(int x, int y, SDL_Rect rect)  
-{
-    return (x >= rect.x && x < rect.x + rect.w && y >= rect.y && y < rect.y + rect.h);
-}
-
 void level_selection_SDL(Tetris *tetris)
 {
 
@@ -839,28 +852,38 @@ void level_selection_SDL(Tetris *tetris)
         exit(EXIT_FAILURE);
     }
 
-    Button backButton = {{20, 20, 100, 50}, "Retour", 0};
-    /*
-    // Affichage des 19 niveaux
-    const int numLevels = 19;
+    Button backButton = {{SCREEN_WIDTH - 400, SCREEN_HEIGHT - 200, 300, 100}, "Retour", 0};
+    const int numLevels = 20;
     Button levelButtons[numLevels];
     int buttonWidth = 100;
-    int buttonHeight = 50;
-    int buttonSpacing = 20;
+    int buttonHeight = 100;
+    int buttonSpacing = 100;
     int levelsPerRow = 5;
 
     for (int i = 0; i < numLevels; i++)
     {
         int row = i / levelsPerRow;
         int col = i % levelsPerRow;
-        int x = col * (buttonWidth + buttonSpacing) + 50;
-        int y = row * (buttonHeight + buttonSpacing) + 150;
+        int x = col * (buttonWidth + buttonSpacing) + 450;
+        int y = row * (buttonHeight + buttonSpacing) + 250;
         levelButtons[i].rect = (SDL_Rect){x, y, buttonWidth, buttonHeight};
         levelButtons[i].selected = 0;
         int textLength = snprintf(NULL, 0, "%d", i);
-        snprintf(levelButtons[i].text, textLength + 1, "%d", i);
+        char *texte = (char *)malloc((textLength + 1) * sizeof(char));
+
+        // Vérifier si l'allocation de mémoire a réussi
+        if (texte == NULL)
+        {
+            fprintf(stderr, "Erreur d'allocation de mémoire.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        snprintf(texte, textLength + 1, "%d", i);
+        levelButtons[i].text = texte;
     }
-    */
+
+    int selectedLevel = 0;
+
     bool run = true;
     while (run)
     {
@@ -868,18 +891,18 @@ void level_selection_SDL(Tetris *tetris)
         SDL_RenderCopy(renderer, MenuTexture, NULL, NULL);
 
         // Afficher le titre
-        SDL_Rect titleRect = {(SCREEN_WIDTH - titleSurface->w) / 2, 50, titleSurface->w, titleSurface->h};
+        SDL_Rect titleRect = {SCREEN_WIDTH / 2 - 800, 50, 600, 200};
         SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
 
         // Afficher le bouton de retour
         display_button(&backButton, TextFont);
 
-        // Afficher les boutons de niveau
-        /*
+        // Affiche les boutons selectionnés ( Niveaux )
         for (int i = 0; i < numLevels; i++)
         {
+            levelButtons[i].selected = (i == selectedLevel) ? 1 : 0;
             display_button(&levelButtons[i], TextFont);
-        }*/
+        }
 
         // Gestion des événements
         SDL_Event event;
@@ -897,41 +920,88 @@ void level_selection_SDL(Tetris *tetris)
                     run = false;
                     tetris->state = MENU;
                     break;
-                }
-                case SDLK_p:
-                    run = false;
-                    tetris->state = GAME;
+                case SDLK_s:
+                case SDLK_DOWN:
+                    selectedLevel = (selectedLevel + 5) % numLevels;
                     break;
-                break;
-            case SDL_MOUSEBUTTONDOWN:
-                if (event.button.button == SDL_BUTTON_LEFT)
-                {
-                    if (is_point_inside_rect(event.button.x, event.button.y, backButton.rect))
+                case SDLK_z:
+                case SDLK_UP:
+                    selectedLevel = (selectedLevel - 5 + numLevels) % numLevels;
+                    break;
+                case SDLK_d:
+                case SDLK_RIGHT:
+                    if (selectedLevel == numLevels - 1)
+                    {
+                        // If we are on the last level, go to the back button
+                        backButton.selected = 1;
+                        levelButtons[selectedLevel].selected = 0;
+                        selectedLevel = numLevels;
+                    }
+                    else if (selectedLevel == numLevels)
+                    {
+                        // If we are on the back button, go to the first level
+                        backButton.selected = 0;
+                        levelButtons[0].selected = 1;
+                        selectedLevel = 0;
+                    }
+                    else
+                    {
+                        backButton.selected = 0;
+                        levelButtons[selectedLevel].selected = 0;
+                        selectedLevel = (selectedLevel + 1) % numLevels;
+                    }
+                    break;
+                case SDLK_q:
+                case SDLK_LEFT:
+                    if (selectedLevel == numLevels)
+                    {
+                        // If we are on the back button, go to the last level
+                        backButton.selected = 0;
+                        levelButtons[numLevels - 1].selected = 1;
+                        selectedLevel = numLevels - 1;
+                    }
+                    else if (selectedLevel == 0)
+                    {
+                        // If we are on the first level, go to the back button
+                        backButton.selected = 1;
+                        levelButtons[0].selected = 0;
+                        selectedLevel = numLevels;
+                    }
+                    else
+                    {
+                        backButton.selected = 0;
+                        levelButtons[selectedLevel].selected = 0;
+                        selectedLevel = (selectedLevel - 1 + numLevels) % numLevels;
+                    }
+                    break;
+                case SDLK_RETURN:
+                case SDLK_RETURN2:
+                case SDLK_KP_ENTER:
+                    if (selectedLevel == numLevels)
                     {
                         run = false;
                         tetris->state = MENU;
                     }
-                    /*
-                    // Vérifier si le clic est sur l'un des boutons de niveau
-                    for (int i = 0; i < numLevels; i++)
+                    else
                     {
-                        if (is_point_inside_rect(event.button.x, event.button.y, levelButtons[i].rect))
-                        {
-                            tetris->level = i;
-                            tetris->state = GAME;
-                        }
+                        run = false;
+                        tetris->level = selectedLevel;
+                        tetris->state = GAME;
                     }
-                    */
+                    break;
                 }
-                break;
             }
         }
-
         // Mettre à jour l'affichage
         SDL_RenderPresent(renderer);
     }
 
     // Libérer les ressources
+    for (int i = 0; i < numLevels; i++)
+    {
+        free(levelButtons[i].text);
+    }
+
     SDL_DestroyTexture(MenuTexture);
     SDL_FreeSurface(titleSurface);
     SDL_DestroyTexture(titleTexture);
@@ -1198,6 +1268,20 @@ void end_screen_SDL(Tetris *tetris)
 
 void play_sound_SDL(int i)
 {
+    // Vérifier si la bibliothèque SDL Mixer est initialisée
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+    {
+        fprintf(stderr, "Erreur lors de l'initialisation de SDL Mixer : %s\n", Mix_GetError());
+        return;
+    }
+
+    // Vérifier si l'indice est dans une plage valide
+    if (i < 0 || i >= 10)
+    {
+        fprintf(stderr, "Indice de son invalide : %d\n", i);
+        return;
+    }
+
     // Jouer le son dans le tableau d'indice i
     if (Mix_PlayChannel(-1, sounds[i], 0) == -1)
     {

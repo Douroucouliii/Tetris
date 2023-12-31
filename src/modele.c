@@ -131,7 +131,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
 
-    userInterface ui = nCurses;
+    userInterface ui = SDL;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -227,7 +227,7 @@ void game(Tetris *tetris, userInterface ui)
                 if (ui.functions->play_sound)
                     ui.functions->play_sound(7);
                 is_panic(tetris);
-                //sleep_NES(tetris);
+                // sleep_NES(tetris);
                 get_piece(tetris);
             }
             break;
@@ -798,8 +798,9 @@ void sleep_NES(Tetris *tetris)
     usleep(sleep_time * 1000);
 }
 
-void is_panic(Tetris *tetris){
-    //Compte le nombre de ligne pour lesquelles on a au moins 6 cellules pleines
+void is_panic(Tetris *tetris)
+{
+    // Compte le nombre de ligne pour lesquelles on a au moins 6 cellules pleines
     int nb = 0;
     for (int i = 0; i < tetris->line; i++)
     {
@@ -817,7 +818,7 @@ void is_panic(Tetris *tetris){
         }
     }
 
-    //Si 11 des lignes sont concernées, on passe en mode panic
+    // Si 11 des lignes sont concernées, on passe en mode panic
     if (nb >= 11)
     {
         tetris->isPanic = true;
@@ -872,5 +873,5 @@ void clear_tetris(Tetris *t, userInterface ui)
     clear_boardPiece(t);
     clear_tmpPiece(t);
     free(t->nextPiece);
-    //free(t);
+    // free(t);
 }
