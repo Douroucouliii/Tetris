@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-// Taille des cases
+
+// Taille des cases du plateau
 #define CELL_SIZE 47
 
 // Par défaut
@@ -1158,8 +1159,6 @@ void home_page_SDL(Tetris *tetris)
     tetris->state = MENU;
     SDL_Texture *MenuTexture = init_background_menu();
 
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, MenuTexture, NULL, NULL);
     // Définir la musique
     if (!Mix_PlayingMusic())
     {
@@ -1206,9 +1205,32 @@ void home_page_SDL(Tetris *tetris)
 
 // DISPLAY END & HIGHSCORE
 
-void player_name_screen(SDL_Color textColor, char *playerName)
+void end_screen_SDL(Tetris *tetris)
 {
-    SDL_Rect textInputRect = {100, 100, 500, 50};
+    tetris->state = END;
+    // Créaction de la couleur de la font
+    SDL_Color textColor = {255, 255, 255};
+
+    // Création du fond du Menu
+    SDL_Texture *MenuTexture = init_background_menu();
+
+    // Création du titre
+    SDL_Texture *TitleTexture = display_title("End", textColor);
+
+    // Création de trois bouton Rejouez , Quitter et Enregistrer
+    Button replayButton = {{SCREEN_WIDTH - 1000, 50, 300, 100}, "Rejouer", 0};
+    Button quitButton = {{SCREEN_WIDTH - 400, 50, 300, 100}, "Quitter", 0};
+    Button saveButton = {{SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 400, 100}, "Enregistrer", 0};
+
+    //  On met la musique de fin si elle n'est pas déjà en train de jouer
+    if (currentMusic != musics[2])
+    {
+        Mix_PlayMusic(musics[2], -1);
+        currentMusic = musics[2];
+    }
+
+    char playerName[30];
+    SDL_Rect textInputRect = {SCREEN_WIDTH / 2 - 800, SCREEN_HEIGHT - 150, 500, 400};
     SDL_StartTextInput();
 
     int quit = 0;
@@ -1217,9 +1239,30 @@ void player_name_screen(SDL_Color textColor, char *playerName)
     while (!quit)
     {
         // Effacer l'écran
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+        if (SDL_RenderCopy(renderer, MenuTexture, NULL, NULL) != 0)
+        {
+        }
 
+        // Afficher le titre
+        SDL_Rect titleRect = {SCREEN_WIDTH / 2 - 800, 50, 400, 200};
+        if (SDL_RenderCopy(renderer, TitleTexture, NULL, &titleRect) != 0)
+        {
+        }
+
+        // Afficher les boutons
+        display_button(&replayButton);
+        display_button(&quitButton);
+        display_button(&saveButton);
+
+        // Afficher le nom du joueur
+        if (strlen(playerName) > 0)
+        {
+            SDL_Texture *TextInputTexture = display_title(playerName, textColor);
+            if (SDL_RenderCopy(renderer, TextInputTexture, NULL, &textInputRect) != 0)
+            {
+            }
+        }
         // Gérer les événements
         while (SDL_PollEvent(&event))
         {
@@ -1261,63 +1304,12 @@ void player_name_screen(SDL_Color textColor, char *playerName)
             }
         }
 
-        // Afficher le nom du joueur
-        if (strlen(playerName) > 0)
-        {
-            SDL_Surface *textSurface = TTF_RenderText_Solid(font, playerName, textColor);
-            if (!textSurface)
-            {
-                fprintf(stderr, "Erreur de rendu du texte : %s\n", TTF_GetError());
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
-
-            SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-            if (!textTexture)
-            {
-                fprintf(stderr, "Erreur de création de texture : %s\n", SDL_GetError());
-                SDL_FreeSurface(textSurface);
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
-
-            SDL_Rect textRect = {textInputRect.x + 10, textInputRect.y + 10, textSurface->w, textSurface->h};
-            if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
-            {
-                fprintf(stderr, "Erreur de rendu de texture : %s\n", SDL_GetError());
-                SDL_FreeSurface(textSurface);
-                SDL_DestroyTexture(textTexture);
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
-
-            SDL_FreeSurface(textSurface);
-            SDL_DestroyTexture(textTexture);
-        }
-
         SDL_RenderPresent(renderer);
     }
 
     SDL_StopTextInput();
-}
-
-void end_screen_SDL(Tetris *tetris)
-{
-    tetris->state = END;
-
-    // Définir la couleur de fond
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
-    // On met la musique de fin si elle n'est pas déjà en train de jouer
-    if (currentMusic != musics[2])
-    {
-        Mix_PlayMusic(musics[2], -1);
-        currentMusic = musics[2];
-    }
-    SDL_Color textColor = {255, 255, 255};
-    char playerName[30];
-    player_name_screen(textColor, playerName);
+    SDL_DestroyTexture(MenuTexture);
+    SDL_DestroyTexture(TitleTexture);
     tetris->state = CLOSE;
 }
 

@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+ * @file sdlInterface.h
+ * @author Perin Clément (https://github.com/Douroucouliii)
+ * @author Mackowiak Carole (https://github.com/Carole-prog)
+ * @brief Affichage du Tetris en SDL
+ * @date 2023-11-24
+ */
+
 #include "modele.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"

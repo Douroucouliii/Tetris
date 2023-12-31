@@ -66,6 +66,16 @@ typedef struct
 } PieceConfig;
 
 /**
+ * @brief Strucutre pour avoir un tableau des hightscores pour notre Tetris
+ *
+ */
+typedef struct
+{
+    char *name; /**< Indique le nom du joueur */
+    int score;  /**< Indique le score du joueur*/
+} Highscore;
+
+/**
  * @brief Structure représentant le jeu : Tetris
  *
  */
@@ -83,7 +93,8 @@ typedef struct Tetris
     int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
     PieceConfig *nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
     int pieceStats[7];        /**< Tableau des statistiques de pièces                   */
-    FILE *file;               /**< Fichier de sauvegarde des highscore                  */
+    FILE *file;               /**< Fichier de sauvegarde des highscores                 */
+    Highscore *highscores;    /**< Tableau des highscores                               */
     bool isPanic;             /**< Indique si le joueur est en mode panic (proche de la mort)*/
 } Tetris;
 
@@ -113,6 +124,12 @@ void init_board(Tetris *);
  * @param tetris
  */
 void init_tmpPiece(Tetris *);
+
+/**
+ * @brief Fonction qui initialise le tableau de highscores par rapport à tetris->file.
+ * @param tetris
+ */
+void init_highscore(Tetris *);
 
 /**
  * @brief Fonction qui permet au joueur de jouer au Tetris avec l'interface voulu ( NCurses ou SDL )
@@ -337,6 +354,12 @@ void clear_boardPiece(Tetris *);
  * @param tetris
  */
 void clear_tmpPiece(Tetris *);
+
+/**
+ * @brief Libère la mémoire allouée pour le tableau des highscores.
+ * @param tetris
+ */
+void clear_highscores(Tetris *);
 
 /**
  * @brief  Libère la mémoire allouée pour le tableau de pointeurs de fonctions d'interface utilisateur

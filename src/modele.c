@@ -62,6 +62,9 @@ Tetris *tetris_init_()
         exit(EXIT_FAILURE);
     }
 
+    // Initialisation des highscores par rapport à tetris->file
+    init_highscore(tetris);
+
     tetris->isPanic = false;
 
     return tetris;
@@ -125,6 +128,59 @@ void init_tmpPiece(Tetris *tetris)
         }
     }
     tetris->tmpPiece = tmpPiece;
+}
+
+void init_highscore(Tetris *tetris)
+{
+    int numHighscores = 10;
+    tetris->highscores = (Highscore *)malloc(numHighscores * sizeof(Highscore));
+
+    if (!tetris->highscores)
+    {
+        fprintf(stderr, "Erreur d'allocation de mémoire pour les highscores.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (!tetris->file)
+    {
+        fprintf(stderr, "Erreur : le fichier des highscores est vide.\n");
+        free_highscore(tetris);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < numHighscores; i++)
+    {
+        tetris->highscores[i].name = (char *)malloc(sizeof(char) * 21);
+        if (!tetris->highscores[i].name)
+        {
+            fprintf(stderr, "Erreur d'allocation de mémoire pour le nom.\n");
+            free_highscore(tetris);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    for (int i = 0; i < numHighscores; i++)
+    {
+        int pos = 0;
+        char c;
+        // Lecture du nom
+        while ((c = fgetc(tetris->file)) != ',' && c != EOF)
+        {
+            tetris->highscores[i].name[pos++] = c;
+        }
+        tetris->highscores[i].name[pos] = '\0';
+
+        // Lecture du score
+        fscanf(tetris->file, "%d", &tetris->highscores[i].score);
+
+        // On passe le saut à la ligne
+        if (i < numHighscores - 1)
+        {
+            while ((c = fgetc(tetris->file)) != '\n' && c != EOF)
+            {
+            }
+        }
+    }
 }
 
 void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
@@ -212,7 +268,8 @@ void game(Tetris *tetris, userInterface ui)
         switch (input)
         {
         case 'q':
-            if(move_left_piece(tetris) && ui.functions->play_sound) ui.functions->play_sound(0);
+            if (move_left_piece(tetris) && ui.functions->play_sound)
+                ui.functions->play_sound(0);
             break;
         case 's':
             if (!move_down_piece(tetris))
@@ -230,7 +287,8 @@ void game(Tetris *tetris, userInterface ui)
             }
             break;
         case 'd':
-            if(move_right_piece(tetris) && ui.functions->play_sound) ui.functions->play_sound(0);
+            if (move_right_piece(tetris) && ui.functions->play_sound)
+                ui.functions->play_sound(0);
             break;
         case 'a':
             rotate_left(tetris);
@@ -792,8 +850,6 @@ void sleep_NES(Tetris *tetris)
 
     // On sleep le programme (on convertit de milliseconde en microseconde)
     usleep(sleep_time * 1000);
-
- 
 }
 
 void is_panic(Tetris *tetris)
@@ -858,6 +914,16 @@ void clear_tmpPiece(Tetris *tetris)
         free(tetris->tmpPiece[i]);
     }
     free(tetris->tmpPiece);
+}
+
+void clear_highscores(Tetris *tetris)
+{
+    int numHighscores = 10;
+    for (int i = 0; i < numHighscores; i++)
+    {
+        free(tetris->highscores[i].name);
+    }
+    free(tetris->highscores);
 }
 
 void clear_pointeur_fct(userInterface ui)
