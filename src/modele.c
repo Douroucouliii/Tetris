@@ -355,7 +355,7 @@ void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface
         ui.functions->display(tetris);
         ui.functions->display_info(tetris);
 
-        // Setup pour 60 fps
+        // Setup pour 60 fps (delta time)
         timespec_get(&ts2, TIME_UTC);
         int delta = ((ts2.tv_sec - ts1.tv_sec) * 1000000 + (ts2.tv_nsec - ts1.tv_nsec) / 1000.0);
         if (delta < 16667)
