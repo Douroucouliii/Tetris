@@ -226,6 +226,12 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
             }
             return;
         }
+        else if (tetris->state == RESTART)
+        {
+            if (ui.functions->play_sound)
+                ui.functions->play_sound(6);
+            restart_game(tetris, ui);
+        }
         else
         {
             perror("Erreur state\n");
@@ -312,7 +318,7 @@ void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface
                 break;
             case 'm':
                 ui.functions->close_interface();
-                //changer de userInterface
+                // changer de userInterface
                 if (strcmp(ui.instance, "NCurses") == 0)
                 {
                     ui = SDL;
@@ -322,7 +328,7 @@ void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface
                     ui = nCurses;
                 }
                 ui.functions->init_interface();
-
+                break;
             default:
                 break;
             }
@@ -370,6 +376,15 @@ void endscreen(Tetris *tetris, userInterface ui)
     sleep(1);
 
     ui.functions->end_screen(tetris);
+}
+
+void restart_game(Tetris *tetris, userInterface ui)
+{
+    clear_tetris(tetris, ui);
+    Tetris *newTetris = tetris_init_();
+    memcpy(tetris, newTetris, sizeof(Tetris));
+
+    tetris->state = MENU;
 }
 
 PieceConfig *get_next_piece(Tetris *tetris)

@@ -381,4 +381,6 @@ void end_screen_nCurses(Tetris *tetris)
 
     if (c == 'Q' || c == 'q')
         tetris->state = CLOSE;
+    if (c == 'R' || c == 'r')
+        tetris->state = RESTART;
 }

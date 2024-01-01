@@ -606,6 +606,7 @@ char input_SDL(Tetris *tetris)
             case SDLK_e:
                 return 'e';
             case SDLK_m:
+                Mix_HaltMusic();
                 return 'm';
             }
         }
@@ -1109,13 +1110,19 @@ void update_highscores(Tetris *tetris, char *playerName)
     {
         if (tetris->score > tetris->highscores[i].score)
         {
+            // Décaler les scores suivants
+            for (int j = i + 1; j < numHighscores; j++)
+            {
+                strcpy(tetris->highscores[j].name, tetris->highscores[j - 1].name);
+                tetris->highscores[j].score = tetris->highscores[j - 1].score;
+            }
             strcpy(tetris->highscores[i].name, playerName);
             tetris->highscores[i].score = tetris->score;
+
+            // Sortir de la boucle
             break;
         }
     }
-
-    // Enregistrer les scores mis à jour
     save_highscores(tetris, numHighscores);
 }
 
@@ -1156,7 +1163,7 @@ void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName,
         else if (replayButton->selected == 1)
         {
             *quit = 1;
-            // tetris->state = RESTART;
+            tetris->state = RESTART;
         }
         break;
     case SDLK_RIGHT:
@@ -1274,9 +1281,12 @@ void display_player_name(SDL_Rect textInputRect, char *playerName, SDL_Color tex
 
 int is_highscore(Tetris *tetris)
 {
-    if (tetris->score > tetris->highscores[0].score)
+    for (int i = 0; i < 10; i++)
     {
-        return 1;
+        if (tetris->score > tetris->highscores[i].score)
+        {
+            return 1;
+        }
     }
 
     return 0;
@@ -1395,7 +1405,6 @@ void end_screen_SDL(Tetris *tetris)
     SDL_StopTextInput();
     SDL_DestroyTexture(menuTexture);
     SDL_DestroyTexture(titleTexture);
-    tetris->state = CLOSE;
 }
 
 // SOUNDS
@@ -1440,46 +1449,55 @@ void free_levels(Button levelButton[], int numLevels)
     }
 }
 
-void close_SDL() {
+void close_SDL()
+{
     // Libérer les textures
     clear_img_textures();
 
     // Libérer la texture du fond
-    if (backgroundTexture != NULL) {
+    if (backgroundTexture != NULL)
+    {
         SDL_DestroyTexture(backgroundTexture);
         backgroundTexture = NULL;
     }
 
     // Libérer les musiques
-    for (int i = 0; i < 4; ++i) {
-        if (musics[i] != NULL) {
+    for (int i = 0; i < 4; ++i)
+    {
+        if (musics[i] != NULL)
+        {
             Mix_FreeMusic(musics[i]);
             musics[i] = NULL;
         }
     }
 
     // Libérer les sons
-    for (int i = 0; i < 10; ++i) {
-        if (sounds[i] != NULL) {
+    for (int i = 0; i < 10; ++i)
+    {
+        if (sounds[i] != NULL)
+        {
             Mix_FreeChunk(sounds[i]);
             sounds[i] = NULL;
         }
     }
 
     // Fermer le renderer SDL
-    if (renderer != NULL) {
+    if (renderer != NULL)
+    {
         SDL_DestroyRenderer(renderer);
         renderer = NULL;
     }
 
     // Fermer la fenêtre SDL
-    if (window != NULL) {
+    if (window != NULL)
+    {
         SDL_DestroyWindow(window);
         window = NULL;
     }
 
     // Fermer la font
-    if (font != NULL) {
+    if (font != NULL)
+    {
         TTF_CloseFont(font);
         font = NULL;
     }

@@ -35,10 +35,11 @@ typedef enum color color;
  */
 enum state
 {
-    MENU,  /**< Etat du menu principal */
-    GAME,  /**< Etat du jeu */
-    END,   /**< Etat de fin de jeu */
-    CLOSE, /**< Etat de fermeture du jeu */
+    MENU,    /**< Etat du menu principal */
+    GAME,    /**< Etat du jeu */
+    END,     /**< Etat de fin de jeu */
+    CLOSE,   /**< Etat de fermeture du jeu */
+    RESTART, /**<ETat de relancement de jeu*/
 };
 typedef enum state state;
 
@@ -152,6 +153,12 @@ void homescreen(Tetris *, userInterface);
  * @param userInterface
  */
 void game(Tetris *, userInterface, userInterface, userInterface);
+
+/**
+ * @brief
+ *
+ */
+void restart_game(Tetris *, userInterface);
 
 /**
  * @brief Fonction qui gère le menu du jeu Tetris
