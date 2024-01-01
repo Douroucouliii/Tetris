@@ -207,6 +207,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
         {
             if (ui.functions->play_sound)
                 ui.functions->play_sound(6);
+            tetris->level = 29;
             game(tetris, ui);
         }
         else if (tetris->state == END)
@@ -257,8 +258,9 @@ void game(Tetris *tetris, userInterface ui)
     ui.functions->display(tetris);
     ui.functions->display_info(tetris);
 
-    // Nombre de frames avant de faire tomber la piece
+    // Nombre de frames avant de faire tomber la piece d'une case
     int fallTime = delay(tetris);
+    // Nombre de frames avant de faire apparaitre la piece suivante
     int holdTime = 0;
 
     char input;
@@ -341,12 +343,13 @@ void game(Tetris *tetris, userInterface ui)
         ui.functions->display(tetris);
         ui.functions->display_info(tetris);
         
+        // Setup pour 60 fps
         timespec_get(&ts2, TIME_UTC);
-        int delta = ((ts2.tv_sec - ts1.tv_sec) + (ts2.tv_nsec - ts1.tv_nsec) / 1000000000.0) * 1000000;
+        int delta = ((ts2.tv_sec - ts1.tv_sec) * 1000000 + (ts2.tv_nsec - ts1.tv_nsec) / 1000.0);
         if (delta < 16667) {
             usleep(16667 - delta);
         }
-        ts1 = ts2;
+        timespec_get(&ts1, TIME_UTC);
         
     }
 }
@@ -877,7 +880,7 @@ int frame_sleep_NES(Tetris *tetris)
     }
     else
     {
-        frame = 10 * 2;
+        frame = 20;
         nb -= 2;
         while (nb >= 4)
         {
