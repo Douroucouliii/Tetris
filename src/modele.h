@@ -151,7 +151,7 @@ void homescreen(Tetris *, userInterface);
  * @param tetris
  * @param userInterface
  */
-void game(Tetris *, userInterface);
+void game(Tetris *, userInterface, userInterface, userInterface);
 
 /**
  * @brief Fonction qui gère le menu du jeu Tetris

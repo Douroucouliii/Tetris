@@ -90,7 +90,7 @@ void init_SDL()
     init_music_sound();
 
     // Initialiser le nombre de canaux maximum
-    Mix_AllocateChannels(16);
+    Mix_AllocateChannels(32);
 
     // Inialisation des textures des tuiles
     init_img_textures();
@@ -605,6 +605,8 @@ char input_SDL(Tetris *tetris)
                 return 'a';
             case SDLK_e:
                 return 'e';
+            case SDLK_m:
+                return 'm';
             }
         }
     }
@@ -1438,42 +1440,56 @@ void free_levels(Button levelButton[], int numLevels)
     }
 }
 
-void close_SDL()
-{
-    for (int i = 0; i < 4; i++)
-    {
-        if (musics[i])
-        {
-            Mix_FreeMusic(musics[i]);
-        }
-    }
-    for (int i = 0; i < 10; i++)
-    {
-        if (sounds[i])
-        {
-            Mix_FreeChunk(sounds[i]);
-        }
-    }
-
-    Mix_CloseAudio();
-
-    if (font != NULL)
-    {
-        TTF_CloseFont(font);
-    }
-
+void close_SDL() {
+    // Libérer les textures
     clear_img_textures();
 
-    if (renderer != NULL)
-    {
-        SDL_DestroyRenderer(renderer);
-    }
-    if (window != NULL)
-    {
-        SDL_DestroyWindow(window);
+    // Libérer la texture du fond
+    if (backgroundTexture != NULL) {
+        SDL_DestroyTexture(backgroundTexture);
+        backgroundTexture = NULL;
     }
 
+    // Libérer les musiques
+    for (int i = 0; i < 4; ++i) {
+        if (musics[i] != NULL) {
+            Mix_FreeMusic(musics[i]);
+            musics[i] = NULL;
+        }
+    }
+
+    // Libérer les sons
+    for (int i = 0; i < 10; ++i) {
+        if (sounds[i] != NULL) {
+            Mix_FreeChunk(sounds[i]);
+            sounds[i] = NULL;
+        }
+    }
+
+    // Fermer le renderer SDL
+    if (renderer != NULL) {
+        SDL_DestroyRenderer(renderer);
+        renderer = NULL;
+    }
+
+    // Fermer la fenêtre SDL
+    if (window != NULL) {
+        SDL_DestroyWindow(window);
+        window = NULL;
+    }
+
+    // Fermer la font
+    if (font != NULL) {
+        TTF_CloseFont(font);
+        font = NULL;
+    }
+
+    // Fermer la librairie SDL_ttf
     TTF_Quit();
 
+    // Fermer l'audio
+    Mix_CloseAudio();
+
+    // Fermer la librairie SDL
     SDL_Quit();
 }

@@ -207,7 +207,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
         {
             if (ui.functions->play_sound)
                 ui.functions->play_sound(6);
-            game(tetris, ui);
+            game(tetris, ui, nCurses, SDL);
         }
         else if (tetris->state == END)
         {
@@ -240,7 +240,7 @@ void homescreen(Tetris *tetris, userInterface ui)
     ui.functions->home_page(tetris);
 }
 
-void game(Tetris *tetris, userInterface ui)
+void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface SDL)
 {
     tetris->state = GAME;
 
@@ -310,6 +310,18 @@ void game(Tetris *tetris, userInterface ui)
                 if (ui.functions->play_sound)
                     ui.functions->play_sound(1);
                 break;
+            case 'm':
+                ui.functions->close_interface();
+                //changer de userInterface
+                if (strcmp(ui.instance, "NCurses") == 0)
+                {
+                    ui = SDL;
+                }
+                else
+                {
+                    ui = nCurses;
+                }
+                ui.functions->init_interface();
 
             default:
                 break;

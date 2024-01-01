@@ -104,6 +104,7 @@ char input_nCurses(Tetris *tetris)
     case 's':
     case 'a':
     case 'e':
+    case 'm':
         return c;
         break;
     // Déplacement/rotation de la pièce
