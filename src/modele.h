@@ -39,7 +39,6 @@ enum state
     GAME,  /**< Etat du jeu */
     END,   /**< Etat de fin de jeu */
     CLOSE, /**< Etat de fermeture du jeu */
-    OPTION /**< Etat des options */
 };
 typedef enum state state;
 

@@ -1,10 +1,10 @@
-MOUAHAHAH,23720
+BobLeBricoleur,23720
 River Song,11720
-Testtest,3740
-Testtest,3740
-Testtest,3740
-Testtest,3740
-Aled,3040
-11th Doctor,0
-11th Doctor,0
+OuiOui,3760
+Chantal,3740
+Meduse,3040
+Bleu,3000
+Tetris,700
+QuaranteDeux,42
+10th Doctor,2
 11th Doctor,0

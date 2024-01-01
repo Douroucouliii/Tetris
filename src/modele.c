@@ -226,12 +226,6 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
             }
             return;
         }
-
-        // Pas encore géré donc je close
-        else if (tetris->state == OPTION)
-        {
-            tetris->state = CLOSE;
-        }
         else
         {
             perror("Erreur state\n");

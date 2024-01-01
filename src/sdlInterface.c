@@ -472,7 +472,7 @@ void display_txt(char *texte, SDL_Rect rect, SDL_Color textColor)
         exit(EXIT_FAILURE);
     }
 
-    SDL_Rect textRect = {rect.x + 20, rect.y + 20, textSurface->w, textSurface->h};
+    SDL_Rect textRect = {rect.x + 10, rect.y + 10, textSurface->w, textSurface->h};
     if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
     {
         SDL_FreeSurface(textSurface);
@@ -591,12 +591,16 @@ char input_SDL(Tetris *tetris)
         {
             switch (event.key.keysym.sym)
             {
+            case SDLK_LEFT:
             case SDLK_q:
                 return 'q';
+            case SDLK_RIGHT:
             case SDLK_d:
                 return 'd';
+            case SDLK_DOWN:
             case SDLK_s:
                 return 's';
+            case SDLK_UP:
             case SDLK_a:
                 return 'a';
             case SDLK_e:
@@ -693,12 +697,21 @@ void display_info_SDL(Tetris *tetris)
 
     // Affiche le score du joueur
     SDL_Rect scoreP = {SCREEN_WIDTH - 650, SCREEN_HEIGHT - 280, 200, 50};
-
     char ScoreString[10];
     snprintf(ScoreString, sizeof(ScoreString), "%d", tetris->score);
     display_txt(ScoreString, scoreP, textColor);
 
-    // Affiche le titre Stats
+    // Affichage du nom HighScore
+    SDL_Rect pseudoTextRect = {SCREEN_WIDTH - 690, SCREEN_HEIGHT - 205, 200, 50};
+    display_txt("Highscore", pseudoTextRect, textColor);
+
+    // Affichage du plus haut Score atteint
+    char scoreText[10];
+    snprintf(scoreText, sizeof(scoreText), "%d", tetris->highscores[0].score);
+    SDL_Rect scoreH = {SCREEN_WIDTH - 650, SCREEN_HEIGHT - 150, 200, 50};
+    display_txt(scoreText, scoreH, textColor);
+
+    // Affiche le titre Statistics
     SDL_Rect Stats = {450, 20, 100, 40};
     display_txt("Statistics", Stats, textColor);
 
@@ -706,20 +719,18 @@ void display_info_SDL(Tetris *tetris)
     SDL_Rect PieceStats = {450, 80, 400, (SCREEN_HEIGHT * 2 / 4) + 120};
     display_stat_piece(tetris, PieceStats, textColor);
 
-    // Affiche du titre niveau
-    SDL_Rect NameLevel = {450, SCREEN_HEIGHT - 340, 100, 40};
+    // Affiche du titre du niveau
+    SDL_Rect NameLevel = {450, SCREEN_HEIGHT - 330, 100, 40};
     display_txt("Level", NameLevel, textColor);
 
     // Affichage du Niveau du joueur
     SDL_Rect rectLevel = {550, SCREEN_HEIGHT - 220, 100, 40};
     char levelString[20];
     sprintf(levelString, "%d", tetris->level);
-
     display_txt(levelString, rectLevel, textColor);
 
     //  Affiche le nombre de ligne clear par le joueur
     SDL_Rect linesRect = {450, SCREEN_HEIGHT - 150, 100, 40};
-
     char LineString[20];
     snprintf(LineString, sizeof(LineString), "Line clear: %d", tetris->nbLines);
     display_txt(LineString, linesRect, textColor);
@@ -762,7 +773,7 @@ int home_page_events(Button *play, Button *options, Button *exit, Tetris *tetris
                 }
                 else if (options->selected == 1)
                 {
-                    tetris->state = OPTION;
+                    // En attente
                 }
                 return 1; // Evènement traités
             case SDLK_s:
@@ -1277,9 +1288,9 @@ void end_screen_SDL(Tetris *tetris)
     SDL_Texture *menuTexture = get_background("menu");
     SDL_Texture *titleTexture = display_title("End", textColor);
 
-    Button replayButton = {{SCREEN_WIDTH - 1000, 50, 300, 100}, "Rejouer", 0};
-    Button quitButton = {{SCREEN_WIDTH - 400, 50, 300, 100}, "Quitter", 0};
-    Button saveButton = {{SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 400, 100}, "Enregistrer", 0};
+    Button replayButton = {{SCREEN_WIDTH - 1000, 50, 300, 100}, "Restart", 0};
+    Button quitButton = {{SCREEN_WIDTH - 400, 50, 300, 100}, "Quit", 0};
+    Button saveButton = {{SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 400, 100}, "Register", 0};
     saveButton.selected = 1;
 
     if (currentMusic != musics[2])
@@ -1326,17 +1337,17 @@ void end_screen_SDL(Tetris *tetris)
 
         if (is_highscore(tetris))
         {
-            SDL_Rect highscoreRect = {SCREEN_WIDTH / 2 + 200, 250, 400, 50};
+            SDL_Rect highscoreRect = {SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT - 450, 400, 50};
             display_txt("Well done, you've set a new record !", highscoreRect, textColor);
         }
         else
         {
-            SDL_Rect noHighscoreRect = {SCREEN_WIDTH / 2 + 200, 250, 400, 50};
+            SDL_Rect noHighscoreRect = {SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT - 450, 400, 50};
             display_txt("you didn't break the record :( ", noHighscoreRect, textColor);
         }
         SDL_Rect ScorePlayer = {SCREEN_WIDTH - 600, SCREEN_HEIGHT - 400, 400, 50};
         char scoreText[20];
-        sprintf(scoreText, "Votre Score : %d", tetris->score);
+        sprintf(scoreText, "Your score : %d", tetris->score);
         display_txt(scoreText, ScorePlayer, textColor);
 
         display_highscores(tetris);
