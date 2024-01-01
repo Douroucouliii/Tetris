@@ -579,14 +579,9 @@ char input_SDL(Tetris *tetris)
         exit(EXIT_FAILURE);
     }
     SDL_Event event;
-    int startTime = SDL_GetTicks();
-    // Delai d'une frame 60 fps
-    const int frameTime = 16;
-
-    while (SDL_PollEvent(&event) || (SDL_GetTicks() - startTime < frameTime))
-    {
-        if (event.type == SDL_QUIT)
-        {
+    
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
             close_SDL();
             exit(EXIT_SUCCESS);
         }

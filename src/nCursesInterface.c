@@ -70,7 +70,6 @@ char input_nCurses(Tetris *tetris)
 {
     // On crée un timeout pour la fenetre (permet de sortir de la fonction au bout d'une frame (case ERR))
     timeout(0);
-    usleep(16667);
 
     char c = getch();
     switch (c)
