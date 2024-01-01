@@ -1324,9 +1324,7 @@ void end_screen_SDL(Tetris *tetris)
         display_button(&quitButton);
         display_button(&saveButton);
 
-        display_highscores(tetris);
-
-        if ((inputMode = 1) && strlen(playerName) > 0)
+        if (is_highscore(tetris))
         {
             SDL_Rect highscoreRect = {SCREEN_WIDTH / 2 + 200, 250, 400, 50};
             display_txt("Well done, you've set a new record !", highscoreRect, textColor);
@@ -1338,6 +1336,7 @@ void end_screen_SDL(Tetris *tetris)
         }
         SDL_Rect ScorePlayer = {SCREEN_WIDTH / 2 - 400, SCREEN_HEIGHT / 2 + 250, 400, 50};
         display_txt(, ScorePlayer, textColor);
+
         display_highscores(tetris);
 
         if (strlen(playerName) > 0)
