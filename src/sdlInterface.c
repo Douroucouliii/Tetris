@@ -68,7 +68,7 @@ void init_SDL()
 
     // Initialisation de la Font
     TTF_Init();
-    font = TTF_OpenFont("assets/ttf/calibri.ttf", 42);
+    font = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
     if (font == NULL)
     {
         fprintf(stderr, "Erreur lors de l'ouverture de la police : %s\n", TTF_GetError());
@@ -1053,62 +1053,36 @@ void display_highscores(Tetris *tetris)
 
     // Afficher le titre du tableau Highscores
     SDL_Rect tableTitleRect = {tableX, tableY, 0, 0};
-
-    SDL_Texture *tableTitle = display_title("Highscores:", textColor);
-    SDL_QueryTexture(tableTitle, NULL, NULL, &tableTitleRect.w, &tableTitleRect.h);
-    SDL_RenderCopy(renderer, tableTitle, NULL, &tableTitleRect);
+    display_txt("Highscores", tableTitleRect, textColor);
 
     // Afficher les en-têtes du tableau
     // RANG
     SDL_Rect rankHeaderRect = {tableX, tableY + 50, 0, 0};
-
-    SDL_Texture *rankHeader = display_title("Rang", textColor);
-    SDL_QueryTexture(rankHeader, NULL, NULL, &rankHeaderRect.w, &rankHeaderRect.h);
-    SDL_RenderCopy(renderer, rankHeader, NULL, &rankHeaderRect);
+    display_txt("Rank", rankHeaderRect, textColor);
 
     // PSEUDO
-    SDL_Rect pseudoHeaderRect = {tableX + 200, tableY + 50, 0, 0};
-
-    SDL_Texture *pseudoHeader = display_title("Pseudonyme", textColor);
-    SDL_QueryTexture(pseudoHeader, NULL, NULL, &pseudoHeaderRect.w, &pseudoHeaderRect.h);
-    SDL_RenderCopy(renderer, pseudoHeader, NULL, &pseudoHeaderRect);
+    SDL_Rect UserHeaderRect = {tableX + 200, tableY + 50, 0, 0};
+    display_txt("User ID", UserHeaderRect, textColor);
 
     // SCORE
     SDL_Rect scoreHeaderRect = {tableX + 600, tableY + 50, 0, 0};
-
-    SDL_Texture *scoreHeader = display_title("Score", textColor);
-    SDL_QueryTexture(scoreHeader, NULL, NULL, &scoreHeaderRect.w, &scoreHeaderRect.h);
-    SDL_RenderCopy(renderer, scoreHeader, NULL, &scoreHeaderRect);
+    display_txt("Score", scoreHeaderRect, textColor);
 
     for (int i = 0; i < 10; i++)
     {
         char rankText[3];
         snprintf(rankText, sizeof(rankText), "%d", i + 1);
-        SDL_Texture *rankTexture = display_title(rankText, textColor);
         SDL_Rect rankTextRect = {tableX, tableY + 100 + i * 50, 0, 0};
-        SDL_QueryTexture(rankTexture, NULL, NULL, &rankTextRect.w, &rankTextRect.h);
-        SDL_RenderCopy(renderer, rankTexture, NULL, &rankTextRect);
+        display_txt(rankText, rankTextRect, textColor);
 
-        SDL_Texture *pseudoText = display_title(tetris->highscores[i].name, textColor);
         SDL_Rect pseudoTextRect = {tableX + 200, tableY + 100 + i * 50, 0, 0};
-        SDL_QueryTexture(pseudoText, NULL, NULL, &pseudoTextRect.w, &pseudoTextRect.h);
-        SDL_RenderCopy(renderer, pseudoText, NULL, &pseudoTextRect);
+        display_txt(tetris->highscores[i].name, pseudoTextRect, textColor);
 
         char scoreText[10];
         snprintf(scoreText, sizeof(scoreText), "%d", tetris->highscores[i].score);
-        SDL_Texture *scoreTexture = display_title(scoreText, textColor);
         SDL_Rect scoreRect = {tableX + 600, tableY + 100 + i * 50, 0, 0};
-        SDL_QueryTexture(scoreTexture, NULL, NULL, &scoreRect.w, &scoreRect.h);
-        SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
-
-        // N'oubliez pas de libérer les textures après les avoir utilisées
-        SDL_DestroyTexture(rankTexture);
+        display_txt(scoreText, scoreRect, textColor);
     }
-    // N'oubliez pas de libérer les textures après les avoir utilisées
-    SDL_DestroyTexture(tableTitle);
-    SDL_DestroyTexture(rankHeader);
-    SDL_DestroyTexture(pseudoHeader);
-    SDL_DestroyTexture(scoreHeader);
 }
 
 void save_highscores(Tetris *tetris, int numHighscores)
@@ -1157,7 +1131,7 @@ void update_highscores(Tetris *tetris, char *playerName)
         tetris->highscores[insertPosition].score = tetris->score;
 
         // Update the number of highscores
-        numHighscores = (numHighscores < 10) ? (numHighscores + 1) : 10;
+        numHighscores = (insertPosition + 1 < 10) ? (insertPosition + 1) : 10;
 
         // Save the updated highscores to a file (you need to implement this)
         save_highscores(tetris, numHighscores);
@@ -1186,16 +1160,8 @@ void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName,
             // tetris->state = RESTART;
         }
         break;
-    case SDLK_BACKSPACE:
-        if (strlen(playerName) > 0)
-        {
-            playerName[strlen(playerName) - 1] = '\0';
-        }
-        break;
     case SDLK_RIGHT:
     case SDLK_d:
-    case SDLK_DOWN:
-    case SDLK_s:
         if (replayButton->selected == 1)
         {
             replayButton->selected = 0;
@@ -1214,8 +1180,6 @@ void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName,
         break;
     case SDLK_LEFT:
     case SDLK_q:
-    case SDLK_UP:
-    case SDLK_z:
         if (replayButton->selected == 1)
         {
             replayButton->selected = 0;
@@ -1239,23 +1203,87 @@ void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName,
 
 void end_screen_text_input(SDL_Event *event, char *playerName)
 {
-    if (event->type == SDL_TEXTINPUT)
+    switch (event->type)
     {
+    case SDL_TEXTINPUT:
         if (strlen(playerName) < 20)
         {
             strcat(playerName, event->text.text);
         }
-    }
-    else if (event->type == SDL_KEYDOWN)
-    {
-        if (event->key.keysym.sym == SDLK_BACKSPACE)
+        break;
+    case SDL_KEYDOWN:
+        switch (event->key.keysym.sym)
         {
+        case SDLK_BACKSPACE:
             if (strlen(playerName) > 0)
             {
                 playerName[strlen(playerName) - 1] = '\0';
             }
+            break;
+        }
+        break;
+    }
+}
+
+void display_player_name(SDL_Rect textInputRect, char *playerName, SDL_Color textColor)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawRect(renderer, &textInputRect);
+
+    TTF_Font *textFont = TTF_OpenFont("assets/ttf/Tetris.ttf", 70);
+    if (!textFont)
+    {
+        fprintf(stderr, "Error opening font for the title: %s\n", TTF_GetError());
+        TTF_CloseFont(textFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Surface *textSurface = TTF_RenderText_Solid(textFont, playerName, textColor);
+    if (!textSurface)
+    {
+        fprintf(stderr, "Error rendering text: %s\n", TTF_GetError());
+        TTF_CloseFont(textFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    if (!textTexture)
+    {
+        fprintf(stderr, "Error creating texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(textSurface);
+        TTF_CloseFont(textFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Rect textRect = {textInputRect.x + 20, textInputRect.y + 20, textSurface->w, textSurface->h};
+    if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
+    {
+        fprintf(stderr, "Error rendering texture: %s\n", SDL_GetError());
+        SDL_DestroyTexture(textTexture);
+        SDL_FreeSurface(textSurface);
+        TTF_CloseFont(textFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+    SDL_DestroyTexture(textTexture);
+    SDL_FreeSurface(textSurface);
+    TTF_CloseFont(textFont);
+}
+
+int is_highscore(Tetris *tetris)
+{
+    int numHighscores = 10;
+    for (int i = 0; i < numHighscores; i++)
+    {
+        if (tetris->score > tetris->highscores[i].score)
+        {
+            return 1;
         }
     }
+    return 0;
 }
 
 void end_screen_SDL(Tetris *tetris)
@@ -1269,6 +1297,7 @@ void end_screen_SDL(Tetris *tetris)
     Button replayButton = {{SCREEN_WIDTH - 1000, 50, 300, 100}, "Rejouer", 0};
     Button quitButton = {{SCREEN_WIDTH - 400, 50, 300, 100}, "Quitter", 0};
     Button saveButton = {{SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 400, 100}, "Enregistrer", 0};
+    saveButton.selected = 1;
 
     if (currentMusic != musics[2])
     {
@@ -1312,52 +1341,22 @@ void end_screen_SDL(Tetris *tetris)
         display_button(&quitButton);
         display_button(&saveButton);
 
+        if (is_highscore(tetris))
+        {
+            SDL_Rect highscoreRect = {SCREEN_WIDTH / 2 + 200, 250, 400, 50};
+            display_txt("Well done, you've set a new record !", highscoreRect, textColor);
+        }
+        else
+        {
+            SDL_Rect noHighscoreRect = {SCREEN_WIDTH / 2 + 200, 250, 400, 50};
+            display_txt("you didn't break the record :( ", noHighscoreRect, textColor);
+        }
+
         display_highscores(tetris);
 
-        if (inputMode = 1 && strlen(playerName) > 0)
+        if (strlen(playerName) > 0)
         {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-            SDL_RenderDrawRect(renderer, &textInputRect);
-
-            TTF_Font *textFont = TTF_OpenFont("assets/ttf/Tetris.ttf", 70);
-            if (!textFont)
-            {
-                fprintf(stderr, "Error opening font for the title: %s\n", TTF_GetError());
-                TTF_CloseFont(textFont);
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
-
-            SDL_Surface *textSurface = TTF_RenderText_Solid(textFont, playerName, textColor);
-            if (!textSurface)
-            {
-                fprintf(stderr, "Error rendering text: %s\n", TTF_GetError());
-                TTF_CloseFont(textFont);
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
-
-            SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-            if (!textTexture)
-            {
-                fprintf(stderr, "Error creating texture: %s\n", SDL_GetError());
-                SDL_FreeSurface(textSurface);
-                TTF_CloseFont(textFont);
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
-
-            SDL_Rect textRect = {textInputRect.x + 20, textInputRect.y + 20, textSurface->w, textSurface->h};
-            if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
-            {
-                fprintf(stderr, "Error rendering texture: %s\n", SDL_GetError());
-                SDL_DestroyTexture(textTexture);
-                SDL_DestroyTexture(titleTexture);
-                SDL_DestroyTexture(menuTexture);
-                TTF_CloseFont(textFont);
-                close_SDL();
-                exit(EXIT_FAILURE);
-            }
+            display_player_name(textInputRect, playerName, textColor);
         }
 
         while (SDL_PollEvent(&event))
@@ -1368,15 +1367,14 @@ void end_screen_SDL(Tetris *tetris)
                 close_SDL();
                 exit(EXIT_SUCCESS);
                 break;
+            case SDL_TEXTINPUT:
             case SDL_KEYDOWN:
                 if (inputMode == 0)
                 {
                     // Traitement des événements de boutons
                     end_screen_button_events(event.key.keysym.sym, tetris, playerName, &replayButton, &quitButton, &saveButton, &quit);
                 }
-                break;
-            case SDL_TEXTINPUT:
-                if (inputMode == 1)
+                else
                 {
                     // Traitement des événements de texte
                     end_screen_text_input(&event, playerName);
@@ -1384,7 +1382,7 @@ void end_screen_SDL(Tetris *tetris)
                 break;
             }
 
-            // Changer le mode d'entrée lorsque la touche Tab est enfoncée
+            // Changer le mode d'entrée avc la touche Tab
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_TAB)
             {
                 inputMode = 1 - inputMode;
