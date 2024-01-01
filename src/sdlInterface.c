@@ -68,7 +68,7 @@ void init_SDL()
 
     // Initialisation de la Font
     TTF_Init();
-    font = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
+    font = TTF_OpenFont("assets/ttf/Tetris.ttf", 32);
     if (font == NULL)
     {
         fprintf(stderr, "Erreur lors de l'ouverture de la police : %s\n", TTF_GetError());
@@ -472,7 +472,7 @@ void display_txt(char *texte, SDL_Rect rect, SDL_Color textColor)
         exit(EXIT_FAILURE);
     }
 
-    SDL_Rect textRect = {rect.x + 10, rect.y + 10, textSurface->w, textSurface->h};
+    SDL_Rect textRect = {rect.x + 20, rect.y + 20, textSurface->w, textSurface->h};
     if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
     {
         SDL_FreeSurface(textSurface);
@@ -1334,8 +1334,10 @@ void end_screen_SDL(Tetris *tetris)
             SDL_Rect noHighscoreRect = {SCREEN_WIDTH / 2 + 200, 250, 400, 50};
             display_txt("you didn't break the record :( ", noHighscoreRect, textColor);
         }
-        SDL_Rect ScorePlayer = {SCREEN_WIDTH / 2 - 400, SCREEN_HEIGHT / 2 + 250, 400, 50};
-        display_txt(, ScorePlayer, textColor);
+        SDL_Rect ScorePlayer = {SCREEN_WIDTH - 600, SCREEN_HEIGHT - 400, 400, 50};
+        char scoreText[20];
+        sprintf(scoreText, "Votre Score : %d", tetris->score);
+        display_txt(scoreText, ScorePlayer, textColor);
 
         display_highscores(tetris);
 

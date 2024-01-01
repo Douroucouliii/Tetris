@@ -207,7 +207,6 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
         {
             if (ui.functions->play_sound)
                 ui.functions->play_sound(6);
-            tetris->level = 29;
             game(tetris, ui);
         }
         else if (tetris->state == END)
@@ -676,7 +675,7 @@ void rotate_left(Tetris *tetris)
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX - deltaY;
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY + deltaX;
     }
-    refresh_board();
+    refresh_board(tetris);
 }
 
 void rotate_right(Tetris *tetris)
@@ -699,7 +698,7 @@ void rotate_right(Tetris *tetris)
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX + deltaY;
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY - deltaX;
     }
-    refresh_board();
+    refresh_board(tetris);
 }
 
 void refresh_board(Tetris *tetris)
