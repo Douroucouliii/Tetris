@@ -97,13 +97,6 @@ void display_info_SDL(Tetris *);
 /**
  * @brief
  *
- * @return int
- */
-int delay_SDL(int);
-
-/**
- * @brief
- *
  * @return char
  */
 char input_SDL(Tetris *);

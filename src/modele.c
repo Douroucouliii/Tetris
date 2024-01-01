@@ -258,10 +258,12 @@ void game(Tetris *tetris, userInterface ui)
     ui.functions->display(tetris);
     ui.functions->display_info(tetris);
 
+    //Nombre de frames avant de faire tomber la piece
+    int fallTime = delay(tetris);
+
     char input;
     while (tetris->state != END)
     {
-
         // On récupère l'input selon l'interface (SDL ou NCurses)
         input = ui.functions->input(tetris);
 
@@ -282,7 +284,12 @@ void game(Tetris *tetris, userInterface ui)
                 if (ui.functions->play_sound)
                     ui.functions->play_sound(7);
                 is_panic(tetris);
-                // sleep_NES(tetris);
+                //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                /*int frame = frame_sleep_NES(tetris);
+                while(frame != 0){
+                    frame--;
+                    usleep(16666);
+                }*/
                 get_piece(tetris);
             }
             break;
@@ -300,6 +307,30 @@ void game(Tetris *tetris, userInterface ui)
             if (ui.functions->play_sound)
                 ui.functions->play_sound(1);
             break;
+        // Le case le plus probable : 1 frame sans que le joueur appuie sur une touche
+        case ' ':
+            fallTime--;
+            if(fallTime == 0){
+                if (!move_down_piece(tetris))
+                {
+                    // Meme chose que le case 's'
+                    refresh_board(tetris);
+                    delete_all_line(tetris, ui);
+                    if (ui.functions->play_sound)
+                        ui.functions->play_sound(7);
+                    is_panic(tetris);
+                    //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    /*int frame = frame_sleep_NES(tetris);
+                    while(frame != 0){
+                        frame--;
+                        usleep(16666);
+                    }*/
+                    get_piece(tetris);
+                }
+                fallTime = delay(tetris);
+            }
+            break;
+
         default:
             break;
         }
@@ -813,7 +844,7 @@ void add_score(Tetris *tetris, int score_line)
     tetris->score += score_line * (tetris->level + 1);
 }
 
-void sleep_NES(Tetris *tetris)
+int frame_sleep_NES(Tetris *tetris)
 {
     int nb = 0;
     int frame = 0;
@@ -845,11 +876,7 @@ void sleep_NES(Tetris *tetris)
         }
     }
 
-    // Transformation des frames en milliseconde
-    int sleep_time = frame * 1000 / 60;
-
-    // On sleep le programme (on convertit de milliseconde en microseconde)
-    usleep(sleep_time * 1000);
+    return frame;
 }
 
 void is_panic(Tetris *tetris)
@@ -881,6 +908,80 @@ void is_panic(Tetris *tetris)
     {
         tetris->isPanic = false;
     }
+}
+
+// Fonction pour calculer le délai en fonction du niveau (en utilisant les frames ou cellules de grille)
+int delay(Tetris *tetris)
+{
+    int frames;
+
+    // le nombre de frames/cellules de grille par pièce en fonction du niveau
+    switch (tetris->level)
+    {
+    case 0:
+        frames = 48;
+        break;
+    case 1:
+        frames = 43;
+        break;
+    case 2:
+        frames = 38;
+        break;
+    case 3:
+        frames = 33;
+        break;
+    case 4:
+        frames = 28;
+        break;
+    case 5:
+        frames = 23;
+        break;
+    case 6:
+        frames = 18;
+        break;
+    case 7:
+        frames = 13;
+        break;
+    case 8:
+        frames = 8;
+        break;
+    case 9:
+        frames = 6;
+        break;
+    case 10:
+    case 11:
+    case 12:
+        frames = 5;
+        break;
+    case 13:
+    case 14:
+    case 15:
+        frames = 4;
+        break;
+    case 16:
+    case 17:
+    case 18:
+        frames = 3;
+        break;
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
+    case 26:
+    case 27:
+    case 28:
+        frames = 2;
+        break;
+    // Niveau >28 : Killscreen : seul mattéo pourrait survivre ici mais bon on sait jamais :)
+    default:
+        frames = 1; // C'est la mort
+        break;
+    }
+
+    return frames;
 }
 
 void clear_board(Tetris *tetris)

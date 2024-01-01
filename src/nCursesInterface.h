@@ -31,13 +31,6 @@ void display_nCurses(Tetris *);
 /**
  * @brief
  *
- * @return int
- */
-int delay(int);
-
-/**
- * @brief
- *
  * @return char
  */
 char input_nCurses(Tetris *);

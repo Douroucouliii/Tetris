@@ -665,81 +665,6 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
 
 // EVENTS GAME
 
-int delay_SDL(int niveau)
-{
-    int frames;
-
-    // le nombre de frames/cellules de grille par pièce en fonction du niveau
-    switch (niveau)
-    {
-    case 0:
-        frames = 48;
-        break;
-    case 1:
-        frames = 43;
-        break;
-    case 2:
-        frames = 38;
-        break;
-    case 3:
-        frames = 33;
-        break;
-    case 4:
-        frames = 28;
-        break;
-    case 5:
-        frames = 23;
-        break;
-    case 6:
-        frames = 18;
-        break;
-    case 7:
-        frames = 13;
-        break;
-    case 8:
-        frames = 8;
-        break;
-    case 9:
-        frames = 6;
-        break;
-    case 10:
-    case 11:
-    case 12:
-        frames = 5;
-        break;
-    case 13:
-    case 14:
-    case 15:
-        frames = 4;
-        break;
-    case 16:
-    case 17:
-    case 18:
-        frames = 3;
-        break;
-    case 19:
-    case 20:
-    case 21:
-    case 22:
-    case 23:
-    case 24:
-    case 25:
-    case 26:
-    case 27:
-    case 28:
-        frames = 2;
-        break;
-    // Niveau >28 : Killscreen : seul mattéo pourrait survivre ici
-    default:
-        frames = 1; // C'est la mort
-        break;
-    }
-
-    // Calculer le délai en fonction du nombre de frames par pièce
-    int delai = (frames * 1000) / 60; // Convertir les frames en millisecondes (60 frames par seconde)
-    return delai;
-}
-
 char input_SDL(Tetris *tetris)
 {
     if (tetris == NULL)
@@ -749,41 +674,27 @@ char input_SDL(Tetris *tetris)
         exit(EXIT_FAILURE);
     }
     SDL_Event event;
-    int delayTime = delay_SDL(tetris->level);
     int startTime = SDL_GetTicks();
-    int lastDescentTime = startTime;
+    //Delai d'une frame 60 fps
+    const int frameTime = 16;
 
-    // Attendre un événement ou jusqu'à ce que le délai soit écoulé
-    while (SDL_PollEvent(&event) || (SDL_GetTicks() - startTime < delayTime))
-    {
-        SDL_Delay(10);
-
-        if (event.type == SDL_QUIT)
-        {
+    while (SDL_PollEvent(&event) || (SDL_GetTicks() - startTime < frameTime)) {
+        if (event.type == SDL_QUIT) {
             close_SDL();
             exit(EXIT_SUCCESS);
-        }
-        else if (event.type == SDL_KEYDOWN)
-        {
-            switch (event.key.keysym.sym)
-            {
-            case SDLK_q:
-                return 'q';
-            case SDLK_d:
-                return 'd';
-            case SDLK_s:
-                return 's';
-            case SDLK_a:
-                return 'a';
-            case SDLK_e:
-                return 'e';
+        } else if (event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+                case SDLK_q:
+                    return 'q';
+                case SDLK_d:
+                    return 'd';
+                case SDLK_s:
+                    return 's';
+                case SDLK_a:
+                    return 'a';
+                case SDLK_e:
+                    return 'e';
             }
-        }
-        int currentTime = SDL_GetTicks();
-        if (currentTime - lastDescentTime >= delayTime)
-        {
-            lastDescentTime = currentTime;
-            return 's';
         }
     }
 

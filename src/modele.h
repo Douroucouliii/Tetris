@@ -329,13 +329,20 @@ void add_score(Tetris *, int);
  * @brief Fonction qui fait un sleep avant d'apparaitre la prochaine piece : "time until piece apparition: 10 frames for the bottom two rows, +2 frames for each group of 4 rows above that"
  * @param tetris
  */
-void sleep_NES(Tetris *);
+int frame_sleep_NES(Tetris *);
 
 /**
  * @brief Fonction qui met à jour la variable isPanic de notre jeu Tetris en fonction de si le joueur est proche de la mort ou non
  * @param tetris
  */
 void is_panic(Tetris *);
+
+/**
+ * @brief Fonction qui retourne le nombre de frame avant de descendre la pièce
+ * @param tetris
+ * @return int : nombre de frames
+ */
+int delay(Tetris *);
 
 /**
  * @brief Fonction qui permet de liberer l'espace alloué à notre plateau de jeu
