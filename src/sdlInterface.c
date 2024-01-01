@@ -579,9 +579,11 @@ char input_SDL(Tetris *tetris)
         exit(EXIT_FAILURE);
     }
     SDL_Event event;
-    
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
+
+    while (SDL_PollEvent(&event))
+    {
+        if (event.type == SDL_QUIT)
+        {
             close_SDL();
             exit(EXIT_SUCCESS);
         }
@@ -825,13 +827,19 @@ int level_selection_events(int *selectedLevel, Button *backButton, Button levelB
                 return 1; // Retour au home
             case SDLK_s:
             case SDLK_DOWN:
-                play_sound_SDL(5);
-                *selectedLevel = (*selectedLevel + 5) % numLevels;
+                if (backButton->selected == 0)
+                {
+                    play_sound_SDL(5);
+                    *selectedLevel = (*selectedLevel + 5) % numLevels;
+                }
                 break;
             case SDLK_z:
             case SDLK_UP:
-                play_sound_SDL(5);
-                *selectedLevel = (*selectedLevel - 5 + numLevels) % numLevels;
+                if (backButton->selected == 0)
+                {
+                    play_sound_SDL(5);
+                    *selectedLevel = (*selectedLevel - 5 + numLevels) % numLevels;
+                }
                 break;
             case SDLK_d:
             case SDLK_RIGHT:
@@ -1080,6 +1088,24 @@ void display_highscores(Tetris *tetris)
     }
 }
 
+void update_highscores(Tetris *tetris, char *playerName)
+{
+    int numHighscores = 10;
+
+    for (int i = 0; i < numHighscores; i++)
+    {
+        if (tetris->score > tetris->highscores[i].score)
+        {
+            strcpy(tetris->highscores[i].name, playerName);
+            tetris->highscores[i].score = tetris->score;
+            break;
+        }
+    }
+
+    // Enregistrer les scores mis à jour
+    save_highscores(tetris, numHighscores);
+}
+
 void save_highscores(Tetris *tetris, int numHighscores)
 {
     FILE *file = fopen("data/highscore.txt", "w");
@@ -1096,41 +1122,6 @@ void save_highscores(Tetris *tetris, int numHighscores)
     }
 
     fclose(file);
-}
-
-void update_highscores(Tetris *tetris, char *playerName)
-{
-    int numHighscores = 10;
-    int highscorePosition = -1;
-    for (int i = 0; i < numHighscores; i++)
-    {
-        if (tetris->score > tetris->highscores[i].score)
-        {
-            highscorePosition = i;
-            break;
-        }
-    }
-
-    // Mettre à jour si Highscore
-    if (highscorePosition != -1 || numHighscores < 10)
-    {
-        int insertPosition = (highscorePosition != -1) ? highscorePosition : numHighscores;
-
-        for (int i = numHighscores - 1; i > insertPosition; i--)
-        {
-            tetris->highscores[i] = tetris->highscores[i - 1];
-        }
-
-        // Insert the new score
-        strcpy(tetris->highscores[insertPosition].name, playerName);
-        tetris->highscores[insertPosition].score = tetris->score;
-
-        // Update the number of highscores
-        numHighscores = (insertPosition + 1 < 10) ? (insertPosition + 1) : 10;
-
-        // Save the updated highscores to a file (you need to implement this)
-        save_highscores(tetris, numHighscores);
-    }
 }
 
 void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName, Button *replayButton, Button *quitButton, Button *saveButton, int *quit)
@@ -1270,14 +1261,11 @@ void display_player_name(SDL_Rect textInputRect, char *playerName, SDL_Color tex
 
 int is_highscore(Tetris *tetris)
 {
-    int numHighscores = 10;
-    for (int i = 0; i < numHighscores; i++)
+    if (tetris->score > tetris->highscores[0].score)
     {
-        if (tetris->score > tetris->highscores[i].score)
-        {
-            return 1;
-        }
+        return 1;
     }
+
     return 0;
 }
 
@@ -1346,7 +1334,8 @@ void end_screen_SDL(Tetris *tetris)
             SDL_Rect noHighscoreRect = {SCREEN_WIDTH / 2 + 200, 250, 400, 50};
             display_txt("you didn't break the record :( ", noHighscoreRect, textColor);
         }
-
+        SDL_Rect ScorePlayer = {SCREEN_WIDTH / 2 - 400, SCREEN_HEIGHT / 2 + 250, 400, 50};
+        display_txt(, ScorePlayer, textColor);
         display_highscores(tetris);
 
         if (strlen(playerName) > 0)

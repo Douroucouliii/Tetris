@@ -247,7 +247,7 @@ void homescreen(Tetris *tetris, userInterface ui)
 }
 
 void game(Tetris *tetris, userInterface ui)
-{    
+{
     tetris->state = GAME;
 
     // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
@@ -262,22 +262,23 @@ void game(Tetris *tetris, userInterface ui)
     int holdTime = 0;
 
     char input;
-    
+
     struct timespec ts1, ts2;
     timespec_get(&ts1, TIME_UTC);
-    
+
     while (tetris->state != END)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
         input = ui.functions->input(tetris);
 
-        
-        if (holdTime > 0) {
+        if (holdTime > 0)
+        {
             holdTime--;
             if (holdTime == 0)
                 get_piece(tetris);
-            
-        } else {     
+        }
+        else
+        {
             switch (input)
             {
             case 'q':
@@ -295,7 +296,7 @@ void game(Tetris *tetris, userInterface ui)
                     if (ui.functions->play_sound)
                         ui.functions->play_sound(7);
                     is_panic(tetris);
-                    //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    // Nombre de frame à attendre avant d'appeller la fonction get_piece
                     holdTime = frame_sleep_NES(tetris);
                 }
                 fallTime = delay(tetris);
@@ -318,7 +319,7 @@ void game(Tetris *tetris, userInterface ui)
             default:
                 break;
             }
-            
+
             fallTime--;
             if (fallTime == 0)
             {
@@ -330,24 +331,24 @@ void game(Tetris *tetris, userInterface ui)
                     if (ui.functions->play_sound)
                         ui.functions->play_sound(7);
                     is_panic(tetris);
-                    //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    // Nombre de frame à attendre avant d'appeller la fonction get_piece
                     holdTime = frame_sleep_NES(tetris);
                 }
                 fallTime = delay(tetris);
             }
         }
-        
+
         refresh_board(tetris);
         ui.functions->display(tetris);
         ui.functions->display_info(tetris);
-        
+
         timespec_get(&ts2, TIME_UTC);
         int delta = ((ts2.tv_sec - ts1.tv_sec) + (ts2.tv_nsec - ts1.tv_nsec) / 1000000000.0) * 1000000;
-        if (delta < 16667) {
+        if (delta < 16667)
+        {
             usleep(16667 - delta);
         }
         ts1 = ts2;
-        
     }
 }
 
@@ -672,6 +673,7 @@ void rotate_left(Tetris *tetris)
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX - deltaY;
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY + deltaX;
     }
+    refresh_board();
 }
 
 void rotate_right(Tetris *tetris)
@@ -694,6 +696,7 @@ void rotate_right(Tetris *tetris)
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0] = pivotX + deltaY;
         tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1] = pivotY - deltaX;
     }
+    refresh_board();
 }
 
 void refresh_board(Tetris *tetris)

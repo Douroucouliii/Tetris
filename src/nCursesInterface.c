@@ -119,7 +119,6 @@ void display_nCurses(Tetris *tetris)
     win = newwin(game_rows + 2, game_cols + 2, game_starty, game_startx);
     // Le cadre autour du jeu
     box(win, 0, 0);
-    wrefresh(win);
 
     // Affiche le plateau de jeu
     for (int i = 0; i < tetris->line; i++)
