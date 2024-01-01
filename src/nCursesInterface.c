@@ -57,18 +57,42 @@ void close_nCurses()
         delwin(win);
         win = NULL;
     }
-
     if (score != NULL)
     {
         delwin(score);
         score = NULL;
+    }
+    if (home_page != NULL)
+    {
+        delwin(home_page);
+        home_page = NULL;
+    }
+    if (piece_stats != NULL)
+    {
+        delwin(piece_stats);
+        piece_stats = NULL;
+    }
+    if (level != NULL)
+    {
+        delwin(level);
+        level = NULL;
+    }
+    if (next_piece != NULL)
+    {
+        delwin(next_piece);
+        next_piece = NULL;
+    }
+    if (end_screen != NULL)
+    {
+        delwin(end_screen);
+        end_screen = NULL;
     }
 }
 
 // Récupère un input depuis NCurses et retourne le char correspondant dans le modele
 char input_nCurses(Tetris *tetris)
 {
-    // On crée un timeout pour la fenetre (permet de sortir de la fonction au bout d'une frame (case ERR))
+    // On crée un timeout pour la fenetre (permet de sortir de la fonction)
     timeout(0);
 
     char c = getch();
