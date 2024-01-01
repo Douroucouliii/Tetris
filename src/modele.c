@@ -144,7 +144,7 @@ void init_highscore(Tetris *tetris)
     if (!tetris->file)
     {
         fprintf(stderr, "Erreur : le fichier des highscores est vide.\n");
-        free_highscore(tetris);
+        clear_highscores(tetris);
         exit(EXIT_FAILURE);
     }
 
@@ -154,7 +154,7 @@ void init_highscore(Tetris *tetris)
         if (!tetris->highscores[i].name)
         {
             fprintf(stderr, "Erreur d'allocation de mémoire pour le nom.\n");
-            free_highscore(tetris);
+            clear_highscores(tetris);
             exit(EXIT_FAILURE);
         }
     }
@@ -187,7 +187,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
 
-    userInterface ui = SDL;
+    userInterface ui = nCurses;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -936,6 +936,7 @@ void clear_tetris(Tetris *t, userInterface ui)
     clear_board(t);
     clear_boardPiece(t);
     clear_tmpPiece(t);
+    clear_highscores(t);
     free(t->nextPiece);
     // free(t);
 }

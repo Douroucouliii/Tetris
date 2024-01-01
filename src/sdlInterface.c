@@ -1291,6 +1291,10 @@ void end_screen_SDL(Tetris *tetris)
                         playerName[strlen(playerName) - 1] = '\0';
                     }
                     break;
+                case SDLK_ESCAPE:
+                    tetris->state = CLOSE;
+                    quit = 1;
+                    break;
                 default:
                     break;
                 }
