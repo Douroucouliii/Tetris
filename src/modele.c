@@ -258,7 +258,7 @@ void game(Tetris *tetris, userInterface ui)
     ui.functions->display(tetris);
     ui.functions->display_info(tetris);
 
-    //Nombre de frames avant de faire tomber la piece
+    // Nombre de frames avant de faire tomber la piece
     int fallTime = delay(tetris);
 
     char input;
@@ -284,7 +284,7 @@ void game(Tetris *tetris, userInterface ui)
                 if (ui.functions->play_sound)
                     ui.functions->play_sound(7);
                 is_panic(tetris);
-                //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                // Nombre de frame à attendre avant d'appeller la fonction get_piece
                 /*int frame = frame_sleep_NES(tetris);
                 while(frame != 0){
                     frame--;
@@ -310,7 +310,8 @@ void game(Tetris *tetris, userInterface ui)
         // Le case le plus probable : 1 frame sans que le joueur appuie sur une touche
         case ' ':
             fallTime--;
-            if(fallTime == 0){
+            if (fallTime == 0)
+            {
                 if (!move_down_piece(tetris))
                 {
                     // Meme chose que le case 's'
@@ -319,7 +320,7 @@ void game(Tetris *tetris, userInterface ui)
                     if (ui.functions->play_sound)
                         ui.functions->play_sound(7);
                     is_panic(tetris);
-                    //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    // Nombre de frame à attendre avant d'appeller la fonction get_piece
                     /*int frame = frame_sleep_NES(tetris);
                     while(frame != 0){
                         frame--;
@@ -1038,6 +1039,7 @@ void clear_tetris(Tetris *t, userInterface ui)
     clear_boardPiece(t);
     clear_tmpPiece(t);
     clear_highscores(t);
+    fclose(t->file);
     free(t->nextPiece);
     // free(t);
 }

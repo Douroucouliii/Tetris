@@ -23,115 +23,62 @@ typedef struct
     int selected;
 } Button;
 
-/**
- * @brief C'est une fonction qui prend en paramètre une énumération de type color et qui retourne un char* correspondant à cette enum.
- * @param color - Une énumération de couleur dans modele.h
- * @return char*
- */
-char *color_to_string(color);
-
-/**
- * @brief C'est une fonction qui retourne l'indice d'une couleur dans son énumération.
- * @param color -  Une énumération de couleur dans modele.h
- * @return int
- */
-int get_indice_by_color(color);
-
-/**
- * @brief Une fonction qui permet de libérer la mémoire pour le Tableau ImgTextures.
- *
- */
-void clear_img_textures();
-
-/**
- * @brief Une fonction qui permet de trouver le chemin ( char* ) dans le dossier images par rapport à son nom.
- * Exemple :  On cherche BLUE qui donne notre tuile Bleu.
- * On met alors en paramètre "BLUE" et celui-ci nous ressort : "assets/images/BLUE.bmp"
- *
- * @return char*
- */
-char *get_image_path(char *);
-
-/**
- * @brief Une fonction qui initialise le tableau ImgTextures qui prend toutes les textures de nos tuiles.
- *
- */
-void init_img_textures();
-
-/**
- * @brief Une fonction qui met une icône sur notre fenêtre SDL
- *
- */
-void set_icon();
-
-/**
- * @brief Cette fonction permet d'initialiser la plus part de nos besoins ( La fenêtre , ...)
- *
- */
 void init_SDL();
 
-/**
- * @brief Cette fonction permet de quitter notre programme SDL
- *
- */
-void close_SDL();
+void init_img_textures();
 
-/**
- * @brief
- *
- */
-void init_background();
+void init_music_sound();
 
-/**
- * @brief Cette fonction affiche notre plateau de tetris
- * @param tetris*
- */
-void display_SDL(Tetris *);
+void set_icon();
 
-/**
- * @brief Cette fonction affiche la prochaine pièce, les statistiques des pièces, le score du joueur, les lignes,..
- *@param tetris*
- */
-void display_info_SDL(Tetris *);
+SDL_Texture *get_background(char *);
 
-/**
- * @brief
- *
- * @return char
- */
-char input_SDL(Tetris *);
+int get_indice_by_color(color);
 
-/**
- * @brief
- *
- */
+char *color_to_string(color);
+
+char *get_image_path(char *);
+
+void display_image_button(Button *);
+
 void display_button(Button *);
 
-/**
- * @brief
- *
- */
-void display_image_button(Button *);
-/**
- * @brief
- *
- */
-void home_page_SDL(Tetris *);
+SDL_Texture *display_title(char *, SDL_Color);
 
-/**
- * @brief
- *
- */
+void create_level_buttons(Button *, int, int, int, int, int);
+
+void display_txt(char *, SDL_Rect, SDL_Color);
+
+void display_next_piece(Tetris *);
+
+void display_stat_piece(Tetris *, SDL_Rect, SDL_Color);
+
+char input_SDL(Tetris *);
+
+void display_SDL(Tetris *);
+
+void display_info_SDL(Tetris *);
+
+int home_page_events(Button *, Button *, Button *, Tetris *);
+
+int level_selection_events(int *, Button *, Button[], int);
+
 void level_selection_SDL(Tetris *);
 
-/**
- * @brief
- *
- */
+void home_page_SDL(Tetris *);
+
+void display_highscores(Tetris *);
+
+void save_highscores(Tetris *, int);
+
+void update_highscores(Tetris *, char *);
+
 void end_screen_SDL(Tetris *);
 
-/**
- * @brief
- *
- */
 void play_sound_SDL(int);
+
+void clear_img_textures();
+
+void free_levels(Button[], int);
+
+void close_SDL();
