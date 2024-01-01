@@ -247,8 +247,7 @@ void homescreen(Tetris *tetris, userInterface ui)
 }
 
 void game(Tetris *tetris, userInterface ui)
-{
-
+{    
     tetris->state = GAME;
 
     // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
@@ -260,55 +259,66 @@ void game(Tetris *tetris, userInterface ui)
 
     // Nombre de frames avant de faire tomber la piece
     int fallTime = delay(tetris);
+    int holdTime = 0;
 
     char input;
+    
+    struct timespec ts1, ts2;
+    timespec_get(&ts1, TIME_UTC);
+    
     while (tetris->state != END)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
         input = ui.functions->input(tetris);
 
-        switch (input)
-        {
-        case 'q':
-            if (move_left_piece(tetris) && ui.functions->play_sound)
-                ui.functions->play_sound(0);
-            break;
-        case 's':
-            if (!move_down_piece(tetris))
-            {
-                // Quand une pièce arrive à destination, on enleve les lignes pleines, on fait un
-                // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
-                // On vérifie si le joueur est proche de la mort pour jouer l'autre musique
-                refresh_board(tetris);
-                delete_all_line(tetris, ui);
-                if (ui.functions->play_sound)
-                    ui.functions->play_sound(7);
-                is_panic(tetris);
-                // Nombre de frame à attendre avant d'appeller la fonction get_piece
-                /*int frame = frame_sleep_NES(tetris);
-                while(frame != 0){
-                    frame--;
-                    usleep(16666);
-                }*/
+        
+        if (holdTime > 0) {
+            holdTime--;
+            if (holdTime == 0)
                 get_piece(tetris);
+            
+        } else {     
+            switch (input)
+            {
+            case 'q':
+                if (move_left_piece(tetris) && ui.functions->play_sound)
+                    ui.functions->play_sound(0);
+                break;
+            case 's':
+                if (!move_down_piece(tetris))
+                {
+                    // Quand une pièce arrive à destination, on enleve les lignes pleines, on fait un
+                    // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
+                    // On vérifie si le joueur est proche de la mort pour jouer l'autre musique
+                    refresh_board(tetris);
+                    delete_all_line(tetris, ui);
+                    if (ui.functions->play_sound)
+                        ui.functions->play_sound(7);
+                    is_panic(tetris);
+                    //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    holdTime = frame_sleep_NES(tetris);
+                }
+                fallTime = delay(tetris);
+                break;
+            case 'd':
+                if (move_right_piece(tetris) && ui.functions->play_sound)
+                    ui.functions->play_sound(0);
+                break;
+            case 'a':
+                rotate_left(tetris);
+                if (ui.functions->play_sound)
+                    ui.functions->play_sound(1);
+                break;
+            case 'e':
+                rotate_right(tetris);
+                if (ui.functions->play_sound)
+                    ui.functions->play_sound(1);
+                break;
+
+            default:
+                break;
             }
-            break;
-        case 'd':
-            if (move_right_piece(tetris) && ui.functions->play_sound)
-                ui.functions->play_sound(0);
-            break;
-        case 'a':
-            rotate_left(tetris);
-            if (ui.functions->play_sound)
-                ui.functions->play_sound(1);
-            break;
-        case 'e':
-            rotate_right(tetris);
-            if (ui.functions->play_sound)
-                ui.functions->play_sound(1);
-            break;
-        // Le case le plus probable : 1 frame sans que le joueur appuie sur une touche
-        case ' ':
+            
             fallTime--;
             if (fallTime == 0)
             {
@@ -320,25 +330,24 @@ void game(Tetris *tetris, userInterface ui)
                     if (ui.functions->play_sound)
                         ui.functions->play_sound(7);
                     is_panic(tetris);
-                    // Nombre de frame à attendre avant d'appeller la fonction get_piece
-                    /*int frame = frame_sleep_NES(tetris);
-                    while(frame != 0){
-                        frame--;
-                        usleep(16666);
-                    }*/
-                    get_piece(tetris);
+                    //Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    holdTime = frame_sleep_NES(tetris);
                 }
                 fallTime = delay(tetris);
             }
-            break;
-
-        default:
-            break;
         }
-
+        
         refresh_board(tetris);
         ui.functions->display(tetris);
         ui.functions->display_info(tetris);
+        
+        timespec_get(&ts2, TIME_UTC);
+        int delta = ((ts2.tv_sec - ts1.tv_sec) + (ts2.tv_nsec - ts1.tv_nsec) / 1000000000.0) * 1000000;
+        if (delta < 16667) {
+            usleep(16667 - delta);
+        }
+        ts1 = ts2;
+        
     }
 }
 
