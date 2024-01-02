@@ -773,6 +773,7 @@ int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetri
                 }
                 else if (settings->selected == 1)
                 {
+                    play_sound_SDL(6);
                     settings_SDL(tetris);
                 }
                 return 1; // Evènement traités
@@ -928,6 +929,7 @@ int settings_events(Button *backButton, Button *musicButton, Button *soundButton
             switch (event.key.keysym.sym)
             {
             case SDLK_ESCAPE:
+                play_sound_SDL(6);
                 return 1;
                 break;
             case SDLK_RETURN:
@@ -935,18 +937,22 @@ int settings_events(Button *backButton, Button *musicButton, Button *soundButton
             case SDLK_KP_ENTER:
                 if (backButton->selected == 1)
                 {
+                    play_sound_SDL(6);
                     return 1;
                 }
                 else if (musicButton->selected == 1)
                 {
+                    play_sound_SDL(5);
                     checkmusics = !checkmusics;
                 }
                 else if (soundButton->selected == 1)
                 {
+                    play_sound_SDL(5);
                     checksounds = !checksounds;
                 }
                 else if (volumeDownButton->selected == 1)
                 {
+                    play_sound_SDL(5);
                     if (volumeLevel > 0)
                     {
                         volumeLevel -= 1;
@@ -957,6 +963,7 @@ int settings_events(Button *backButton, Button *musicButton, Button *soundButton
                 }
                 else if (volumeUpButton->selected == 1)
                 {
+                    play_sound_SDL(5);
                     if (volumeLevel < MIX_MAX_VOLUME)
                     {
                         volumeLevel += 1;
@@ -969,6 +976,7 @@ int settings_events(Button *backButton, Button *musicButton, Button *soundButton
                 break;
             case SDLK_q:
             case SDLK_LEFT:
+                play_sound_SDL(5);
                 if (volumeUpButton->selected == 1)
                 {
                     volumeDownButton->selected = 1;
@@ -997,6 +1005,7 @@ int settings_events(Button *backButton, Button *musicButton, Button *soundButton
                 break;
             case SDLK_z:
             case SDLK_UP:
+                play_sound_SDL(5);
                 if (backButton->selected == 1)
                 {
                     backButton->selected = 0;
@@ -1027,6 +1036,7 @@ int settings_events(Button *backButton, Button *musicButton, Button *soundButton
             case SDLK_RIGHT:
             case SDLK_s:
             case SDLK_DOWN:
+                play_sound_SDL(5);
                 if (backButton->selected == 1)
                 {
                     backButton->selected = 0;
