@@ -124,9 +124,6 @@ char input_nCurses(Tetris *tetris)
 
 void display_nCurses(Tetris *tetris)
 {
-    // On supprime le menu
-    wclear(home_page);
-
     // La taille du terminal
     int term_rows, term_cols;
     getmaxyx(stdscr, term_rows, term_cols);
@@ -163,6 +160,7 @@ void display_nCurses(Tetris *tetris)
     }
 
     wrefresh(win);
+
 }
 
 void display_info_nCurses(Tetris *tetris)
@@ -267,6 +265,7 @@ void home_page_nCurses(Tetris *tetris)
     mvwprintw(home_page, term_rows / 2, term_cols / 2 - 13, "Select a level : (0-19)");
     mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 22, "(write a number between 0 and 19 and press enter)");
 
+    //On récupère le niveau choisi par l'utilisateur
     char number[2];
     do
     {
@@ -278,6 +277,7 @@ void home_page_nCurses(Tetris *tetris)
     tetris->level = atoi(number);
 
     tetris->state = GAME;
+    wclear(home_page);
 }
 
 void end_screen_nCurses(Tetris *tetris)
@@ -330,6 +330,7 @@ void end_screen_nCurses(Tetris *tetris)
         // Afficher le nom
         mvwprintw(end_screen, term_rows / 2 + 8, term_cols / 2 - 11, "Your name is : %s", player_name);
         // Mettre à jour les meilleurs scores avec le nouveau score
+
         // Effacer tout le contenu du fichier
         tetris->file = freopen("data/highscore.txt", "w", tetris->file);
         if (tetris->file == NULL)
@@ -356,7 +357,6 @@ void end_screen_nCurses(Tetris *tetris)
         {
             fprintf(tetris->file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
         }
-        fclose(tetris->file);
     }
     else
     {
@@ -380,4 +380,6 @@ void end_screen_nCurses(Tetris *tetris)
         tetris->state = CLOSE;
     if (c == 'R' || c == 'r')
         tetris->state = RESTART;
+
+    wclear(end_screen);
 }

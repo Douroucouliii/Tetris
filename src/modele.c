@@ -56,7 +56,7 @@ Tetris *tetris_init_()
         tetris->pieceStats[i] = 0;
     }
 
-    tetris->file = fopen("data/highscore.txt", "r");
+    tetris->file = fopen("data/highscore.txt", "r+");
     if (!tetris->file)
     {
         perror("Erreur fopen(), impossible de sauvegarder le score\n");
@@ -142,13 +142,6 @@ void init_highscore(Tetris *tetris)
         exit(EXIT_FAILURE);
     }
 
-    if (!tetris->file)
-    {
-        fprintf(stderr, "Erreur : le fichier des highscores est vide.\n");
-        clear_highscores(tetris);
-        exit(EXIT_FAILURE);
-    }
-
     for (int i = 0; i < numHighscores; i++)
     {
         tetris->highscores[i].name = (char *)malloc(sizeof(char) * 21);
@@ -188,7 +181,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
 
-    userInterface ui = SDL;
+    userInterface ui = nCurses;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -384,9 +377,25 @@ void endscreen(Tetris *tetris, userInterface ui)
 
 void restart_game(Tetris *tetris, userInterface ui)
 {
+    if(fclose(tetris->file)){
+        perror("Erreur fclose()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //On recrée un tetris
     clear_tetris(tetris, ui);
     Tetris *newTetris = tetris_init_();
     memcpy(tetris, newTetris, sizeof(Tetris));
+
+    //On actualise les highscore
+    clear_highscores(tetris);
+    tetris->file = fopen("data/highscore.txt", "r");
+    if (!tetris->file)
+    {
+        perror("Erreur fopen(), impossible de sauvegarder le score\n");
+        exit(EXIT_FAILURE);
+    }
+    init_highscore(tetris);
 
     tetris->state = MENU;
 }
@@ -793,7 +802,7 @@ void delete_all_line(Tetris *tetris, userInterface ui)
     {
         if (is_full_line(tetris, i))
         {
-            blink_line(tetris, i, ui);
+            //blink_line(tetris, i, ui);
             delete_line(tetris, i);
             cpt++;
             tetris->nbLines++;

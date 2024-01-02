@@ -11,44 +11,42 @@
 #include "modele.h"
 
 /**
- * @brief
- *
+ * @brief Initialise nCurses et les couleurs qu'on va utiliser
  */
 void init_nCurses();
 
 /**
- * @brief
- *
+ * @brief Ferme nCurses et libère la mémoire
  */
 void close_nCurses();
 
 /**
- * @brief
- *
+ * @brief Affiche le jeu Tetris en Ncurses
+ * @param tetris
  */
 void display_nCurses(Tetris *);
 
 /**
- * @brief
- *
+ * @brief Prend un input de l'utilisateur en Ncurses
+ * @param tetris
  * @return char
  */
 char input_nCurses(Tetris *);
 
 /**
- * @brief
- *
+ * @brief Affiche les infos de Tetris en Ncurses (next piece, score, level, etc..)
+ * @param tetris
  */
 void display_info_nCurses(Tetris *);
 
 /**
- * @brief
- *
+ * @brief Affiche la page d'accueil du jeu en Ncurses, entrer le niveau pour jouer
+ * @param tetris
  */
 void home_page_nCurses(Tetris *);
 
 /**
- * @brief
- *
+ * @brief Affiche la page de fin en nCurses, avec l=es hisghscores etc
+ * @param tetris
  */
 void end_screen_nCurses(Tetris *);
