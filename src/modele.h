@@ -91,7 +91,7 @@ typedef struct Tetris
     int nbLines;              /**< Le nombre de ligne supprimées                        */
     int score;                /**< Le score du jeu ( On utilise le système de score de la NES )*/
     int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
-    int lineUntilFirstLevelUp;/**< Le nombre de ligne avant de passer au niveau suivant (premiere fois, ensuite, 10lignes/level) */
+    int line_until_first_level_up;/**< Le nombre de ligne avant de passer au niveau suivant (premiere fois, ensuite, 10lignes/level) */
     PieceConfig *nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
     int pieceStats[7];        /**< Tableau des statistiques de pièces                   */
     FILE *file;               /**< Fichier de sauvegarde des highscores                 */
@@ -355,7 +355,7 @@ int delay(Tetris *);
  * @brief Fonction qui calcule le nombre de ligne avant de passer au niveau suivant (premiere fois, ensuite, 10lignes/level)
  * @param tetris 
  */
-void lineUntilFirstLevelUp(Tetris *);
+void line_until_first_level_up(Tetris *);
 
 /**
  * @brief Fonction qui permet de liberer l'espace alloué à notre plateau de jeu
