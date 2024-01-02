@@ -1074,9 +1074,10 @@ void settings_SDL(Tetris *tetris)
     Button soundButton = {{SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT / 2 + 100, 400, 100}, "Muted Sounds", 0};
 
     int pourcentVolume = (volumeLevel * 100) / MIX_MAX_VOLUME;
-    SDL_Rect volumeRect = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 100, 100, 100};
-    Button volumeDownButton = {{SCREEN_WIDTH / 2 - 300, SCREEN_HEIGHT / 2 - 100, 200, 100}, "<<<<<", 0};
-    Button volumeUpButton = {{SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT / 2 - 100, 200, 100}, ">>>>>", 0};
+    SDL_Rect volumeRect = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 75, 100, 100};
+    Button volumeDownButton = {{SCREEN_WIDTH / 2 - 300, SCREEN_HEIGHT / 2 - 100, 200, 100}, "<<<", 0};
+    Button volumeUpButton = {{SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT / 2 - 100, 200, 100}, ">>>", 0};
+
     int indice = 0;
     bool run = true;
     while (run)
