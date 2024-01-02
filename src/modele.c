@@ -789,6 +789,7 @@ void delete_all_line(Tetris *tetris, userInterface ui)
     {
         if (is_full_line(tetris, i))
         {
+            blink_line(tetris, i, ui);
             delete_line(tetris, i);
             cpt++;
             tetris->nbLines++;
@@ -1031,6 +1032,28 @@ void line_until_first_level_up(Tetris *tetris){
         int var1 =  (tetris->level - 5) * 10;
         if(var1 > 100) tetris->line_until_first_level_up = var1;
         else tetris->line_until_first_level_up = 100;
+    }
+}
+
+void blink_line(Tetris *tetris, int i, userInterface ui){
+    color tmp[tetris->column];
+    //Clignoter la ligne i
+    for(int j = 0; j < tetris->column; j++){
+        //Récupérer les tmp des couleurs de chaque cellule
+        tmp[j] = tetris->board[i][j].c;
+    }
+    //Clignoter 3 fois
+    for(int k = 0; k < 3; k++){
+        for(int j = 0; j < tetris->column; j++){
+            tetris->board[i][j].c = NOTHING;
+        }
+        ui.functions->display(tetris);
+        usleep(100000);
+        for(int j = 0; j < tetris->column; j++){
+            tetris->board[i][j].c = tmp[j];
+        }
+        ui.functions->display(tetris);
+        usleep(100000);
     }
 }
 
