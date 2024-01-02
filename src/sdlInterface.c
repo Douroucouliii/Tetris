@@ -7,19 +7,21 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// Taille des cases du plateau
 #define CELL_SIZE 47
-
-// Par défaut
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *backgroundTexture = NULL;
-TTF_Font *font = NULL;
 
 SDL_Texture *imageTexture[8];
+TTF_Font *ButtonFont = NULL;
+TTF_Font *font = NULL;
+
+bool checksounds = false;
+bool checkmusics = false;
+int volumeLevel = MIX_MAX_VOLUME / 2;
 
 Mix_Music *musics[4];
 Mix_Chunk *sounds[10];
@@ -68,29 +70,26 @@ void init_SDL()
 
     // Initialisation de la Font
     TTF_Init();
-    font = TTF_OpenFont("assets/ttf/Tetris.ttf", 32);
-    if (font == NULL)
+
+    ButtonFont = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
+    if (!ButtonFont)
     {
-        fprintf(stderr, "Erreur lors de l'ouverture de la police : %s\n", TTF_GetError());
-        TTF_Quit();
+        fprintf(stderr, "Erreur lors de l'ouverture de la police du titre (button font): %s\n", TTF_GetError());
+        TTF_CloseFont(ButtonFont);
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    font = TTF_OpenFont("assets/ttf/Tetris.ttf", 32);
+    if (!font)
+    {
+        fprintf(stderr, "Erreur lors de l'ouverture de la police du titre (font): %s\n", TTF_GetError());
         close_SDL();
         exit(EXIT_FAILURE);
     }
 
     // Initialisation de l'audio
-    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
-    {
-        fprintf(stderr, "Erreur Mix_OpenAudio : %s", SDL_GetError());
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
-
-    // Initialiser les musiques et les sons
-    init_music_sound();
-
-    // Initialiser le nombre de canaux maximum
-    Mix_AllocateChannels(32);
+    init_audio_SDL();
 
     // Inialisation des textures des tuiles
     init_img_textures();
@@ -143,6 +142,21 @@ void set_icon()
     }
     SDL_SetWindowIcon(window, iconSurface);
     SDL_FreeSurface(iconSurface);
+}
+
+void init_audio_SDL()
+{
+    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+    {
+        fprintf(stderr, "Erreur Mix_OpenAudio (SDL) : %s", SDL_GetError());
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+    Mix_VolumeMusic(volumeLevel);
+
+    init_music_sound();
+
+    Mix_AllocateChannels(32);
 }
 
 void init_music_sound()
@@ -242,13 +256,12 @@ char *get_image_path(char *texte)
     if (!imagePath)
     {
         fprintf(stderr, "Erreur d'allocation mémoire pour le chemin de l'image\n");
+        free(imagePath);
         close_SDL();
         exit(EXIT_FAILURE);
     }
 
-    strcpy(imagePath, "assets/images/");
-    strcat(imagePath, texte);
-    strcat(imagePath, ".bmp");
+    snprintf(imagePath, imagePathSize, "assets/images/%s.bmp", texte);
 
     return imagePath;
 }
@@ -300,7 +313,6 @@ void display_image_button(Button *button)
     SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
     SDL_RenderFillRect(renderer, &buttonRect);
 
-    // Rendre le bouton à l'écran
     if (SDL_RenderCopy(renderer, buttonTexture, NULL, &buttonRect) != 0)
     {
         fprintf(stderr, "Erreur Impossible de faire le rendu : %s\n", SDL_GetError());
@@ -319,24 +331,14 @@ void display_image_button(Button *button)
 
 void display_button(Button *button)
 {
-    TTF_Font *Textfont = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
-    if (!font)
-    {
-        fprintf(stderr, "Erreur lors de l'ouverture de la police du titre : %s\n", TTF_GetError());
-        TTF_CloseFont(Textfont);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
     // Définir la couleur du texte
     SDL_Color textColor = {255, 255, 255};
 
     // Créer la surface du texte du bouton
-    SDL_Surface *buttonTextSurface = TTF_RenderText_Solid(Textfont, button->text, textColor);
+    SDL_Surface *buttonTextSurface = TTF_RenderText_Solid(ButtonFont, button->text, textColor);
     if (!buttonTextSurface)
     {
         fprintf(stderr, "Erreur : texte du bouton non rendu : %s\n", SDL_GetError());
-        TTF_CloseFont(Textfont);
         close_SDL();
         exit(EXIT_FAILURE);
     }
@@ -347,7 +349,6 @@ void display_button(Button *button)
     {
         fprintf(stderr, "Erreur lors de la création de la texture du bouton : %s\n", SDL_GetError());
         SDL_FreeSurface(buttonTextSurface);
-        TTF_CloseFont(Textfont);
         close_SDL();
         exit(EXIT_FAILURE);
     }
@@ -371,40 +372,27 @@ void display_button(Button *button)
     SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
     SDL_RenderFillRect(renderer, &button->rect);
 
-    // Rendre le texte du bouton à l'écran
     if (SDL_RenderCopy(renderer, buttonTextTexture, NULL, &button->rect) != 0)
     {
+        fprintf(stderr, "Erreur ButtonTexture ( display_button ) : %s \n", SDL_GetError());
         SDL_FreeSurface(buttonTextSurface);
         SDL_DestroyTexture(buttonTextTexture);
-        TTF_CloseFont(Textfont);
         close_SDL();
         exit(EXIT_FAILURE);
     }
 
     // Libérer la surface et la texture du texte du bouton
-    TTF_CloseFont(Textfont);
     SDL_FreeSurface(buttonTextSurface);
     SDL_DestroyTexture(buttonTextTexture);
 }
 
 SDL_Texture *display_title(char *texte, SDL_Color textColor)
 {
-    // On charge la font pour le titre
-    TTF_Font *TextFont = TTF_OpenFont("assets/ttf/Tetris.ttf", 42);
-    if (!TextFont)
-    {
-        fprintf(stderr, "Erreur lors de l'ouverture de la police du titre : %s\n", TTF_GetError());
-        TTF_CloseFont(TextFont);
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
-
     // Titre Surface
-    SDL_Surface *titleSurface = TTF_RenderText_Solid(TextFont, texte, textColor);
+    SDL_Surface *titleSurface = TTF_RenderText_Solid(ButtonFont, texte, textColor);
     if (!titleSurface)
     {
         fprintf(stderr, "Erreur : texte du titre non rendu : %s\n", SDL_GetError());
-        TTF_CloseFont(TextFont);
         close_SDL();
         exit(EXIT_FAILURE);
     }
@@ -414,13 +402,10 @@ SDL_Texture *display_title(char *texte, SDL_Color textColor)
     {
         fprintf(stderr, "Erreur lors de la création de la texture du titre : %s\n", SDL_GetError());
         SDL_FreeSurface(titleSurface);
-        TTF_CloseFont(TextFont);
         close_SDL();
         exit(EXIT_FAILURE);
     }
 
-    // On libère ceux qu'on peut
-    TTF_CloseFont(TextFont);
     SDL_FreeSurface(titleSurface);
 
     return titleTexture;
@@ -475,6 +460,7 @@ void display_txt(char *texte, SDL_Rect rect, SDL_Color textColor)
     SDL_Rect textRect = {rect.x + 10, rect.y + 10, textSurface->w, textSurface->h};
     if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
     {
+        fprintf(stderr, "Erreur de chargement Texture Fonction : Display_txt : %s \n", SDL_GetError());
         SDL_FreeSurface(textSurface);
         SDL_DestroyTexture(textTexture);
         close_SDL();
@@ -501,6 +487,7 @@ void display_next_piece(Tetris *tetris)
 
         if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &cellRect) != 0)
         {
+            fprintf(stderr, "Erreur imageTexture ( display_next_piece ) : %s \n", SDL_GetError());
             close_SDL();
             exit(EXIT_FAILURE);
         }
@@ -524,6 +511,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
 
             if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &cellRect) != 0)
             {
+                fprintf(stderr, "Erreur imageTexture ( Affiche PieceStat ) : %s \n", SDL_GetError());
                 close_SDL();
                 exit(EXIT_FAILURE);
             }
@@ -532,7 +520,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
         char numberString[10];
         snprintf(numberString, sizeof(numberString), "%d", tetris->pieceStats[i]);
 
-        SDL_Surface *textSurface = TTF_RenderText_Solid(font, numberString, textColor);
+        SDL_Surface *textSurface = TTF_RenderText_Solid(ButtonFont, numberString, textColor);
         if (!textSurface)
         {
             fprintf(stderr, "Erreur Surface (Affichage PieceSat) : %s\n", SDL_GetError());
@@ -556,6 +544,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
 
         if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) != 0)
         {
+            fprintf(stderr, "Erreur Affiche pieceStat : %s \n", SDL_GetError());
             SDL_DestroyTexture(textTexture);
             SDL_FreeSurface(textSurface);
             close_SDL();
@@ -606,7 +595,6 @@ char input_SDL(Tetris *tetris)
             case SDLK_e:
                 return 'e';
             case SDLK_m:
-                Mix_HaltMusic();
                 return 'm';
             }
         }
@@ -632,10 +620,15 @@ void display_SDL(Tetris *tetris)
         close_SDL();
         exit(EXIT_FAILURE);
     }
+
     // On met la musique de jeu si elle n'est pas déjà en train de jouer (en fonction du mode panic)
     if (tetris->isPanic)
     {
-        if (currentMusic != musics[3])
+        if (musics[3] == NULL)
+        {
+            fprintf(stderr, "Erreur : la musique panic (musics[3]) est NULL.\n");
+        }
+        else if (currentMusic != musics[3])
         {
             Mix_HaltMusic();
             Mix_PlayMusic(musics[3], -1);
@@ -644,14 +637,19 @@ void display_SDL(Tetris *tetris)
     }
     else
     {
-        if (currentMusic != musics[1])
+        if (musics[1] == NULL)
+        {
+            fprintf(stderr, "Erreur : la musique normale (musics[1]) est NULL.\n");
+        }
+        else if (currentMusic != musics[1])
         {
             Mix_HaltMusic();
             Mix_PlayMusic(musics[1], -1);
             currentMusic = musics[1];
         }
-        // Si la musique n'est pas lancé, on la lance
-        if (!Mix_PlayingMusic())
+
+        // Si la musique n'est pas lancée, on la lance
+        if (musics[1] != NULL && !Mix_PlayingMusic())
         {
             Mix_PlayMusic(musics[1], -1);
             currentMusic = musics[1];
@@ -674,6 +672,7 @@ void display_SDL(Tetris *tetris)
 
             if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &rect) != 0)
             {
+                fprintf(stderr, "Impossible de charger les textures des tuiles : %s \n", SDL_GetError());
                 close_SDL();
                 exit(EXIT_FAILURE);
             }
@@ -744,13 +743,11 @@ void display_info_SDL(Tetris *tetris)
 
     // Affiche la prochaine pièce
     display_next_piece(tetris);
-
-    SDL_RenderPresent(renderer);
 }
 
 // EVENTS MENU & SELECTION
 
-int home_page_events(Button *play, Button *options, Button *exit, Tetris *tetris)
+int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetris)
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -774,9 +771,9 @@ int home_page_events(Button *play, Button *options, Button *exit, Tetris *tetris
                 {
                     tetris->state = CLOSE;
                 }
-                else if (options->selected == 1)
+                else if (settings->selected == 1)
                 {
-                    // En attente
+                    settings_SDL(tetris);
                 }
                 return 1; // Evènement traités
             case SDLK_s:
@@ -784,13 +781,13 @@ int home_page_events(Button *play, Button *options, Button *exit, Tetris *tetris
                 play_sound_SDL(5);
                 if (play->selected == 1)
                 {
-                    options->selected = 1;
+                    settings->selected = 1;
                     play->selected = 0;
                 }
-                else if (options->selected == 1)
+                else if (settings->selected == 1)
                 {
                     exit->selected = 1;
-                    options->selected = 0;
+                    settings->selected = 0;
                 }
                 else if (exit->selected == 1)
                 {
@@ -806,14 +803,14 @@ int home_page_events(Button *play, Button *options, Button *exit, Tetris *tetris
                     exit->selected = 1;
                     play->selected = 0;
                 }
-                else if (options->selected == 1)
+                else if (settings->selected == 1)
                 {
                     play->selected = 1;
-                    options->selected = 0;
+                    settings->selected = 0;
                 }
                 else if (exit->selected == 1)
                 {
-                    options->selected = 1;
+                    settings->selected = 1;
                     exit->selected = 0;
                 }
                 break;
@@ -917,12 +914,265 @@ int level_selection_events(int *selectedLevel, Button *backButton, Button levelB
     return 0;
 }
 
+int settings_events(Button *backButton, Button *musicButton, Button *soundButton, Button *volumeDownButton, Button *volumeUpButton, int *pourcentVolume)
+{
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+        case SDL_QUIT:
+            close_SDL();
+            break;
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym)
+            {
+            case SDLK_ESCAPE:
+                return 1;
+                break;
+            case SDLK_RETURN:
+            case SDLK_RETURN2:
+            case SDLK_KP_ENTER:
+                if (backButton->selected == 1)
+                {
+                    return 1;
+                }
+                else if (musicButton->selected == 1)
+                {
+                    checkmusics = !checkmusics;
+                }
+                else if (soundButton->selected == 1)
+                {
+                    checksounds = !checksounds;
+                }
+                else if (volumeDownButton->selected == 1)
+                {
+                    if (volumeLevel > 0)
+                    {
+                        volumeLevel -= 1;
+                        *pourcentVolume = (volumeLevel * 100) / MIX_MAX_VOLUME;
+                        Mix_Volume(-1, volumeLevel);
+                        Mix_VolumeMusic(volumeLevel);
+                    }
+                }
+                else if (volumeUpButton->selected == 1)
+                {
+                    if (volumeLevel < MIX_MAX_VOLUME)
+                    {
+                        volumeLevel += 1;
+                        *pourcentVolume = (volumeLevel * 100) / MIX_MAX_VOLUME;
+
+                        Mix_Volume(-1, volumeLevel);
+                        Mix_VolumeMusic(volumeLevel);
+                    }
+                }
+                break;
+            case SDLK_q:
+            case SDLK_LEFT:
+                if (volumeUpButton->selected == 1)
+                {
+                    volumeDownButton->selected = 1;
+                    volumeUpButton->selected = 0;
+                }
+                else if (volumeDownButton->selected == 1)
+                {
+                    musicButton->selected = 1;
+                    volumeDownButton->selected = 0;
+                }
+                else if (musicButton->selected == 1)
+                {
+                    musicButton->selected = 0;
+                    soundButton->selected = 1;
+                }
+                else if (soundButton->selected == 1)
+                {
+                    soundButton->selected = 0;
+                    backButton->selected = 1;
+                }
+                else if (backButton->selected == 1)
+                {
+                    backButton->selected = 0;
+                    volumeUpButton->selected = 1;
+                }
+                break;
+            case SDLK_z:
+            case SDLK_UP:
+                if (backButton->selected == 1)
+                {
+                    backButton->selected = 0;
+                    soundButton->selected = 1;
+                }
+                else if (soundButton->selected == 1)
+                {
+                    soundButton->selected = 0;
+                    musicButton->selected = 1;
+                }
+                else if (musicButton->selected == 1)
+                {
+                    volumeDownButton->selected = 1;
+                    musicButton->selected = 0;
+                }
+                else if (volumeDownButton->selected == 1)
+                {
+                    volumeDownButton->selected = 0;
+                    volumeUpButton->selected = 1;
+                }
+                else if (volumeUpButton->selected == 1)
+                {
+                    backButton->selected = 1;
+                    volumeUpButton->selected = 0;
+                }
+                break;
+            case SDLK_d:
+            case SDLK_RIGHT:
+            case SDLK_s:
+            case SDLK_DOWN:
+                if (backButton->selected == 1)
+                {
+                    backButton->selected = 0;
+                    volumeDownButton->selected = 1;
+                }
+                else if (volumeDownButton->selected == 1)
+                {
+                    volumeUpButton->selected = 1;
+                    volumeDownButton->selected = 0;
+                }
+                else if (volumeUpButton->selected == 1)
+                {
+                    musicButton->selected = 1;
+                    volumeUpButton->selected = 0;
+                }
+                else if (soundButton->selected == 1)
+                {
+                    soundButton->selected = 0;
+                    backButton->selected = 1;
+                }
+                else if (musicButton->selected == 1)
+                {
+                    soundButton->selected = 1;
+                    musicButton->selected = 0;
+                }
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
 // DISPLAY MENU & SELECTION
+
+void settings_SDL(Tetris *tetris)
+{
+    SDL_Color textColor = {255, 255, 255};
+    SDL_Texture *MenuTexture = get_background("menu");
+
+    SDL_Rect titleRect = {SCREEN_WIDTH / 2 - 800, 50, 600, 200};
+    SDL_Texture *TitleTexture = display_title("Settings", textColor);
+
+    Button backButton = {{SCREEN_WIDTH - 400, SCREEN_HEIGHT - 200, 300, 100}, "Back", 1};
+    Button musicButton = {{SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT / 2, 400, 100}, "Muted Musics", 0};
+    Button soundButton = {{SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT / 2 + 100, 400, 100}, "Muted Sounds", 0};
+
+    int pourcentVolume = (volumeLevel * 100) / MIX_MAX_VOLUME;
+    SDL_Rect volumeRect = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 100, 100, 100};
+    Button volumeDownButton = {{SCREEN_WIDTH / 2 - 300, SCREEN_HEIGHT / 2 - 100, 200, 100}, "<<<<<", 0};
+    Button volumeUpButton = {{SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT / 2 - 100, 200, 100}, ">>>>>", 0};
+    int indice = 0;
+    bool run = true;
+    while (run)
+    {
+        SDL_RenderClear(renderer);
+        if (SDL_RenderCopy(renderer, MenuTexture, NULL, NULL) != 0)
+        {
+            fprintf(stderr, "Impossible de mettre le fond ( SETTINGS ) : %s \n", SDL_GetError());
+            SDL_DestroyTexture(MenuTexture);
+            SDL_DestroyTexture(TitleTexture);
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+
+        if (SDL_RenderCopy(renderer, TitleTexture, NULL, &titleRect) != 0)
+        {
+            fprintf(stderr, "Impossible de mettre le titre ( SETTINGS ) : %s \n", SDL_GetError());
+            SDL_DestroyTexture(MenuTexture);
+            SDL_DestroyTexture(TitleTexture);
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+
+        char volumeText[10];
+        sprintf(volumeText, "%d ", pourcentVolume);
+        display_txt(volumeText, volumeRect, textColor);
+
+        display_button(&backButton);
+        display_button(&musicButton);
+        display_button(&soundButton);
+        display_button(&volumeDownButton);
+        display_button(&volumeUpButton);
+
+        // Gestion du bouton check ( Mute la musique )
+        if (checkmusics)
+        {
+            indice = get_indice_by_color(GREEN);
+            Mix_PauseMusic();
+        }
+        else
+        {
+            indice = get_indice_by_color(NOTHING);
+            Mix_ResumeMusic();
+        }
+
+        SDL_Rect imageRect = {musicButton.rect.x + musicButton.rect.w + 100, musicButton.rect.y, 100, 100};
+        if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &imageRect) != 0)
+        {
+            fprintf(stderr, "Impossible de mettre Musics : %s \n", SDL_GetError());
+            SDL_DestroyTexture(MenuTexture);
+            SDL_DestroyTexture(TitleTexture);
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+
+        // Gestion du bouton check (Mute les sons)
+        if (checksounds)
+        {
+            indice = get_indice_by_color(GREEN);
+            Mix_Volume(-1, 0);
+        }
+        else
+        {
+            indice = get_indice_by_color(NOTHING);
+            Mix_Volume(-1, MIX_MAX_VOLUME);
+        }
+
+        SDL_Rect soundRect = {soundButton.rect.x + soundButton.rect.w + 100, soundButton.rect.y, 100, 100};
+        if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &soundRect) != 0)
+        {
+            fprintf(stderr, "Impossible de mettre Sounds : %s \n", SDL_GetError());
+            SDL_DestroyTexture(MenuTexture);
+            SDL_DestroyTexture(TitleTexture);
+            close_SDL();
+            exit(EXIT_FAILURE);
+        }
+
+        int event = settings_events(&backButton, &musicButton, &soundButton, &volumeDownButton, &volumeUpButton, &pourcentVolume);
+
+        if (event == 1)
+        {
+            run = false;
+            home_page_SDL(tetris);
+        }
+        SDL_RenderPresent(renderer);
+    }
+    SDL_DestroyTexture(MenuTexture);
+    SDL_DestroyTexture(TitleTexture);
+}
 
 void level_selection_SDL(Tetris *tetris)
 {
-
-    play_sound_SDL(6);
+    if (checksounds == false)
+    {
+        play_sound_SDL(6);
+    }
 
     SDL_Color textColor = {255, 255, 255};
 
@@ -932,7 +1182,7 @@ void level_selection_SDL(Tetris *tetris)
     // Créer le titre
     SDL_Texture *TitleTexture = display_title("Level Selection", textColor);
 
-    Button backButton = {{SCREEN_WIDTH - 400, SCREEN_HEIGHT - 200, 300, 100}, "Retour", 0};
+    Button backButton = {{SCREEN_WIDTH - 400, SCREEN_HEIGHT - 200, 300, 100}, "Back", 0};
 
     const int numLevels = 20;
     Button levelButtons[numLevels];
@@ -951,7 +1201,9 @@ void level_selection_SDL(Tetris *tetris)
         SDL_RenderClear(renderer);
         if (SDL_RenderCopy(renderer, MenuTexture, NULL, NULL) != 0)
         {
+            fprintf(stderr, "Erreur Impossible de charger le fond ( Level ): %s \n", SDL_GetError());
             SDL_DestroyTexture(MenuTexture);
+            SDL_DestroyTexture(TitleTexture);
             close_SDL();
             exit(EXIT_FAILURE);
         }
@@ -960,7 +1212,9 @@ void level_selection_SDL(Tetris *tetris)
         SDL_Rect titleRect = {SCREEN_WIDTH / 2 - 800, 50, 600, 200};
         if (SDL_RenderCopy(renderer, TitleTexture, NULL, &titleRect) != 0)
         {
+            fprintf(stderr, "Erreur Impossible de charger le titre ( Level ) : %s \n", SDL_GetError());
             SDL_DestroyTexture(TitleTexture);
+            SDL_DestroyTexture(MenuTexture);
             close_SDL();
             exit(EXIT_FAILURE);
         }
@@ -995,18 +1249,19 @@ void level_selection_SDL(Tetris *tetris)
 
     // Libérer les ressources
     free_levels(levelButtons, numLevels);
-
     SDL_DestroyTexture(MenuTexture);
     SDL_DestroyTexture(TitleTexture);
 }
 
 void home_page_SDL(Tetris *tetris)
 {
-    tetris->state = MENU;
+    if (tetris->state != MENU)
+    {
+        tetris->state = MENU;
+    }
     SDL_Texture *MenuTexture = get_background("menu");
 
-    // Définir la musique
-    if (!Mix_PlayingMusic())
+    if (!Mix_PlayingMusic() && checkmusics == false)
     {
         Mix_PlayMusic(musics[0], -1);
         currentMusic = musics[0];
@@ -1018,7 +1273,7 @@ void home_page_SDL(Tetris *tetris)
 
     // Afficher les boutons
     Button play = {{SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 100, 400, 150}, "JOUER", 1};
-    Button options = {{SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 100, 400, 150}, "OPTIONS", 0};
+    Button settings = {{SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 100, 400, 150}, "OPTIONS", 0};
     Button quit = {{SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 300, 400, 150}, "EXIT", 0};
 
     bool run = true;
@@ -1027,7 +1282,9 @@ void home_page_SDL(Tetris *tetris)
         SDL_RenderClear(renderer);
         if (SDL_RenderCopy(renderer, MenuTexture, NULL, NULL) != 0)
         {
+            fprintf(stderr, "Impossible de mettre le fond (MENU) : %s \n", SDL_GetError());
             SDL_DestroyTexture(tetrisTextTexture);
+            SDL_DestroyTexture(MenuTexture);
             close_SDL();
             exit(EXIT_FAILURE);
         }
@@ -1036,18 +1293,19 @@ void home_page_SDL(Tetris *tetris)
         SDL_Rect tetrisTextRect = {(SCREEN_WIDTH / 2) - 450, SCREEN_HEIGHT / 4 - 200, 1000, 400};
         if (SDL_RenderCopy(renderer, tetrisTextTexture, NULL, &tetrisTextRect) != 0)
         {
-            fprintf(stderr, "Erreur Impossible de faire le rendu : %s\n", SDL_GetError());
+            fprintf(stderr, "Impossible de mettre le titre ( TETRIS HOME ) : %s \n", SDL_GetError());
             SDL_DestroyTexture(tetrisTextTexture);
+            SDL_DestroyTexture(MenuTexture);
             close_SDL();
             exit(EXIT_FAILURE);
         }
 
         // Afficher les boutons à chaque itération
         display_image_button(&play);
-        display_image_button(&options);
+        display_image_button(&settings);
         display_image_button(&quit);
 
-        if (home_page_events(&play, &options, &quit, tetris))
+        if (home_page_events(&play, &settings, &quit, tetris))
         {
             run = false;
         }
@@ -1432,6 +1690,28 @@ void play_sound_SDL(int i)
 }
 
 // CLOSE & CLEAR
+void cleanup_audio()
+{
+    // Libérer les musiques
+    for (int i = 0; i < 4; ++i)
+    {
+        if (musics[i] != NULL)
+        {
+            Mix_FreeMusic(musics[i]);
+            musics[i] = NULL;
+        }
+    }
+
+    // Libérer les sons
+    for (int i = 0; i < 10; ++i)
+    {
+        if (sounds[i] != NULL)
+        {
+            Mix_FreeChunk(sounds[i]);
+            sounds[i] = NULL;
+        }
+    }
+}
 
 void clear_img_textures()
 {
@@ -1461,25 +1741,7 @@ void close_SDL()
         backgroundTexture = NULL;
     }
 
-    // Libérer les musiques
-    for (int i = 0; i < 4; ++i)
-    {
-        if (musics[i] != NULL)
-        {
-            Mix_FreeMusic(musics[i]);
-            musics[i] = NULL;
-        }
-    }
-
-    // Libérer les sons
-    for (int i = 0; i < 10; ++i)
-    {
-        if (sounds[i] != NULL)
-        {
-            Mix_FreeChunk(sounds[i]);
-            sounds[i] = NULL;
-        }
-    }
+    cleanup_audio();
 
     // Fermer le renderer SDL
     if (renderer != NULL)
@@ -1496,6 +1758,12 @@ void close_SDL()
     }
 
     // Fermer la font
+    if (ButtonFont != NULL)
+    {
+        TTF_CloseFont(ButtonFont);
+        ButtonFont = NULL;
+    }
+
     if (font != NULL)
     {
         TTF_CloseFont(font);

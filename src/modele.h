@@ -204,7 +204,7 @@ void get_piece(Tetris *);
  * @param tetris
  * @param temp_cells[][4][2]
  */
-void restore_board_state(Tetris *tetris, bool temp_cells[][4][2]);
+void restore_board_state(Tetris *tetris, bool temp_cells[4][2]);
 
 bool is_same_as_old_coords(Tetris *tetris, int x, int y, int oldX, int oldY);
 

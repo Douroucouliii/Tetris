@@ -486,22 +486,25 @@ void get_piece(Tetris *tetris)
     tetris->nextPiece = get_next_piece(tetris);
 }
 
-void restore_board_state(Tetris *tetris, bool temp_cells[][4][2])
+void restore_board_state(Tetris *tetris, bool temp_cells[4][2])
 {
     for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
     {
-        int curr_x = temp_cells[tetris->nbBoardPiece - 1][i][0];
-        int curr_y = temp_cells[tetris->nbBoardPiece - 1][i][1];
+        int curr_x = temp_cells[i][0];
+        int curr_y = temp_cells[i][1];
 
         // Restaurer l'état initial de la cellule sur le plateau
-        tetris->board[curr_x][curr_y].isFull = true;
+        if ((curr_x >= 0 && curr_x < tetris->line) && (curr_y >= 0 && curr_y < tetris->column))
+        {
+            tetris->board[curr_x][curr_y].isFull = true;
+        }
     }
 }
 
 bool can_move(Tetris *tetris, int varX, int varY)
 {
     // Stockage temporaire des cellules actuelles de la pièce
-    bool temp_cells[tetris->nbBoardPiece][4][2];
+    bool temp_cells[4][2];
 
     // Copie des cellules actuelles de la pièce avant déplacement
     for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
@@ -509,8 +512,9 @@ bool can_move(Tetris *tetris, int varX, int varY)
         int curr_x = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][0];
         int curr_y = tetris->boardPiece[tetris->nbBoardPiece - 1]->coords[i][1];
 
-        temp_cells[tetris->nbBoardPiece - 1][i][0] = curr_x;
-        temp_cells[tetris->nbBoardPiece - 1][i][1] = curr_y;
+        temp_cells[i][0] = curr_x;
+        temp_cells[i][1] = curr_y;
+
         if ((curr_x >= 0 && curr_x < tetris->line) && (curr_y >= 0 && curr_y < tetris->column))
         {
             tetris->board[curr_x][curr_y].isFull = false;

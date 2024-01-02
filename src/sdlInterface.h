@@ -27,6 +27,8 @@ void init_SDL();
 
 void init_img_textures();
 
+void init_audio_SDL();
+
 void init_music_sound();
 
 void set_icon();
@@ -63,6 +65,8 @@ int home_page_events(Button *, Button *, Button *, Tetris *);
 
 int level_selection_events(int *, Button *, Button[], int);
 
+void settings_SDL(Tetris *);
+
 void level_selection_SDL(Tetris *);
 
 void home_page_SDL(Tetris *);
@@ -76,6 +80,8 @@ void update_highscores(Tetris *, char *);
 void end_screen_SDL(Tetris *);
 
 void play_sound_SDL(int);
+
+void cleanup_audio();
 
 void clear_img_textures();
 
