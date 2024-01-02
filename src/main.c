@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include "modele.h"
+#include "tetris.h"
 #include "userInterface.h"
 
 /**

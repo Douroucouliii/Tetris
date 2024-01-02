@@ -1,2 +1,2 @@
-obj/src/sdlInterface.o: src/sdlInterface.c src/modele.h \
+obj/src/sdlInterface.o: src/sdlInterface.c src/tetris.h \
  src/userInterface.h src/sdlInterface.h

@@ -8,7 +8,7 @@
  * @date 2023-11-24
  */
 
-#include "modele.h"
+#include "tetris.h"
 
 /**
  * @brief Initialise nCurses et les couleurs qu'on va utiliser

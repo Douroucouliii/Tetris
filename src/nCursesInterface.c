@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "modele.h"
+#include "tetris.h"
 #include "nCursesInterface.h"
 
 WINDOW *home_page;

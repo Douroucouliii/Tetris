@@ -1,4 +1,4 @@
-#include "modele.h"
+#include "tetris.h"
 #include "sdlInterface.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
@@ -1423,6 +1423,7 @@ void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName,
         {
             *quit = 1;
             tetris->state = RESTART;
+            Mix_HaltMusic();
         }
         break;
     case SDLK_RIGHT:

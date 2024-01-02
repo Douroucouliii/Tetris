@@ -8,7 +8,7 @@
  * @date 2023-11-24
  */
 
-#include "modele.h"
+#include "tetris.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
 

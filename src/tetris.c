@@ -5,7 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "modele.h"
+#include "tetris.h"
 
 PieceConfig pieces[7] = {
     {'T', 4, {{0, 4}, {0, 5}, {0, 6}, {1, 5}}, GREEN},
