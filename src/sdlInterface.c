@@ -1386,20 +1386,10 @@ void update_highscores(Tetris *tetris, char *playerName)
 
 void save_highscores(Tetris *tetris, int numHighscores)
 {
-    FILE *file = fopen("data/highscore.txt", "w");
-
-    if (!file)
-    {
-        fprintf(stderr, "Erreur lors de l'ouverture du fichier highscore.txt en écriture.\n");
-        exit(EXIT_FAILURE);
-    }
-
     for (int i = 0; i < numHighscores; i++)
     {
-        fprintf(file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
+        fprintf(tetris->file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
     }
-
-    fclose(file);
 }
 
 void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName, Button *replayButton, Button *quitButton, Button *saveButton, int *quit)
