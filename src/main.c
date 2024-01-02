@@ -19,15 +19,14 @@
 int main()
 {
 
+    // Création du modèle
     Tetris *game = tetris_init_();
 
-    // On devra faire en sorte de pouvoir switch entre les 2 (SDL/NCurses) depuis le jeu :)
-    // Pour l'instant j'ai créé une interface nCurses, ensuite on fera la SDL
-
-    // userInterface ui = textInterface_init_();
+    //Création des interfaces
     userInterface nCurses = nCursesInterface_init_();
     userInterface SDL = sdlInterface_init_();
 
+    //On lance la boucle du jeu
     tetris_playGame(game, nCurses, SDL);
 
     return 0;

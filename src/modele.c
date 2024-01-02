@@ -197,7 +197,6 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
     homescreen(tetris, ui);
     //On actualise la variable pour savoir au bout de combien de temps le premier level up se fera
     lineUntilFirstLevelUp(tetris);
-    tetris->nbLines=19;
 
     // On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
     while (1)
@@ -464,7 +463,6 @@ void update_piece(Tetris *tetris, PieceConfig *piece)
     }
 }
 
-// On ajoute une piece de tmpPiece dans le tableau
 void get_piece(Tetris *tetris)
 {
     if (!tetris->nextPiece)
@@ -592,7 +590,6 @@ bool move_right_piece(Tetris *tetris)
     return true;
 }
 
-/*Si ça bug pour le 'I' : De base le pivot est à [2][0]*/
 int get_pivot_X(PieceConfig *p)
 {
     if ((p->name == 'J') || (p->name == 'T') || (p->name == 'Z') || (p->name == 'L') || (p->name == 'I'))
@@ -619,7 +616,6 @@ int get_pivot_Y(PieceConfig *p)
     return -1;
 }
 
-// Fonction pour vérifier si la position spécifiée est la même que les anciennes coordonnées
 bool is_same_as_old_coords(Tetris *tetris, int x, int y, int oldX, int oldY)
 {
     for (int i = 0; i < tetris->boardPiece[tetris->nbBoardPiece - 1]->num_cells; i++)
@@ -631,11 +627,7 @@ bool is_same_as_old_coords(Tetris *tetris, int x, int y, int oldX, int oldY)
     }
     return false;
 }
-/*
-Fonction qui permet de rotate une piece standard.
-    Direction : -1 //Rotation Gauche
-    Direction :  1 //Rotation Droites
-*/
+
 bool can_rotate(Tetris *tetris, int rotationDirection)
 {
     int newCoords[4][2];
@@ -958,7 +950,6 @@ void is_panic(Tetris *tetris)
     }
 }
 
-// Fonction pour calculer le délai en fonction du niveau (en utilisant les frames ou cellules de grille)
 int delay(Tetris *tetris)
 {
     int frames;

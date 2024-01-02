@@ -3,30 +3,7 @@
 
 #include "userInterface.h"
 #include "sdlInterface.h"
-#include "textInterface.h"
 #include "nCursesInterface.h"
-
-userInterface textInterface_init_()
-{
-    userInterface interface;
-    Function *f = (Function *)malloc(sizeof(Function));
-    if (!f)
-    {
-        perror("malloc()\n");
-        exit(EXIT_FAILURE);
-    }
-    interface.functions = f;
-    interface.instance = "NCurses";
-    interface.functions->init_interface = init_text;
-    interface.functions->close_interface = close_text;
-    interface.functions->display = display_text;
-    interface.functions->input = input_text;
-    interface.functions->display_info = NULL;
-    interface.functions->home_page = NULL;
-    interface.functions->end_screen = NULL;
-    interface.functions->play_sound = NULL;
-    return interface;
-}
 
 userInterface nCursesInterface_init_()
 {

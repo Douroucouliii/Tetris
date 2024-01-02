@@ -24,6 +24,5 @@ typedef struct
     Function *functions;
 } userInterface;
 
-userInterface textInterface_init_();
 userInterface sdlInterface_init_();
 userInterface nCursesInterface_init_();

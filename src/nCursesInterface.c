@@ -14,7 +14,6 @@ WINDOW *level;
 WINDOW *next_piece;
 WINDOW *end_screen;
 
-// Initialise nCurses
 void init_nCurses()
 {
     // Lance NCurses
@@ -47,10 +46,8 @@ void init_nCurses()
     init_pair(GREEN, COLOR_GREEN, COLOR_GREEN);      // Green
 }
 
-// Ferme nCurses
 void close_nCurses()
 {
-    endwin();
 
     if (win != NULL)
     {
@@ -87,9 +84,10 @@ void close_nCurses()
         delwin(end_screen);
         end_screen = NULL;
     }
+
+    endwin();
 }
 
-// Récupère un input depuis NCurses et retourne le char correspondant dans le modele
 char input_nCurses(Tetris *tetris)
 {
     // On crée un timeout pour la fenetre (permet de sortir de la fonction)
@@ -124,7 +122,6 @@ char input_nCurses(Tetris *tetris)
     }
 }
 
-// Affiche le tetris dans la console
 void display_nCurses(Tetris *tetris)
 {
     // On supprime le menu
