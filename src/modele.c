@@ -48,6 +48,7 @@ Tetris *tetris_init_()
     tetris->nbLines = 0;
     tetris->score = 0;
     tetris->level = 0;
+    tetris->lineUntilFirstLevelUp = 10;
     tetris->nextPiece = NULL;
 
     for (int i = 0; i < 7; i++)
@@ -192,7 +193,11 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
 
+    //On lance le menu
     homescreen(tetris, ui);
+    //On actualise la variable pour savoir au bout de combien de temps le premier level up se fera
+    lineUntilFirstLevelUp(tetris);
+    tetris->nbLines=19;
 
     // On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
     while (1)
@@ -795,12 +800,19 @@ void delete_all_line(Tetris *tetris, userInterface ui)
             delete_line(tetris, i);
             cpt++;
             tetris->nbLines++;
-            if (tetris->nbLines % 10 == 0)
+            //Si c'est le premier level up, on se réfère à "lineUntilFirstLevelUp", ensuite on passe de niveau toutes les 10 lignes
+            if (tetris->lineUntilFirstLevelUp != -1 && (tetris->nbLines % tetris->lineUntilFirstLevelUp == 0))
             {
                 tetris->level++;
                 switch_color(tetris);
-                if (ui.functions->play_sound)
-                    ui.functions->play_sound(4);
+                if (ui.functions->play_sound) ui.functions->play_sound(4);
+                tetris->lineUntilFirstLevelUp = -1;
+            }
+            else if(tetris->lineUntilFirstLevelUp == -1 && (tetris->nbLines % 10 == 0))
+            {
+                tetris->level++;
+                switch_color(tetris);
+                if (ui.functions->play_sound) ui.functions->play_sound(4);
             }
             i++;
         }
@@ -1018,6 +1030,17 @@ int delay(Tetris *tetris)
     }
 
     return frames;
+}
+
+void lineUntilFirstLevelUp(Tetris *tetris){
+    if(tetris->level>=0 && tetris->level<=9){
+        tetris->lineUntilFirstLevelUp = (tetris->level + 1) * 10;
+    }
+    else if(tetris->level>=10 && tetris->level<=19){
+        int var1 =  (tetris->level - 5) * 10;
+        if(var1 > 100) tetris->lineUntilFirstLevelUp = var1;
+        else tetris->lineUntilFirstLevelUp = 100;
+    }
 }
 
 void clear_board(Tetris *tetris)
