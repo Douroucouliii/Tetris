@@ -870,7 +870,7 @@ void display_info_SDL(Tetris *tetris)
 
     //  Affiche le nombre de ligne clear par le joueur
     SDL_Rect linesRect = {450, SCREEN_HEIGHT - 150, 100, 40};
-    char *lineString = int_to_str_with_prefix("Line clear :", tetris->nbLines);
+    char *lineString = int_to_str_with_prefix("Line clear : ", tetris->nbLines);
     display_txt(lineString, linesRect, textColor);
     free(lineString);
 
