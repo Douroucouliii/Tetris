@@ -627,33 +627,46 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
     }
 }
 
-char *int_to_str(int value)
+char *int_to_str(int num)
 {
-    char *str = (char *)malloc((snprintf(NULL, 0, "%d", value) + 1) * sizeof(char));
+    // Taille maximale d'un int en décimal + 1 pour le caractère nul
+    int taille_max = 11;
+
+    // Allouer de la mémoire pour la chaîne de caractères
+    char *str = (char *)malloc(taille_max * sizeof(char));
+
+    // Vérifier si l'allocation de mémoire a réussi
     if (str == NULL)
     {
-        fprintf(stderr, "Erreur d'allocation de mémoire pour int_to_str.\n");
-        close_SDL();
+        fprintf(stderr, "Erreur d'allocation de mémoire\n");
         exit(EXIT_FAILURE);
     }
-    snprintf(str, strlen(str) + 1, "%d", value);
+
+    // Utiliser la fonction sprintf pour convertir l'int en char*
+    snprintf(str, taille_max, "%d", num);
+
     return str;
 }
 
-char *int_to_str_with_prefix(char *prefix, int value)
+char *int_to_str_with_prefix(char *prefix, int num)
 {
-    char *strValue = int_to_str(value);
-    char *result = (char *)malloc((strlen(prefix) + strlen(strValue) + 1) * sizeof(char));
-    if (result == NULL)
+    // Taille maximale d'un int en décimal + la longueur du préfixe + 1
+    int taille_max = 11 + strlen(prefix) + 1;
+
+    // Allouer de la mémoire pour la chaîne de caractères
+    char *str = (char *)malloc(taille_max * sizeof(char));
+
+    // Vérifier si l'allocation de mémoire a réussi
+    if (str == NULL)
     {
-        fprintf(stderr, "Erreur d'allocation de mémoire pour int_to_str_with_prefix.\n");
-        close_SDL();
+        fprintf(stderr, "Erreur d'allocation de mémoire\n");
         exit(EXIT_FAILURE);
     }
-    strcpy(result, prefix);
-    strcat(result, strValue);
-    free(strValue);
-    return result;
+
+    // Utiliser la fonction snprintf pour concaténer le préfixe et convertir l'int en char*
+    snprintf(str, taille_max, "%s%d", prefix, num);
+
+    return str;
 }
 
 // EVENTS GAME
