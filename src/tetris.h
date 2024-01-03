@@ -81,22 +81,22 @@ typedef struct
  */
 typedef struct Tetris
 {
-    unsigned line : 5;        /**< Valeur par defaut pour les lignes de notre plateau   */
-    unsigned column : 5;      /**< Valeur par defaut pour les colonnes de notre plateau */
-    cell **board;             /**< Tableau representant notre plateau de jeu Tetris     */
-    PieceConfig **tmpPiece;   /**< Tableau des structures de toutes les pièces possibles pour notre Tetris*/
-    PieceConfig **boardPiece; /**< Tableau des pièces déjà présente dans le Tetris      */
-    int nbBoardPiece;         /**< Le nombre de pièces dans le tableau boardPiece       */
-    state state;              /**< L'état actuel du jeu ( HOME, GAME, END, OPTION )     */
-    int nbLines;              /**< Le nombre de ligne supprimées                        */
-    int score;                /**< Le score du jeu ( On utilise le système de score de la NES )*/
-    int level;                /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
-    int line_until_first_level_up;/**< Le nombre de ligne avant de passer au niveau suivant (premiere fois, ensuite, 10lignes/level) */
-    PieceConfig *nextPiece;   /**< La prochaine pièce qui va arriver sur le plateau     */
-    int pieceStats[7];        /**< Tableau des statistiques de pièces                   */
-    FILE *file;               /**< Fichier de sauvegarde des highscores                 */
-    Highscore *highscores;    /**< Tableau des highscores                               */
-    bool isPanic;             /**< Indique si le joueur est en mode panic (proche de la mort)*/
+    unsigned line : 5;             /**< Valeur par defaut pour les lignes de notre plateau   */
+    unsigned column : 5;           /**< Valeur par defaut pour les colonnes de notre plateau */
+    cell **board;                  /**< Tableau representant notre plateau de jeu Tetris     */
+    PieceConfig **tmpPiece;        /**< Tableau des structures de toutes les pièces possibles pour notre Tetris*/
+    PieceConfig **boardPiece;      /**< Tableau des pièces déjà présente dans le Tetris      */
+    int nbBoardPiece;              /**< Le nombre de pièces dans le tableau boardPiece       */
+    state state;                   /**< L'état actuel du jeu ( HOME, GAME, END, OPTION )     */
+    int nbLines;                   /**< Le nombre de ligne supprimées                        */
+    int score;                     /**< Le score du jeu ( On utilise le système de score de la NES )*/
+    int level;                     /**< Le niveau actuel du jeu ( Cela affecte la vitesse de déplacement des pièces )*/
+    int line_until_first_level_up; /**< Le nombre de ligne avant de passer au niveau suivant (premiere fois, ensuite, 10lignes/level) */
+    PieceConfig *nextPiece;        /**< La prochaine pièce qui va arriver sur le plateau     */
+    int pieceStats[7];             /**< Tableau des statistiques de pièces                   */
+    FILE *file;                    /**< Fichier de sauvegarde des highscores                 */
+    Highscore *highscores;         /**< Tableau des highscores                               */
+    bool isPanic;                  /**< Indique si le joueur est en mode panic (proche de la mort)*/
 } Tetris;
 
 /**
@@ -153,7 +153,7 @@ void homescreen(Tetris *, userInterface);
  * @param tetris
  * @param userInterface
  */
-void game(Tetris *, userInterface, userInterface, userInterface);
+void game(Tetris *, userInterface *, userInterface, userInterface);
 
 /**
  * @brief
@@ -353,14 +353,14 @@ int delay(Tetris *);
 
 /**
  * @brief Fonction qui calcule le nombre de ligne avant de passer au niveau suivant (premiere fois, ensuite, 10lignes/level)
- * @param tetris 
+ * @param tetris
  */
 void line_until_first_level_up(Tetris *);
 
 /**
  * @brief Faire clignoter la ligne i
- * @param tetris 
- * @param i 
+ * @param tetris
+ * @param i
  */
 void blink_line(Tetris *, int, userInterface);
 

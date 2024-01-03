@@ -1459,6 +1459,7 @@ void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName,
         else if (replayButton->selected == 1)
         {
             *quit = 1;
+            save = false;
             tetris->state = RESTART;
             Mix_HaltMusic();
         }

@@ -151,6 +151,7 @@ void init_highscore(Tetris *tetris)
             clear_highscores(tetris);
             exit(EXIT_FAILURE);
         }
+        tetris->highscores[i].score = 0; // Initialise le score à zéro
     }
 
     for (int i = 0; i < numHighscores; i++)
@@ -181,15 +182,15 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     srand(time(NULL));
 
-    //SDL de base
+    // SDL de base
     userInterface ui = SDL;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
 
-    //On lance le menu
+    // On lance le menu
     homescreen(tetris, ui);
-    //On actualise la variable pour savoir au bout de combien de temps le premier level up se fera
+    // On actualise la variable pour savoir au bout de combien de temps le premier level up se fera
     line_until_first_level_up(tetris);
 
     // On lance le menu, il change l'état du jeu en fonction de ce qu'on fait, ça permet d'intéragir entre les états du jeu
@@ -205,7 +206,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
         {
             if (ui.functions->play_sound)
                 ui.functions->play_sound(6);
-            game(tetris, ui, nCurses, SDL);
+            game(tetris, &ui, nCurses, SDL);
         }
         else if (tetris->state == END)
         {
@@ -244,20 +245,20 @@ void homescreen(Tetris *tetris, userInterface ui)
     ui.functions->home_page(tetris);
 }
 
-void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface SDL)
+void game(Tetris *tetris, userInterface *ui, userInterface nCurses, userInterface SDL)
 {
     tetris->state = GAME;
 
-    // je prend une piece aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
+    // je prends une pièce aléatoire avec le get (memcpy etc), ça l'ajoute dans la grille
     get_piece(tetris);
 
     // On affiche le jeu et les infos du jeu
-    ui.functions->display(tetris);
-    ui.functions->display_info(tetris);
+    ui->functions->display(tetris);
+    ui->functions->display_info(tetris);
 
-    // Nombre de frames avant de faire tomber la piece d'une case
+    // Nombre de frames avant de faire tomber la pièce d'une case
     int fallTime = delay(tetris);
-    // Nombre de frames avant de faire apparaitre la piece suivante
+    // Nombre de frames avant de faire apparaître la pièce suivante
     int holdTime = 0;
 
     char input;
@@ -268,7 +269,7 @@ void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface
     while (tetris->state != END)
     {
         // On récupère l'input selon l'interface (SDL ou NCurses)
-        input = ui.functions->input(tetris);
+        input = ui->functions->input(tetris);
 
         if (holdTime > 0)
         {
@@ -281,51 +282,51 @@ void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface
             switch (input)
             {
             case 'q':
-                if (move_left_piece(tetris) && ui.functions->play_sound)
-                    ui.functions->play_sound(0);
+                if (move_left_piece(tetris) && ui->functions->play_sound)
+                    ui->functions->play_sound(0);
                 break;
             case 's':
                 if (!move_down_piece(tetris))
                 {
-                    // Quand une pièce arrive à destination, on enleve les lignes pleines, on fait un
+                    // Quand une pièce arrive à destination, on enlève les lignes pleines, on fait un
                     // petit sleep  (voir détail fonction sleep) et on prend une nouvelle pièce
                     // On vérifie si le joueur est proche de la mort pour jouer l'autre musique
                     refresh_board(tetris);
-                    delete_all_line(tetris, ui);
-                    if (ui.functions->play_sound)
-                        ui.functions->play_sound(7);
+                    delete_all_line(tetris, *ui);
+                    if (ui->functions->play_sound)
+                        ui->functions->play_sound(7);
                     is_panic(tetris);
-                    // Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    // Nombre de frame à attendre avant d'appeler la fonction get_piece
                     holdTime = frame_sleep_NES(tetris);
                 }
                 fallTime = delay(tetris);
                 break;
             case 'd':
-                if (move_right_piece(tetris) && ui.functions->play_sound)
-                    ui.functions->play_sound(0);
+                if (move_right_piece(tetris) && ui->functions->play_sound)
+                    ui->functions->play_sound(0);
                 break;
             case 'a':
                 rotate_left(tetris);
-                if (ui.functions->play_sound)
-                    ui.functions->play_sound(1);
+                if (ui->functions->play_sound)
+                    ui->functions->play_sound(1);
                 break;
             case 'e':
                 rotate_right(tetris);
-                if (ui.functions->play_sound)
-                    ui.functions->play_sound(1);
+                if (ui->functions->play_sound)
+                    ui->functions->play_sound(1);
                 break;
             case 'm':
-                ui.functions->close_interface();
+                ui->functions->close_interface();
                 // changer de userInterface
-                if (strcmp(ui.instance, "NCurses") == 0)
+                if (strcmp(ui->instance, "NCurses") == 0)
                 {
-                    ui = SDL;
+                    *ui = SDL;
                 }
                 else
                 {
-                    ui = nCurses;
+                    *ui = nCurses;
                 }
-                ui.functions->init_interface();
+                ui->functions->init_interface();
                 break;
             default:
                 break;
@@ -338,11 +339,11 @@ void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface
                 {
                     // Meme chose que le case 's'
                     refresh_board(tetris);
-                    delete_all_line(tetris, ui);
-                    if (ui.functions->play_sound)
-                        ui.functions->play_sound(7);
+                    delete_all_line(tetris, *ui);
+                    if (ui->functions->play_sound)
+                        ui->functions->play_sound(7);
                     is_panic(tetris);
-                    // Nombre de frame à attendre avant d'appeller la fonction get_piece
+                    // Nombre de frame à attendre avant d'appeler la fonction get_piece
                     holdTime = frame_sleep_NES(tetris);
                 }
                 fallTime = delay(tetris);
@@ -350,8 +351,8 @@ void game(Tetris *tetris, userInterface ui, userInterface nCurses, userInterface
         }
 
         refresh_board(tetris);
-        ui.functions->display(tetris);
-        ui.functions->display_info(tetris);
+        ui->functions->display(tetris);
+        ui->functions->display_info(tetris);
 
         // Setup pour 60 fps (delta time)
         timespec_get(&ts2, TIME_UTC);
@@ -378,26 +379,24 @@ void endscreen(Tetris *tetris, userInterface ui)
 
 void restart_game(Tetris *tetris, userInterface ui)
 {
-    if(fclose(tetris->file)){
+    // Ferme le fichier de scores actuel
+    if (fclose(tetris->file))
+    {
         perror("Erreur fclose()\n");
         exit(EXIT_FAILURE);
     }
 
-    //On recrée un tetris
+    // Libère la mémoire et réinitialise la structure Tetris
     clear_tetris(tetris, ui);
+
+    // Initialise un nouveau Tetris
     Tetris *newTetris = tetris_init_();
     memcpy(tetris, newTetris, sizeof(Tetris));
 
-    //On actualise les highscore
-    clear_highscores(tetris);
-    tetris->file = fopen("data/highscore.txt", "r");
-    if (!tetris->file)
-    {
-        perror("Erreur fopen(), impossible de sauvegarder le score\n");
-        exit(EXIT_FAILURE);
-    }
-    init_highscore(tetris);
+    // Libère la mémoire allouée pour le nouveau Tetris
+    free(newTetris);
 
+    // On défini à MENU
     tetris->state = MENU;
 }
 
@@ -803,23 +802,25 @@ void delete_all_line(Tetris *tetris, userInterface ui)
     {
         if (is_full_line(tetris, i))
         {
-            //blink_line(tetris, i, ui);
+            // blink_line(tetris, i, ui);
             delete_line(tetris, i);
             cpt++;
             tetris->nbLines++;
-            //Si c'est le premier level up, on se réfère à "line_until_first_level_up", ensuite on passe de niveau toutes les 10 lignes
+            // Si c'est le premier level up, on se réfère à "line_until_first_level_up", ensuite on passe de niveau toutes les 10 lignes
             if (tetris->line_until_first_level_up != -1 && (tetris->nbLines % tetris->line_until_first_level_up == 0))
             {
                 tetris->level++;
                 switch_color(tetris);
-                if (ui.functions->play_sound) ui.functions->play_sound(4);
+                if (ui.functions->play_sound)
+                    ui.functions->play_sound(4);
                 tetris->line_until_first_level_up = -1;
             }
-            else if(tetris->line_until_first_level_up == -1 && (tetris->nbLines % 10 == 0))
+            else if (tetris->line_until_first_level_up == -1 && (tetris->nbLines % 10 == 0))
             {
                 tetris->level++;
                 switch_color(tetris);
-                if (ui.functions->play_sound) ui.functions->play_sound(4);
+                if (ui.functions->play_sound)
+                    ui.functions->play_sound(4);
             }
             i++;
         }
@@ -1038,32 +1039,42 @@ int delay(Tetris *tetris)
     return frames;
 }
 
-void line_until_first_level_up(Tetris *tetris){
-    if(tetris->level>=0 && tetris->level<=9){
+void line_until_first_level_up(Tetris *tetris)
+{
+    if (tetris->level >= 0 && tetris->level <= 9)
+    {
         tetris->line_until_first_level_up = (tetris->level + 1) * 10;
     }
-    else if(tetris->level>=10 && tetris->level<=19){
-        int var1 =  (tetris->level - 5) * 10;
-        if(var1 > 100) tetris->line_until_first_level_up = var1;
-        else tetris->line_until_first_level_up = 100;
+    else if (tetris->level >= 10 && tetris->level <= 19)
+    {
+        int var1 = (tetris->level - 5) * 10;
+        if (var1 > 100)
+            tetris->line_until_first_level_up = var1;
+        else
+            tetris->line_until_first_level_up = 100;
     }
 }
 
-void blink_line(Tetris *tetris, int i, userInterface ui){
+void blink_line(Tetris *tetris, int i, userInterface ui)
+{
     color tmp[tetris->column];
-    //Clignoter la ligne i
-    for(int j = 0; j < tetris->column; j++){
-        //Récupérer les tmp des couleurs de chaque cellule
+    // Clignoter la ligne i
+    for (int j = 0; j < tetris->column; j++)
+    {
+        // Récupérer les tmp des couleurs de chaque cellule
         tmp[j] = tetris->board[i][j].c;
     }
-    //Clignoter 3 fois
-    for(int k = 0; k < 3; k++){
-        for(int j = 0; j < tetris->column; j++){
+    // Clignoter 3 fois
+    for (int k = 0; k < 3; k++)
+    {
+        for (int j = 0; j < tetris->column; j++)
+        {
             tetris->board[i][j].c = NOTHING;
         }
         ui.functions->display(tetris);
         usleep(100000);
-        for(int j = 0; j < tetris->column; j++){
+        for (int j = 0; j < tetris->column; j++)
+        {
             tetris->board[i][j].c = tmp[j];
         }
         ui.functions->display(tetris);
@@ -1125,6 +1136,10 @@ void clear_tetris(Tetris *t, userInterface ui)
     clear_boardPiece(t);
     clear_tmpPiece(t);
     clear_highscores(t);
-    free(t->nextPiece);
+
+    if (t->nextPiece != NULL)
+    {
+        free(t->nextPiece);
+    }
     // free(t);
 }
