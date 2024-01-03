@@ -183,7 +183,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
     srand(time(NULL));
 
     // SDL de base
-    userInterface ui = nCurses;
+    userInterface ui = SDL;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -376,13 +376,6 @@ void endscreen(Tetris *tetris, userInterface ui)
 
 void restart_game(Tetris *tetris, userInterface ui)
 {
-    // Ferme le fichier de scores actuel
-    if (fclose(tetris->file))
-    {
-        perror("Erreur fclose()\n");
-        exit(EXIT_FAILURE);
-    }
-
     // Libère la mémoire et réinitialise la structure Tetris
     clear_tetris(tetris);
 
@@ -391,7 +384,7 @@ void restart_game(Tetris *tetris, userInterface ui)
     memcpy(tetris, newTetris, sizeof(Tetris));
 
     // Libère la mémoire allouée pour le nouveau Tetris
-    free(newTetris);
+    //free(newTetris);
 
     // On défini à MENU
     tetris->state = MENU;
@@ -799,7 +792,6 @@ void delete_all_line(Tetris *tetris, userInterface ui)
     {
         if (is_full_line(tetris, i))
         {
-            // blink_line(tetris, i, ui);
             delete_line(tetris, i);
             cpt++;
             tetris->nbLines++;
@@ -1049,33 +1041,6 @@ void line_until_first_level_up(Tetris *tetris)
             tetris->line_until_first_level_up = var1;
         else
             tetris->line_until_first_level_up = 100;
-    }
-}
-
-void blink_line(Tetris *tetris, int i, userInterface ui)
-{
-    color tmp[tetris->column];
-    // Clignoter la ligne i
-    for (int j = 0; j < tetris->column; j++)
-    {
-        // Récupérer les tmp des couleurs de chaque cellule
-        tmp[j] = tetris->board[i][j].c;
-    }
-    // Clignoter 3 fois
-    for (int k = 0; k < 3; k++)
-    {
-        for (int j = 0; j < tetris->column; j++)
-        {
-            tetris->board[i][j].c = NOTHING;
-        }
-        ui.functions->display(tetris);
-        usleep(100000);
-        for (int j = 0; j < tetris->column; j++)
-        {
-            tetris->board[i][j].c = tmp[j];
-        }
-        ui.functions->display(tetris);
-        usleep(100000);
     }
 }
 

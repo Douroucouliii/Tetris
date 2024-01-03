@@ -358,13 +358,6 @@ int delay(Tetris *);
 void line_until_first_level_up(Tetris *);
 
 /**
- * @brief Faire clignoter la ligne i
- * @param tetris
- * @param i
- */
-void blink_line(Tetris *, int, userInterface);
-
-/**
  * @brief Fonction qui permet de liberer l'espace alloué à notre plateau de jeu
  * @param tetris
  */

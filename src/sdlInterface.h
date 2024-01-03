@@ -298,7 +298,7 @@ void display_player_name(SDL_Rect, char *, SDL_Color);
  * @param Tetris *    - Pointeur vers notre jeu Tetris
  * @return void
  */
-void is_highscore(Tetris *);
+int is_highscore(Tetris *);
 
 /**
  * @brief Cette fonction permet d'afficher à l'écran la fin de partie.

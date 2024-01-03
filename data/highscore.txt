@@ -1,4 +1,6 @@
 Voila c regler,1080
+letsgo,480
+ii,300
 i,100
 fort,60
 moi,41
@@ -6,5 +8,3 @@ moi,41
 yo,40
 sstest,40
 test2,40
-test,40
-krol,39

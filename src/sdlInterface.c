@@ -586,7 +586,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
         {
             fprintf(stderr, "Erreur Surface (Affichage PieceSat) : %s\n", SDL_GetError());
             free(numberString);
-            lose_SDL();
+            close_SDL();
             exit(EXIT_FAILURE);
         }
 
