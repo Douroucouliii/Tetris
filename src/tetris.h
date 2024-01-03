@@ -159,7 +159,7 @@ void game(Tetris *, userInterface *, userInterface, userInterface);
  * @brief
  *
  */
-void restart_game(Tetris *, userInterface);
+void restart_game(Tetris *, userInterface, userInterface);
 
 /**
  * @brief Fonction qui gère le menu du jeu Tetris

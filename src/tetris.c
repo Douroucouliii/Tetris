@@ -186,7 +186,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
     userInterface ui = SDL;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
-    ui.functions->init_interface();
+    if(tetris->state != GAME) ui.functions->init_interface();
 
     // On lance le menu
     homescreen(tetris, ui);
@@ -228,7 +228,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
         {
             if (ui.functions->play_sound)
                 ui.functions->play_sound(6);
-            restart_game(tetris, ui);
+            restart_game(tetris, nCurses, SDL);
         }
         else
         {
@@ -376,20 +376,17 @@ void endscreen(Tetris *tetris, userInterface ui)
     ui.functions->end_screen(tetris);
 }
 
-void restart_game(Tetris *tetris, userInterface ui)
+void restart_game(Tetris *tetris, userInterface nCurses, userInterface SDL)
 {
     // Libère la mémoire et réinitialise la structure Tetris
     clear_tetris(tetris);
+    free(tetris);
 
     // Initialise un nouveau Tetris
     Tetris *newTetris = tetris_init_();
-    memcpy(tetris, newTetris, sizeof(Tetris));
+    newTetris->state = GAME;
 
-    // Libère la mémoire allouée pour le nouveau Tetris
-    clear_tetris(newTetris);
-
-    // On défini à MENU
-    tetris->state = MENU;
+    tetris_playGame(newTetris, nCurses, SDL);
 }
 
 PieceConfig *get_next_piece(Tetris *tetris)
