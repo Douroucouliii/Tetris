@@ -384,7 +384,7 @@ void restart_game(Tetris *tetris, userInterface ui)
     memcpy(tetris, newTetris, sizeof(Tetris));
 
     // Libère la mémoire allouée pour le nouveau Tetris
-    //free(newTetris);
+    clear_tetris(newTetris);
 
     // On défini à MENU
     tetris->state = MENU;
