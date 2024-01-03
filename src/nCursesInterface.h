@@ -46,7 +46,7 @@ void display_info_nCurses(Tetris *);
 void home_page_nCurses(Tetris *);
 
 /**
- * @brief Affiche la page de fin en nCurses, avec l=es hisghscores etc
+ * @brief Affiche la page de fin en nCurses, avec les hisghscores etc
  * @param tetris
  */
 void end_screen_nCurses(Tetris *);
