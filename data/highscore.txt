@@ -1,3 +1,4 @@
+Voila c regler,1080
 fort,60
 moi,41
 test,40
@@ -5,6 +6,5 @@ ssstest,40
 test,40
 testi,40
 krol,39
-nul,2
 nul,2
 nul,2

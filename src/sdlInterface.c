@@ -3,6 +3,8 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
 #include "SDL2/SDL_mixer.h"
+
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -21,6 +23,7 @@ TTF_Font *font = NULL;
 
 bool checksounds = false;
 bool checkmusics = false;
+bool save = false;
 int volumeLevel = MIX_MAX_VOLUME / 2;
 
 Mix_Music *musics[4];
@@ -621,38 +624,40 @@ void display_SDL(Tetris *tetris)
         exit(EXIT_FAILURE);
     }
 
-    // On met la musique de jeu si elle n'est pas déjà en train de jouer (en fonction du mode panic)
-    if (tetris->isPanic)
-    {
-        if (musics[3] == NULL)
+    if (checkmusics == false)
+    { // On met la musique de jeu si elle n'est pas déjà en train de jouer (en fonction du mode panic)
+        if (tetris->isPanic)
         {
-            fprintf(stderr, "Erreur : la musique panic (musics[3]) est NULL.\n");
+            if (musics[3] == NULL)
+            {
+                fprintf(stderr, "Erreur : la musique panic (musics[3]) est NULL.\n");
+            }
+            else if (currentMusic != musics[3])
+            {
+                Mix_HaltMusic();
+                Mix_PlayMusic(musics[3], -1);
+                currentMusic = musics[3];
+            }
         }
-        else if (currentMusic != musics[3])
+        else
         {
-            Mix_HaltMusic();
-            Mix_PlayMusic(musics[3], -1);
-            currentMusic = musics[3];
-        }
-    }
-    else
-    {
-        if (musics[1] == NULL)
-        {
-            fprintf(stderr, "Erreur : la musique normale (musics[1]) est NULL.\n");
-        }
-        else if (currentMusic != musics[1])
-        {
-            Mix_HaltMusic();
-            Mix_PlayMusic(musics[1], -1);
-            currentMusic = musics[1];
-        }
+            if (musics[1] == NULL)
+            {
+                fprintf(stderr, "Erreur : la musique normale (musics[1]) est NULL.\n");
+            }
+            else if (currentMusic != musics[1])
+            {
+                Mix_HaltMusic();
+                Mix_PlayMusic(musics[1], -1);
+                currentMusic = musics[1];
+            }
 
-        // Si la musique n'est pas lancée, on la lance
-        if (musics[1] != NULL && !Mix_PlayingMusic())
-        {
-            Mix_PlayMusic(musics[1], -1);
-            currentMusic = musics[1];
+            // Si la musique n'est pas lancée, on la lance
+            if (musics[1] != NULL && !Mix_PlayingMusic())
+            {
+                Mix_PlayMusic(musics[1], -1);
+                currentMusic = musics[1];
+            }
         }
     }
 
@@ -1373,30 +1378,62 @@ void display_highscores(Tetris *tetris)
 
 void update_highscores(Tetris *tetris, char *playerName)
 {
-    int numHighscores = 10;
-
-    for (int i = 0; i < numHighscores; i++)
+    if (save == true)
     {
-        if (tetris->score > tetris->highscores[i].score)
-        {
-            // Décaler les scores suivants
-            for (int j = i + 1; j < numHighscores; j++)
-            {
-                strcpy(tetris->highscores[j].name, tetris->highscores[j - 1].name);
-                tetris->highscores[j].score = tetris->highscores[j - 1].score;
-            }
-            strcpy(tetris->highscores[i].name, playerName);
-            tetris->highscores[i].score = tetris->score;
+        return;
+    }
 
-            // Sortir de la boucle
+    int numHighscores = 10;
+    int positionPlayer;
+
+    // Trouver la position dans le tableau du nouveau score du joueur
+    for (positionPlayer = 0; positionPlayer < numHighscores; positionPlayer++)
+    {
+        if (tetris->score > tetris->highscores[positionPlayer].score)
+        {
             break;
         }
     }
+
+    // On doit décaler les éléments
+    for (int i = numHighscores; i > positionPlayer; i--)
+    {
+        tetris->highscores[i] = tetris->highscores[i - 1];
+    }
+
+    tetris->highscores[positionPlayer].name = playerName;
+    tetris->highscores[positionPlayer].score = tetris->score;
+
+    save = true;
     save_highscores(tetris, numHighscores);
 }
 
 void save_highscores(Tetris *tetris, int numHighscores)
 {
+    // On est en r+ (lecture/écriture)
+
+    // On vérifie que le fichier est pas NULL
+    if (tetris->file == NULL)
+    {
+        fprintf(stderr, "Erreur d'ouverture du fichier ( tetris->file ) NULL");
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    // Supprimer les anciens scores
+
+    // Remettre le curseur de fichier au début
+    rewind(tetris->file);
+
+    // Tronquer le fichier à la taille 0 pour supprimer les anciens scores
+    if (ftruncate(fileno(tetris->file), 0) == -1)
+    {
+        fprintf(stderr, "Erreur lors de la troncature du fichier");
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
+    // On écrit les nouveaux scores
     for (int i = 0; i < numHighscores; i++)
     {
         fprintf(tetris->file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
@@ -1565,10 +1602,13 @@ void end_screen_SDL(Tetris *tetris)
     Button saveButton = {{SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 400, 100}, "Register", 0};
     saveButton.selected = 1;
 
-    if (currentMusic != musics[2])
+    if (checkmusics == false)
     {
-        Mix_PlayMusic(musics[2], -1);
-        currentMusic = musics[2];
+        if (currentMusic != musics[2])
+        {
+            Mix_PlayMusic(musics[2], -1);
+            currentMusic = musics[2];
+        }
     }
 
     char playerName[30];
