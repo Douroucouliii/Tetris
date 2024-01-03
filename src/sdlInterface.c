@@ -1302,7 +1302,7 @@ void settings_SDL(Tetris *tetris)
         else
         {
             indice = get_indice_by_color(NOTHING);
-            Mix_Volume(-1, MIX_MAX_VOLUME);
+            Mix_Volume(-1, volumeLevel);
         }
 
         // On affiche si c'est selectionner ou non
