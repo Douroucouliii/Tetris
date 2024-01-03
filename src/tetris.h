@@ -399,4 +399,4 @@ void clear_pointeur_fct(userInterface);
  * @param tetris
  * @param userInterface
  */
-void clear_tetris(Tetris *, userInterface);
+void clear_tetris(Tetris *);

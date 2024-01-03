@@ -183,7 +183,7 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
     srand(time(NULL));
 
     // SDL de base
-    userInterface ui = SDL;
+    userInterface ui = nCurses;
 
     // On initialise l'interface (ouvrir Ncurses ou SDL)
     ui.functions->init_interface();
@@ -216,13 +216,10 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
         {
             // On ferme l'interface (fermer Ncurses ou SDL)
             ui.functions->close_interface();
-            clear_tetris(tetris, ui);
-            clear_pointeur_fct(ui);
-            if (fclose(tetris->file))
-            {
-                perror("Erreur fclose()\n");
-                exit(EXIT_FAILURE);
-            }
+            clear_tetris(tetris);
+            //Elle était là notre erreur valgrind, il faut clear les 2 ui et non pas juste la variable ui ;)
+            clear_pointeur_fct(SDL);
+            clear_pointeur_fct(nCurses);
             return;
         }
         else if (tetris->state == RESTART)
@@ -387,7 +384,7 @@ void restart_game(Tetris *tetris, userInterface ui)
     }
 
     // Libère la mémoire et réinitialise la structure Tetris
-    clear_tetris(tetris, ui);
+    clear_tetris(tetris);
 
     // Initialise un nouveau Tetris
     Tetris *newTetris = tetris_init_();
@@ -1130,7 +1127,7 @@ void clear_pointeur_fct(userInterface ui)
     free(ui.functions);
 }
 
-void clear_tetris(Tetris *t, userInterface ui)
+void clear_tetris(Tetris *t)
 {
     clear_board(t);
     clear_boardPiece(t);
@@ -1141,5 +1138,12 @@ void clear_tetris(Tetris *t, userInterface ui)
     {
         free(t->nextPiece);
     }
-    // free(t);
+
+    if (fclose(t->file))
+    {
+        perror("Erreur fclose()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    free(t);
 }
