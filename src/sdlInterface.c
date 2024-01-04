@@ -1556,7 +1556,14 @@ void update_highscores(Tetris *tetris, char *playerName)
         tetris->highscores[i] = tetris->highscores[i - 1];
     }
 
-    tetris->highscores[positionPlayer].name = playerName;
+    tetris->highscores[positionPlayer].name = strdup(playerName);
+    if (tetris->highscores[positionPlayer].name == NULL)
+    {
+        fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le nom du joueur\n");
+        close_SDL();
+        exit(EXIT_FAILURE);
+    }
+
     tetris->highscores[positionPlayer].score = tetris->score;
 
     save = true;
@@ -1565,25 +1572,13 @@ void update_highscores(Tetris *tetris, char *playerName)
 
 void save_highscores(Tetris *tetris, int numHighscores)
 {
-    // On est en r+ (lecture/écriture)
-
-    // On vérifie que le fichier est pas NULL
-    if (tetris->file == NULL)
-    {
-        fprintf(stderr, "Erreur d'ouverture du fichier ( tetris->file ) NULL");
-        close_SDL();
-        exit(EXIT_FAILURE);
-    }
 
     // Supprimer les anciens scores
-
-    // Remettre le curseur de fichier au début
-    rewind(tetris->file);
-
-    // Tronquer le fichier à la taille 0 pour supprimer les anciens scores
-    if (ftruncate(fileno(tetris->file), 0) == -1)
+    tetris->file = fopen("data/highscore.txt", "w");
+    // Vérifier l'ouverture du fichier en mode écriture
+    if (tetris->file == NULL)
     {
-        fprintf(stderr, "Erreur lors de la troncature du fichier");
+        fprintf(stderr, "Erreur d'ouverture du fichier en mode écriture\n");
         close_SDL();
         exit(EXIT_FAILURE);
     }
@@ -1593,6 +1588,9 @@ void save_highscores(Tetris *tetris, int numHighscores)
     {
         fprintf(tetris->file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
     }
+
+    // Fermer le fichier après l'écriture
+    fclose(tetris->file);
 }
 
 void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName, Button *replayButton, Button *quitButton, Button *saveButton, int *quit)
