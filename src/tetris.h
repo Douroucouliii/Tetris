@@ -35,11 +35,10 @@ typedef enum color color;
  */
 enum state
 {
-    MENU,    /**< Etat du menu principal */
-    GAME,    /**< Etat du jeu */
-    END,     /**< Etat de fin de jeu */
-    CLOSE,   /**< Etat de fermeture du jeu */
-    RESTART, /**<ETat de relancement de jeu*/
+    MENU,  /**< Etat du menu principal */
+    GAME,  /**< Etat du jeu */
+    END,   /**< Etat de fin de jeu */
+    CLOSE, /**< Etat de fermeture du jeu */
 };
 typedef enum state state;
 

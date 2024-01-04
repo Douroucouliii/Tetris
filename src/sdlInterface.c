@@ -44,7 +44,6 @@ void init_SDL()
         close_SDL();
         exit(EXIT_FAILURE);
     }
-
     // On récupère ici la taille de l'écran du joueur
 
     SDL_DisplayMode mode;
@@ -545,6 +544,7 @@ void display_next_piece(Tetris *tetris)
         {
             fprintf(stderr, "Erreur imageTexture ( display_next_piece ) : %s \n", SDL_GetError());
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
     }
@@ -573,6 +573,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
             {
                 fprintf(stderr, "Erreur imageTexture ( Affiche PieceStat ) : %s \n", SDL_GetError());
                 close_SDL();
+                tetris->state = CLOSE;
                 exit(EXIT_FAILURE);
             }
         }
@@ -587,6 +588,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
             fprintf(stderr, "Erreur Surface (Affichage PieceSat) : %s\n", SDL_GetError());
             free(numberString);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -598,6 +600,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
             free(numberString);
             SDL_FreeSurface(textSurface);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -614,6 +617,7 @@ void display_stat_piece(Tetris *tetris, SDL_Rect rect, SDL_Color textColor)
             SDL_DestroyTexture(textTexture);
             SDL_FreeSurface(textSurface);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -688,6 +692,7 @@ char input_SDL(Tetris *tetris)
         if (event.type == SDL_QUIT)
         {
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_SUCCESS);
         }
         else if (event.type == SDL_KEYDOWN)
@@ -748,6 +753,7 @@ void display_SDL(Tetris *tetris)
     {
         fprintf(stderr, "Erreur lors du rendu de l'image de fond : %s \n", SDL_GetError());
         close_SDL();
+        tetris->state = CLOSE;
         exit(EXIT_FAILURE);
     }
 
@@ -808,6 +814,7 @@ void display_SDL(Tetris *tetris)
             {
                 fprintf(stderr, "Impossible de charger les textures des tuiles : %s \n", SDL_GetError());
                 close_SDL();
+                tetris->state = CLOSE;
                 exit(EXIT_FAILURE);
             }
         }
@@ -884,7 +891,7 @@ void display_info_SDL(Tetris *tetris)
 
 // EVENTS MENU & SELECTION
 
-int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetris)
+int home_page_events(Button *play, Button *settings, Button *quit, Tetris *tetris)
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -893,6 +900,8 @@ int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetri
         {
         case SDL_QUIT:
             close_SDL();
+            tetris->state = CLOSE;
+            exit(EXIT_SUCCESS);
             break;
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym)
@@ -904,9 +913,11 @@ int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetri
                 {
                     level_selection_SDL(tetris);
                 }
-                else if (exit->selected == 1)
+                else if (quit->selected == 1)
                 {
+                    close_SDL();
                     tetris->state = CLOSE;
+                    exit(EXIT_SUCCESS);
                 }
                 else if (settings->selected == 1)
                 {
@@ -924,13 +935,13 @@ int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetri
                 }
                 else if (settings->selected == 1)
                 {
-                    exit->selected = 1;
+                    quit->selected = 1;
                     settings->selected = 0;
                 }
-                else if (exit->selected == 1)
+                else if (quit->selected == 1)
                 {
                     play->selected = 1;
-                    exit->selected = 0;
+                    quit->selected = 0;
                 }
                 break;
             case SDLK_z:
@@ -938,7 +949,7 @@ int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetri
                 play_sound_SDL(5);
                 if (play->selected == 1)
                 {
-                    exit->selected = 1;
+                    quit->selected = 1;
                     play->selected = 0;
                 }
                 else if (settings->selected == 1)
@@ -946,10 +957,10 @@ int home_page_events(Button *play, Button *settings, Button *exit, Tetris *tetri
                     play->selected = 1;
                     settings->selected = 0;
                 }
-                else if (exit->selected == 1)
+                else if (quit->selected == 1)
                 {
                     settings->selected = 1;
-                    exit->selected = 0;
+                    quit->selected = 0;
                 }
                 break;
             }
@@ -968,6 +979,7 @@ int level_selection_events(int *selectedLevel, Button *backButton, Button levelB
         {
         case SDL_QUIT:
             close_SDL();
+            exit(EXIT_SUCCESS);
             break;
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym)
@@ -1061,6 +1073,7 @@ int settings_events(Button *backButton, Button *musicButton, Button *soundButton
         {
         case SDL_QUIT:
             close_SDL();
+            exit(EXIT_SUCCESS);
             break;
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym)
@@ -1245,6 +1258,7 @@ void settings_SDL(Tetris *tetris)
             SDL_DestroyTexture(MenuTexture);
             SDL_DestroyTexture(TitleTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1255,6 +1269,7 @@ void settings_SDL(Tetris *tetris)
             SDL_DestroyTexture(MenuTexture);
             SDL_DestroyTexture(TitleTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1290,6 +1305,7 @@ void settings_SDL(Tetris *tetris)
             SDL_DestroyTexture(MenuTexture);
             SDL_DestroyTexture(TitleTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1313,6 +1329,7 @@ void settings_SDL(Tetris *tetris)
             SDL_DestroyTexture(MenuTexture);
             SDL_DestroyTexture(TitleTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1372,6 +1389,7 @@ void level_selection_SDL(Tetris *tetris)
             SDL_DestroyTexture(MenuTexture);
             SDL_DestroyTexture(TitleTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1383,6 +1401,7 @@ void level_selection_SDL(Tetris *tetris)
             SDL_DestroyTexture(TitleTexture);
             SDL_DestroyTexture(MenuTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1457,6 +1476,7 @@ void home_page_SDL(Tetris *tetris)
             SDL_DestroyTexture(tetrisTextTexture);
             SDL_DestroyTexture(MenuTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1468,6 +1488,7 @@ void home_page_SDL(Tetris *tetris)
             SDL_DestroyTexture(tetrisTextTexture);
             SDL_DestroyTexture(MenuTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1561,6 +1582,7 @@ void update_highscores(Tetris *tetris, char *playerName)
     {
         fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le nom du joueur\n");
         close_SDL();
+        tetris->state = CLOSE;
         exit(EXIT_FAILURE);
     }
 
@@ -1580,6 +1602,7 @@ void save_highscores(Tetris *tetris, int numHighscores)
     {
         fprintf(stderr, "Erreur d'ouverture du fichier en mode écriture\n");
         close_SDL();
+        tetris->state = CLOSE;
         exit(EXIT_FAILURE);
     }
 
@@ -1593,7 +1616,7 @@ void save_highscores(Tetris *tetris, int numHighscores)
     fclose(tetris->file);
 }
 
-void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName, Button *replayButton, Button *quitButton, Button *saveButton, int *quit)
+void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName, Button *quitButton, Button *saveButton, int *quit)
 {
     switch (key)
     {
@@ -1609,41 +1632,25 @@ void end_screen_button_events(SDL_Keycode key, Tetris *tetris, char *playerName,
             tetris->state = CLOSE;
             exit(EXIT_SUCCESS);
         }
-        else if (replayButton->selected == 1)
-        {
-            *quit = 1;
-            tetris->state = RESTART;
-            Mix_HaltMusic();
-        }
         break;
     case SDLK_RIGHT:
     case SDLK_d:
-        if (replayButton->selected == 1)
-        {
-            replayButton->selected = 0;
-            quitButton->selected = 1;
-        }
-        else if (quitButton->selected == 1)
+        if (quitButton->selected == 1)
         {
             saveButton->selected = 1;
             quitButton->selected = 0;
         }
         else if (saveButton->selected == 1)
         {
-            replayButton->selected = 1;
+            quitButton->selected = 1;
             saveButton->selected = 0;
         }
         break;
     case SDLK_LEFT:
     case SDLK_q:
-        if (replayButton->selected == 1)
+        if (quitButton->selected == 1)
         {
-            replayButton->selected = 0;
             saveButton->selected = 1;
-        }
-        else if (quitButton->selected == 1)
-        {
-            replayButton->selected = 1;
             quitButton->selected = 0;
         }
         else if (saveButton->selected == 1)
@@ -1750,7 +1757,6 @@ void end_screen_SDL(Tetris *tetris)
     SDL_Texture *menuTexture = get_background("menu");
     SDL_Texture *titleTexture = display_title("End", textColor);
 
-    Button replayButton = {{SCREEN_WIDTH - 1000, 50, 300, 100}, "Restart", 0};
     Button quitButton = {{SCREEN_WIDTH - 400, 50, 300, 100}, "Quit", 0};
     Button saveButton = {{SCREEN_WIDTH - 500, SCREEN_HEIGHT - 150, 400, 100}, "Register", 0};
     saveButton.selected = 1;
@@ -1783,6 +1789,7 @@ void end_screen_SDL(Tetris *tetris)
             fprintf(stderr, "Error applying MenuTexture (END): %s ", SDL_GetError());
             SDL_DestroyTexture(menuTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
@@ -1793,10 +1800,10 @@ void end_screen_SDL(Tetris *tetris)
             SDL_DestroyTexture(titleTexture);
             SDL_DestroyTexture(menuTexture);
             close_SDL();
+            tetris->state = CLOSE;
             exit(EXIT_FAILURE);
         }
 
-        display_button(&replayButton);
         display_button(&quitButton);
         display_button(&saveButton);
 
@@ -1810,6 +1817,7 @@ void end_screen_SDL(Tetris *tetris)
             SDL_Rect noHighscoreRect = {SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT - 450, 400, 50};
             display_txt("you didn't break the record :( ", noHighscoreRect, textColor);
         }
+
         SDL_Rect ScorePlayer = {SCREEN_WIDTH - 600, SCREEN_HEIGHT - 400, 400, 50};
         char *scoreText = int_to_str_with_prefix("Your score :", tetris->score);
         display_txt(scoreText, ScorePlayer, textColor);
@@ -1828,6 +1836,7 @@ void end_screen_SDL(Tetris *tetris)
             {
             case SDL_QUIT:
                 close_SDL();
+                tetris->state = CLOSE;
                 exit(EXIT_SUCCESS);
                 break;
             case SDL_TEXTINPUT:
@@ -1835,7 +1844,7 @@ void end_screen_SDL(Tetris *tetris)
                 if (inputMode == 0)
                 {
                     // Traitement des événements de boutons
-                    end_screen_button_events(event.key.keysym.sym, tetris, playerName, &replayButton, &quitButton, &saveButton, &quit);
+                    end_screen_button_events(event.key.keysym.sym, tetris, playerName, &quitButton, &saveButton, &quit);
                 }
                 else
                 {

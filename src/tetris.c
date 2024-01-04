@@ -220,18 +220,12 @@ void tetris_playGame(Tetris *tetris, userInterface nCurses, userInterface SDL)
         {
             // On ferme l'interface (fermer Ncurses ou SDL)
             ui.functions->close_interface();
-            clear_tetris(tetris);
-            free(tetris);
-            // Elle était là notre erreur valgrind, il faut clear les 2 ui et non pas juste la variable ui ;)
+            // il faut clear les 2 ui et non pas juste la variable ui ;)
             clear_pointeur_fct(SDL);
             clear_pointeur_fct(nCurses);
+            clear_tetris(tetris);
+            free(tetris);
             return;
-        }
-        else if (tetris->state == RESTART)
-        {
-            if (ui.functions->play_sound)
-                ui.functions->play_sound(6);
-            restart_game(tetris, nCurses, SDL);
         }
         else
         {
@@ -319,7 +313,8 @@ void game(Tetris *tetris, userInterface *ui, userInterface nCurses, userInterfac
                 break;
             case 'm':
                 ui->functions->close_interface();
-                // changer de userInterface
+
+                // Change interface
                 if (strcmp(ui->instance, "NCurses") == 0)
                 {
                     *ui = SDL;
@@ -328,6 +323,8 @@ void game(Tetris *tetris, userInterface *ui, userInterface nCurses, userInterfac
                 {
                     *ui = nCurses;
                 }
+
+                // Initialise la nouvelle interface
                 ui->functions->init_interface();
                 break;
             default:
@@ -377,37 +374,6 @@ void endscreen(Tetris *tetris, userInterface ui)
     sleep(1);
 
     ui.functions->end_screen(tetris);
-}
-
-void print_highscores(Tetris *tetris, int numHighscores)
-{
-    for (int i = 0; i < numHighscores; i++)
-    {
-        fprintf(stderr, "Highscore %d:\n", i);
-        fprintf(stderr, "Name: %s\n", tetris->highscores[i].name);
-        fprintf(stderr, "Score: %d\n", tetris->highscores[i].score);
-    }
-}
-
-void restart_game(Tetris *tetris, userInterface nCurses, userInterface SDL)
-{
-    // Affiche des informations avant la libération de la mémoire
-    fprintf(stderr, "Avant la libération de la mémoire dans restart_game:\n");
-    fprintf(stderr, "tetris->highscores:\n");
-    print_highscores(tetris, 10);
-
-    // Libère la mémoire et réinitialise la structure Tetris
-    clear_tetris(tetris);
-    // free(tetris);
-
-    // Initialise un nouveau Tetris
-    Tetris *newTetris = tetris_init_();
-    newTetris->state = GAME;
-
-    fprintf(stderr, "newTetris->highscores:\n");
-    print_highscores(newTetris, 10);
-
-    tetris_playGame(newTetris, nCurses, SDL);
 }
 
 PieceConfig *get_next_piece(Tetris *tetris)
@@ -1107,7 +1073,11 @@ void clear_highscores(Tetris *tetris)
     {
         for (int i = 0; i < numHighscores; i++)
         {
-            free(tetris->highscores[i].name);
+            if (tetris->highscores[i].name != NULL)
+            {
+                free(tetris->highscores[i].name);
+                tetris->highscores[i].name = NULL;
+            }
         }
         free(tetris->highscores);
         tetris->highscores = NULL;

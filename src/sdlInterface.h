@@ -13,7 +13,7 @@
 #include "SDL2/SDL_ttf.h"
 
 /**
- * @brief C'est une structure qui permet d'imiter le comportement d'un bouton.
+ * @brief Cette structure permet d'imiter le comportement d'un bouton.
  *
  */
 typedef struct
@@ -268,13 +268,12 @@ void save_highscores(Tetris *, int);
  * @param SDL_Keycode     - Touche du clavier pressé
  * @param Tetris *        - Un Pointeur vers notre jeu Tetris
  * @param char*           - Le nom du joueur
- * @param Button*         - Pointeur vers notre structure Button qui gère le relancement du jeu
  * @param Button*         - Pointeur vers noter structure Button qui gère l'évènement de quitter le jeu
  * @param Button*         - Pointeur vers notre structure Button qui gère l'évènement de sauvegarder le score du joueur dans le tetris->highscores ( @file tetris.h )
  * @param int*            - Pointeur pour sortir de notre boucle dans @see end_screen_SDL()
  * @return void
  */
-void end_screen_button_events(SDL_Keycode, Tetris *, char *, Button *, Button *, Button *, int *);
+void end_screen_button_events(SDL_Keycode, Tetris *, char *, Button *, Button *, int *);
 
 /**
  * @brief Cette fonction gère les évènenements de textInput de la fin de partie

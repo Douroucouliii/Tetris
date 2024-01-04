@@ -160,7 +160,6 @@ void display_nCurses(Tetris *tetris)
     }
 
     wrefresh(win);
-
 }
 
 void display_info_nCurses(Tetris *tetris)
@@ -265,7 +264,7 @@ void home_page_nCurses(Tetris *tetris)
     mvwprintw(home_page, term_rows / 2, term_cols / 2 - 13, "Select a level : (0-19)");
     mvwprintw(home_page, term_rows / 2 + 2, term_cols / 2 - 22, "(write a number between 0 and 19 and press enter)");
 
-    //On récupère le niveau choisi par l'utilisateur
+    // On récupère le niveau choisi par l'utilisateur
     char number[2];
     do
     {
@@ -332,7 +331,7 @@ void end_screen_nCurses(Tetris *tetris)
         // Mettre à jour les meilleurs scores avec le nouveau score
 
         // Effacer tout le contenu du fichier
-        tetris->file = freopen("data/highscore.txt", "w", tetris->file);
+        tetris->file = fopen("data/highscore.txt", "w");
         if (tetris->file == NULL)
         {
             fprintf(stderr, "Erreur lors de la réouverture du fichier.\n");
@@ -357,6 +356,7 @@ void end_screen_nCurses(Tetris *tetris)
         {
             fprintf(tetris->file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
         }
+        fclose(tetris->file);
     }
     else
     {
@@ -364,22 +364,19 @@ void end_screen_nCurses(Tetris *tetris)
     }
 
     // Affichage des options pour rejouer ou quitter
-    mvwprintw(end_screen, term_rows / 2 + 12, term_cols / 2 - 12, "Press R to play");
     mvwprintw(end_screen, term_rows / 2 + 13, term_cols / 2 - 12, "Press Q to quit");
 
     wrefresh(end_screen);
 
-    // Attendre que l'utilisateur appuie sur R ou Q
+    // Attendre que l'utilisateur appuie sur Q
     char c;
     do
     {
         c = getch();
-    } while (c != 'r' && c != 'R' && c != 'q' && c != 'Q');
+    } while (c != 'q' && c != 'Q');
 
     if (c == 'Q' || c == 'q')
         tetris->state = CLOSE;
-    if (c == 'R' || c == 'r')
-        tetris->state = RESTART;
 
     wclear(end_screen);
 }
