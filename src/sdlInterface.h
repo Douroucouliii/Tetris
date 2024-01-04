@@ -11,6 +11,11 @@
 #include "tetris.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
+#include "SDL2/SDL_mixer.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 /**
  * @brief Cette structure permet d'imiter le comportement d'un bouton.
@@ -248,20 +253,12 @@ void home_page_SDL(Tetris *);
 void display_highscores(Tetris *);
 
 /**
- * @brief Cette fonction permet de trouver la position du joueur si il a fait un highscore et de décaler le reste du tableau avant de sauvegarder dans le fichier. ( @see save_highscores() )
+ * @brief Cette fonction permet de trouver la position du joueur si il a fait un highscore et de décaler le reste du tableau avant de sauvegarder dans le fichier.
  * @param Tetris *   - Pointeur vers notre jeu Tetris
  * @param char*      - Le nom du joueur
  * @return void
  */
 void update_highscores(Tetris *, char *);
-
-/**
- * @brief Cette fonction permet de sauvegarder les nouveaux scores sur highscore.txt dans assets/data.
- * @param Tetris *   - Pointeur vers notre jeu Tetris
- * @param int        - Nombre de score voulu
- * @return void
- */
-void save_highscores(Tetris *, int);
 
 /**
  * @brief Cette fonction gère les évènements des boutons de la fin de partie.

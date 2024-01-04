@@ -4,7 +4,6 @@
 #include "SDL2/SDL_ttf.h"
 #include "SDL2/SDL_mixer.h"
 
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -1569,7 +1568,7 @@ void display_highscores(Tetris *tetris)
 
 void update_highscores(Tetris *tetris, char *playerName)
 {
-    if (save == true)
+    if (save == true || playerName == NULL)
     {
         return;
     }
@@ -1586,30 +1585,7 @@ void update_highscores(Tetris *tetris, char *playerName)
         }
     }
 
-    // On doit décaler les éléments
-    for (int i = numHighscores; i > positionPlayer; i--)
-    {
-        tetris->highscores[i] = tetris->highscores[i - 1];
-    }
-
-    tetris->highscores[positionPlayer].name = strdup(playerName);
-    if (tetris->highscores[positionPlayer].name == NULL)
-    {
-        fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le nom du joueur\n");
-        close_SDL();
-        tetris->state = CLOSE;
-        exit(EXIT_FAILURE);
-    }
-
-    tetris->highscores[positionPlayer].score = tetris->score;
-
     save = true;
-    save_highscores(tetris, numHighscores);
-}
-
-void save_highscores(Tetris *tetris, int numHighscores)
-{
-
     // Supprimer les anciens scores
     tetris->file = fopen("data/highscore.txt", "w");
     // Vérifier l'ouverture du fichier en mode écriture
@@ -1622,7 +1598,14 @@ void save_highscores(Tetris *tetris, int numHighscores)
     }
 
     // On écrit les nouveaux scores
-    for (int i = 0; i < numHighscores; i++)
+    for (int i = 0; i < positionPlayer; i++)
+    {
+        fprintf(tetris->file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
+    }
+
+    fprintf(tetris->file, "%s,%d\n", playerName, tetris->score);
+
+    for (int i = positionPlayer; i < numHighscores - 1; i++)
     {
         fprintf(tetris->file, "%s,%d\n", tetris->highscores[i].name, tetris->highscores[i].score);
     }
@@ -1686,7 +1669,17 @@ void end_screen_text_input(SDL_Event *event, char *playerName)
     case SDL_TEXTINPUT:
         if (strlen(playerName) < 20)
         {
-            strcat(playerName, event->text.text);
+            size_t currentLength = strlen(playerName);
+            size_t inputLength = strlen(event->text.text);
+
+            if (currentLength + inputLength < 20)
+            {
+                strcat(playerName, event->text.text);
+            }
+            else
+            {
+                fprintf(stderr, "PlayerName ( seulement 20 caractères )");
+            }
         }
         break;
     case SDL_KEYDOWN:
@@ -1785,7 +1778,18 @@ void end_screen_SDL(Tetris *tetris)
         }
     }
 
-    char playerName[30];
+    char *playerName = (char *)malloc(21);
+    if (playerName == NULL)
+    {
+        fprintf(stderr, "Erreur lors de l'allocation de mémoire\n");
+        close_SDL();
+        tetris->state = CLOSE;
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        playerName[0] = '\0';
+    }
     SDL_Rect textInputRect = {SCREEN_WIDTH / 2 - 800, SCREEN_HEIGHT - 150, 1000, 100};
 
     int quit = 0;
@@ -1878,7 +1882,7 @@ void end_screen_SDL(Tetris *tetris)
 
         SDL_RenderPresent(renderer);
     }
-
+    free(playerName);
     SDL_StopTextInput();
     SDL_DestroyTexture(menuTexture);
     SDL_DestroyTexture(titleTexture);

@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * @file modele.h
+ * @file tetris.h
  * @author Perin Clément (https://github.com/Douroucouliii)
  * @author Mackowiak Carole (https://github.com/Carole-prog)
  * @brief Squelette du projet Tetris
