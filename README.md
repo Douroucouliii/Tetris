@@ -100,6 +100,7 @@ la correction a été d'ajuster les fps dans ces cas là afin d'avoir un 60 fps 
 
 ![menu](https://github.com/Douroucouliii/Tetris/assets/129008147/88955914-409a-4f8c-ac89-8b52095b600f)
 ![option](https://github.com/Douroucouliii/Tetris/assets/129008147/ba407a6d-ac56-4853-b862-8695c1f545a6)
+![niveau](https://github.com/Douroucouliii/Tetris/assets/129008147/483acbb5-6e99-465b-81df-782a6e8e8ba7)
 ![jeu](https://github.com/Douroucouliii/Tetris/assets/129008147/4b39ce5e-9cdf-4ce3-81cc-11f2e7f15c46)
 ![end](https://github.com/Douroucouliii/Tetris/assets/129008147/90e2f9e4-05e8-4776-85f6-979386f08908)
 ![jeu2](https://github.com/Douroucouliii/Tetris/assets/129008147/b9863c2a-f8bf-4c2b-8bde-beb6cb9c3147)
