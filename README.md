@@ -3,7 +3,7 @@
 ![jeu](https://github.com/Douroucouliii/Tetris/assets/129008147/4b39ce5e-9cdf-4ce3-81cc-11f2e7f15c46)
   
 * Perin Clément https://github.com/Douroucouliii  
-* Mackowiack Carole https://github.com/Carole-prog  
+* Mackowiack Carole https://github.com/Carole-prog
   
 Projet réalisé en langage C avec les libraires graphique nCurses ainsi que SDL.  
 C'est le jeu tetris réalisé en projet pour ma 3 eme année d'informatique  
@@ -12,10 +12,10 @@ C'est le jeu tetris réalisé en projet pour ma 3 eme année d'informatique
   
 # Pour compiler :  
   
-* Avoir SDL d'installer sous linux  
+* Avoir SDL2 installé sous linux  
   
 * 'make clean' pour supprimer les .o et les .d  
-* 'make' pour compiler et générer la documentation avec Doxyfile  
+* 'make' pour compiler
 * './exec' pour executer le programme  
 * 'make doc' pour générer la documentation  
   
