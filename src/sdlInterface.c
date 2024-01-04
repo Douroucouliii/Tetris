@@ -181,6 +181,21 @@ void init_music_sound()
     sounds[7] = Mix_LoadWAV("assets/music/fall.wav");
     sounds[8] = Mix_LoadWAV("assets/music/gameover.wav");
     sounds[9] = Mix_LoadWAV("assets/music/highscore.wav");
+
+    for(int i=0; i<10; i++)
+    {
+        if(sounds[i] == NULL)
+        {
+            fprintf(stderr, "Erreur : le son %d est NULL.\n", i);
+        }
+    }
+    for(int i=0; i<4; i++)
+    {
+        if(musics[i] == NULL)
+        {
+            fprintf(stderr, "Erreur : la musique %d est NULL.\n", i);
+        }
+    }
 }
 
 void set_icon()
@@ -1915,6 +1930,8 @@ void cleanup_audio()
             sounds[i] = NULL;
         }
     }
+
+    currentMusic = NULL;
 }
 
 void clear_img_textures()
