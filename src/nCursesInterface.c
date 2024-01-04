@@ -316,9 +316,10 @@ void end_screen_nCurses(Tetris *tetris)
         {
             isHighscore = 1;
         }
-        mvwprintw(end_screen, term_rows / 4 + i + 6, term_cols / 2 - 6, "%s %d", tetris->highscores[i].name, tetris->highscores[i].score);
+        mvwprintw(end_screen, term_rows / 4 + i + 6, term_cols / 2 - 8, "%s %d", tetris->highscores[i].name, tetris->highscores[i].score);
     }
 
+    mvwprintw(end_screen, term_rows / 2 + 3, term_cols / 2 - 8, "Score : %d", tetris->score);
     // Si le score du joueur est parmi les meilleurs scores, lui demander son nom
     if (isHighscore)
     {

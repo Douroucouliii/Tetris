@@ -1834,7 +1834,7 @@ void end_screen_SDL(Tetris *tetris)
         }
 
         SDL_Rect ScorePlayer = {SCREEN_WIDTH - 600, SCREEN_HEIGHT - 400, 400, 50};
-        char *scoreText = int_to_str_with_prefix("Your score :", tetris->score);
+        char *scoreText = int_to_str_with_prefix("Your score : ", tetris->score);
         display_txt(scoreText, ScorePlayer, textColor);
         free(scoreText);
 
