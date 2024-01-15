@@ -1,5 +1,6 @@
 Amogus,99999
-sonpseudo,440
+Test,2280
+sonpseudo,440
 clem,40
 N/A,0
 N/A,0
@@ -7,4 +8,4 @@ N/A,0
 N/A,0
 N/A,0
 N/A,0
-N/A,0
+Test,0

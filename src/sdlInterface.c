@@ -181,16 +181,16 @@ void init_music_sound()
     sounds[8] = Mix_LoadWAV("assets/music/gameover.wav");
     sounds[9] = Mix_LoadWAV("assets/music/highscore.wav");
 
-    for(int i=0; i<10; i++)
+    for (int i = 0; i < 10; i++)
     {
-        if(sounds[i] == NULL)
+        if (sounds[i] == NULL)
         {
             fprintf(stderr, "Erreur : le son %d est NULL.\n", i);
         }
     }
-    for(int i=0; i<4; i++)
+    for (int i = 0; i < 4; i++)
     {
-        if(musics[i] == NULL)
+        if (musics[i] == NULL)
         {
             fprintf(stderr, "Erreur : la musique %d est NULL.\n", i);
         }
@@ -542,21 +542,20 @@ void display_txt(char *texte, SDL_Rect rect, SDL_Color textColor)
 
 void display_next_piece(Tetris *tetris)
 {
-    SDL_Rect nextpiece = {SCREEN_WIDTH - 780, 0, 400, SCREEN_HEIGHT / 4};
+    SDL_Rect nextpiece = {SCREEN_WIDTH / 2 - 300, 0, 400, SCREEN_HEIGHT / 4 - 100};
 
     int offsetX = (nextpiece.w - CELL_SIZE) / 2 + 250;
     int offsetY = (nextpiece.h - CELL_SIZE) / 2 + 50;
-
     for (int j = 0; j < 4; j++)
     {
-        int cellX = nextpiece.x + offsetX - tetris->nextPiece->coords[j][1] * CELL_SIZE;
-        int cellY = nextpiece.y + offsetY - tetris->nextPiece->coords[j][0] * CELL_SIZE;
+        int cellX = nextpiece.x + offsetX + tetris->nextPiece->coords[j][1] * CELL_SIZE;
+        int cellY = nextpiece.y + offsetY + tetris->nextPiece->coords[j][0] * CELL_SIZE;
         int indice = get_indice_by_color(tetris->nextPiece->c);
         SDL_Rect cellRect = {cellX, cellY, CELL_SIZE, CELL_SIZE};
 
         if (SDL_RenderCopy(renderer, imageTexture[indice], NULL, &cellRect) != 0)
         {
-            fprintf(stderr, "Erreur imageTexture ( display_next_piece ) : %s \n", SDL_GetError());
+            fprintf(stderr, "Erreur imageTexture (display_next_piece): %s \n", SDL_GetError());
             close_SDL();
             tetris->state = CLOSE;
             exit(EXIT_FAILURE);
